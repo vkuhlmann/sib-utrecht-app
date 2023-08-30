@@ -1,4 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+
+// import 'package:christmas2022_management/evadePresenceDetector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:tuple/tuple.dart';
+
+part 'api_connector.dart';
 
 void main() {
   runApp(const MyApp());
@@ -57,6 +66,32 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  late Future<Map> _apiResult;
+  late Future<String>? _debugOutput;
+
+  @override
+  void initState() {
+    super.initState();
+    _apiResult = APIConnector().get("events");
+    // _debugOutput = Future<String>.value("No debug output yet");
+
+    // _apiResult.then((value) => null)
+    // _debugOutput = jsonEncode(_apiResult);
+    // _debugOutput = _apiResult.then((value) => jsonEncode(value, ));
+    _debugOutput = _apiResult.then((value) {
+      const encoder = JsonEncoder.withIndent("    ");
+      return encoder.convert(value);
+      // jsonEncode(value, )
+    });
+  }
+
+  // void setDebugOutput(String val) {
+  //   setState(() {
+  //     _debugOutput = Future<String>.value(val);
+  //     // _debugOutput = jsonEncode(_apiResult);
+  //   });
+  // }
+
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -89,31 +124,44 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
+        child: ListView(
+            // Column is also a layout widget. It takes a list of children and
+            // arranges them vertically. By default, it sizes itself to fit its
+            // children horizontally, and tries to be as tall as its parent.
+            //
+            // Column has various properties to control how it sizes itself and
+            // how it positions its children. Here we use mainAxisAlignment to
+            // center the children vertically; the main axis here is the vertical
+            // axis because Columns are vertical (the cross axis would be
+            // horizontal).
+            //
+            // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+            // action in the IDE, or press "p" in the console), to see the
+            // wireframe for each widget.
+            // mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Center(
+                  child: FutureBuilder<String>(
+                future: _debugOutput,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(snapshot.data!);
+                  } else if (snapshot.hasError) {
+                    return Text("${snapshot.error}");
+                  }
+                  return const CircularProgressIndicator();
+                },
+              )),
+              Column(children: [
+                const Text(
+                  'You have pushed the button this many times:',
+                ),
+                Text(
+                  '$_counter',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                )
+              ])
+            ]),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
