@@ -14,7 +14,6 @@ part 'pages/activities.dart';
 part 'pages/debug.dart';
 part 'pages/info.dart';
 
-
 void main() {
   initializeDateFormatting("nl_NL", null)
       .then((_) => initializeDateFormatting("en_GB"))
@@ -50,12 +49,14 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.light),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple, brightness: Brightness.light),
         useMaterial3: true,
         brightness: Brightness.light,
       ),
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple, brightness: Brightness.dark),
         useMaterial3: true,
         brightness: Brightness.dark,
       ),
@@ -103,47 +104,120 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+enum SampleItem { itemOne, itemTwo, itemThree }
+
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  // String locale = "nl_NL";
-
-  late Future<Map> _apiResult;
-  late Future<String>? _debugOutput;
-
   int currentPageIndex = 0;
+  SampleItem? selectedMenu;
 
   @override
   void initState() {
     super.initState();
-    _apiResult = APIConnector().get("events");
-    // _debugOutput = Future<String>.value("No debug output yet");
-
-    // _apiResult.then((value) => null)
-    // _debugOutput = jsonEncode(_apiResult);
-    // _debugOutput = _apiResult.then((value) => jsonEncode(value, ));
-    _debugOutput = _apiResult.then((value) {
-      const encoder = JsonEncoder.withIndent("    ");
-      return encoder.convert(value);
-      // jsonEncode(value, )
-    });
   }
 
-  // void setDebugOutput(String val) {
-  //   setState(() {
-  //     _debugOutput = Future<String>.value(val);
-  //     // _debugOutput = jsonEncode(_apiResult);
-  //   });
-  // }
+  void createHighlightOverlay({
+    required AlignmentDirectional alignment,
+    required Color borderColor,
+  }) {
+    // Remove the existing OverlayEntry.
+    // removeHighlightOverlay();
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+    // assert(overlayEntry == null);
+
+    var overlayEntry = OverlayEntry(
+      // Create a new OverlayEntry.
+      builder: (BuildContext context) {
+        // Align is used to position the highlight overlay
+        // relative to the NavigationBar destination.
+        return SafeArea(
+          child: Align(
+            alignment: alignment,
+            heightFactor: 1.0,
+            child: DefaultTextStyle(
+              style: const TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+                fontSize: 14.0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  const Text('Tap here for'),
+                  Builder(builder: (BuildContext context) {
+                    switch (currentPageIndex) {
+                      case 0:
+                        return const Column(
+                          children: <Widget>[
+                            Text(
+                              'Explore page',
+                              style: TextStyle(
+                                color: Colors.red,
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_downward,
+                              color: Colors.red,
+                            ),
+                          ],
+                        );
+                      case 1:
+                        return const Column(
+                          children: <Widget>[
+                            Text(
+                              'Commute page',
+                              style: TextStyle(
+                                color: Colors.green,
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_downward,
+                              color: Colors.green,
+                            ),
+                          ],
+                        );
+                      case 2:
+                        return const Column(
+                          children: <Widget>[
+                            Text(
+                              'Saved page',
+                              style: TextStyle(
+                                color: Colors.orange,
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_downward,
+                              color: Colors.orange,
+                            ),
+                          ],
+                        );
+                      default:
+                        return const Text('No page selected.');
+                    }
+                  }),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 3,
+                    height: 80.0,
+                    child: Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: borderColor,
+                            width: 4.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    // Add the OverlayEntry to the Overlay.
+    Overlay.of(context, debugRequiredFor: widget).insert(overlayEntry!);
   }
 
   @override
@@ -193,57 +267,72 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           appBar: AppBar(
-            // TRY THIS: Try changing the color here to a specific color (to
-            // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-            // change color while the other colors stay the same.
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            // Here we take the value from the MyHomePage object that was created by
-            // the App.build method, and use it to set our appbar title.
-            title: Text(widget.title),
-          ),
-          // body: Center(
-          //   // Center is a layout widget. It takes a single child and positions it
-          //   // in the middle of the parent.
-          //   child: ListView(
-          //       // Column is also a layout widget. It takes a list of children and
-          //       // arranges them vertically. By default, it sizes itself to fit its
-          //       // children horizontally, and tries to be as tall as its parent.
-          //       //
-          //       // Column has various properties to control how it sizes itself and
-          //       // how it positions its children. Here we use mainAxisAlignment to
-          //       // center the children vertically; the main axis here is the vertical
-          //       // axis because Columns are vertical (the cross axis would be
-          //       // horizontal).
-          //       //
-          //       // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          //       // action in the IDE, or press "p" in the console), to see the
-          //       // wireframe for each widget.
-          //       // mainAxisAlignment: MainAxisAlignment.center,
-          //       children: <Widget>[
-          //         // Center(
-          //         //     child: FutureBuilder<String>(
-          //         //   future: _debugOutput,
-          //         //   builder: (context, snapshot) {
-          //         //     if (snapshot.hasData) {
-          //         //       return Text(snapshot.data!);
-          //         //     } else if (snapshot.hasError) {
-          //         //       return Text("${snapshot.error}");
-          //         //     }
-          //         //     return const CircularProgressIndicator();
-          //         //   },
-          //         // )),
-          //         const ActivitiesPage(),
-          //         Column(children: [
-          //           const Text(
-          //             'You have pushed the button this many times:',
-          //           ),
-          //           Text(
-          //             '$_counter',
-          //             style: Theme.of(context).textTheme.headlineMedium,
-          //           )
-          //         ])
-          //       ]),
-          // ),
+              // TRY THIS: Try changing the color here to a specific color (to
+              // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+              // change color while the other colors stay the same.
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              // Here we take the value from the MyHomePage object that was created by
+              // the App.build method, and use it to set our appbar title.
+              title: Row(children: <Widget>[
+                Text(widget.title),
+                const Spacer(),
+                // Text("Test")
+                // OverlayEntry(builder: 
+                // Positioned.directional(
+                //   textDirection: Directionality.of(outerContext),
+                //   top: 0,
+                //   start: 0,
+                //   child: Directionality()
+                // )),
+                ElevatedButton(onPressed: () {
+                  createHighlightOverlay(alignment: AlignmentDirectional.bottomStart, borderColor: Colors.red);
+                }, child: const Text("AA")),
+                MenuAnchor(
+                  builder: (BuildContext context, MenuController controller, Widget? child) {
+                    return IconButton(onPressed: () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+                    icon: CircleAvatar(backgroundColor: Colors.blue),
+                    tooltip: "Profile",
+                    );
+                  },
+                  // menuChildren: List<MenuItemButton>.generate(10,
+                  //   (int index) => MenuItemButton(
+                  //     onPressed: () =>
+                  //         setState(() => selectedMenu = SampleItem.values[index]),
+                  //     child: Text('Item ${index + 1}'),
+                  //   ),
+                  // )
+                  menuChildren: <MenuItemButton> [
+                    MenuItemButton(
+                      onPressed: () =>
+                          setState(() => selectedMenu = SampleItem.itemOne),
+                      child: Text('Item 1'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () =>
+                          setState(() => selectedMenu = SampleItem.itemTwo),
+                      child: Text('Item 2'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () =>
+                          setState(() => selectedMenu = SampleItem.itemThree),
+                      child: Text('Item 3'),
+                    ),
+                  ]
+                    // icon: 
+                    // itemBuilder: (BuildContext context) {
+                    //   return <PopupMenuEntry>[
+                    //     const PopupMenuItem(
+                    //       child: Text("Test"),
+                    //     )
+                    //   ];
+                  )
+              ])),
           body: <Widget>[
             const ActivitiesPage(),
             // const Text("Profile"),
