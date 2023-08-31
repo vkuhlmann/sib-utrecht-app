@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of '../main.dart';
 
 // Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
 
@@ -348,34 +348,16 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
             }
             return const CircularProgressIndicator();
           }),
-      FutureBuilder<Set<int>>(
-          future: _bookedEvents,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return Text(jsonEncode(snapshot.data!.toList()));
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            return const CircularProgressIndicator();
-          }),
+      // FutureBuilder<Set<int>>(
+      //     future: _bookedEvents,
+      //     builder: (context, snapshot) {
+      //       if (snapshot.hasData) {
+      //         return Text(jsonEncode(snapshot.data!.toList()));
+      //       } else if (snapshot.hasError) {
+      //         return Text("${snapshot.error}");
+      //       }
+      //       return const CircularProgressIndicator();
+      //     }),
     ]);
-
-    // return Column(children: const <Widget>[
-    //   Text("Activity 1"),
-    //   Text("Activity 2"),
-
-    //   // Center(
-    //   //     child: FutureBuilder<String>(
-    //   //   future: _debugOutput,
-    //   //   builder: (context, snapshot) {
-    //   //     if (snapshot.hasData) {
-    //   //       return Text(snapshot.data!);
-    //   //     } else if (snapshot.hasError) {
-    //   //       return Text("${snapshot.error}");
-    //   //     }
-    //   //     return const CircularProgressIndicator();
-    //   //   },
-    //   // )),
-    // ]);
   }
 }
