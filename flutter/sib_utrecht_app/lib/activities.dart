@@ -1,6 +1,6 @@
 part of 'main.dart';
 
-// class Activities {}
+// Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
 
 class ActivityView extends StatefulWidget {
   final Map activity;
@@ -11,15 +11,13 @@ class ActivityView extends StatefulWidget {
   final ValueSetter<bool> setParticipating;
 
   ActivityView(
-    {
-      Key? key, required this.activity,
+      {Key? key,
+      required this.activity,
       required this.isParticipating,
-      required this.setParticipating
-    }
-  ) :
-    start=DateTime.parse('${activity["event_start"]}Z').toLocal(),
-    end=DateTime.parse('${activity["event_end"]}Z').toLocal(),
-    super(key: key);
+      required this.setParticipating})
+      : start = DateTime.parse('${activity["event_start"]}Z').toLocal(),
+        end = DateTime.parse('${activity["event_end"]}Z').toLocal(),
+        super(key: key);
 
   @override
   State<ActivityView> createState() => _ActivityViewState();
@@ -27,7 +25,7 @@ class ActivityView extends StatefulWidget {
 
 class _ActivityViewState extends State<ActivityView> {
   // final TimeOfDayFormat _timeFormat = TimeOfDayFormat.HH_colon_mm;
-  final  _timeFormat = DateFormat("HH:mm");
+  final _timeFormat = DateFormat("HH:mm");
   // late Future
 
   _ActivitiesPageState() {
@@ -54,32 +52,32 @@ class _ActivityViewState extends State<ActivityView> {
           //             image: NetworkImage(widget.activity["image_url"]),
           //             fit: BoxFit.cover))),
           // Row(children: <Widget>[
-            Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.all(10),
-              margin: const EdgeInsets.all(5),
-              color: Colors.lightBlueAccent,
-              child: Text('${widget.start.day}'),
-            ),
-            Container(
+          Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.all(5),
+            color: Colors.lightBlueAccent,
+            child: Text('${widget.start.day}'),
+          ),
+          Container(
               alignment: Alignment.center,
               padding: const EdgeInsets.all(10),
               margin: const EdgeInsets.all(5),
               child:
-              // Text(DateFormat("MMM", "nl_NL").format(widget.start))
-              Text(DateFormat("MMM", Preferences.of(context).locale).format(widget.start))
+                  // Text(DateFormat("MMM", "nl_NL").format(widget.start))
+                  Text(DateFormat("MMM", Preferences.of(context).locale)
+                      .format(widget.start))
               // Text('${widget.start.month}')
-            ),
-            // Text('${widget.start.day} ${widget.start.month}'),
-            Expanded(
+              ),
+          // Text('${widget.start.day} ${widget.start.month}'),
+          Expanded(
               child: Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.all(5),
-                child: Text(widget.activity["event_name"])
-              )
-            ),
-            Container(alignment: Alignment.center,
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(5),
+                  child: Text(widget.activity["event_name"]))),
+          Container(
+              alignment: Alignment.center,
               // child: IconButton(
               //   icon: const Icon(Icons.add),
               //   onPressed: () {
@@ -95,27 +93,26 @@ class _ActivityViewState extends State<ActivityView> {
                 onChanged: (value) {
                   print("Checkbox changed to $value");
                   widget.setParticipating(value!);
-                }, 
-              )
-            ),
-            Container(alignment: Alignment.centerLeft,
+                },
+              )),
+          Container(
+              alignment: Alignment.centerLeft,
               padding: const EdgeInsets.all(10),
               margin: const EdgeInsets.all(5),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(_timeFormat.format(widget.start)),
-                  // Text(_timeFormat.format(widget.end)),
-                  // Text(start_time.format(context)),
-                  // Text(end_time.format(context))
-                // Text('${widget.start.hour:2d}:${widget.start.minute}'),
-                // Text('${widget.end.hour}:${widget.end.minute}'),
-              ])
-            ),
-            // Text(widget.activity["event_start"]),
-            // Text(widget.activity["event_time"]),
-            // Text(widget.activity["event_location"]),
-            // Text(widget.activity["event_description"]),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_timeFormat.format(widget.start)),
+                    // Text(_timeFormat.format(widget.end)),
+                    // Text(start_time.format(context)),
+                    // Text(end_time.format(context))
+                    // Text('${widget.start.hour:2d}:${widget.start.minute}'),
+                    // Text('${widget.end.hour}:${widget.end.minute}'),
+                  ])),
+          // Text(widget.activity["event_start"]),
+          // Text(widget.activity["event_time"]),
+          // Text(widget.activity["event_location"]),
+          // Text(widget.activity["event_description"]),
           // ])
         ]));
   }
@@ -150,6 +147,8 @@ class ActivitiesPage extends StatefulWidget {
 }
 
 class _ActivitiesPageState extends State<ActivitiesPage> {
+  late APIConnector apiConnector;
+
   late Future<Map> _apiResult;
   late Future<Set<int>> _bookedEvents;
   late Future<String>? _debugOutput;
@@ -157,8 +156,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   @override
   void initState() {
     super.initState();
-    
-    var apiConnector = APIConnector();
+
+    apiConnector = APIConnector();
 
     _apiResult = apiConnector.get("events");
 
@@ -167,18 +166,126 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       return encoder.convert(value);
     });
 
-    _bookedEvents = apiConnector.get("my-bookings").then((value) {
-      Set<int> events =
-        (value["data"]["bookings"] as List<dynamic>)
-        .where((v) => v["booking"]["status"] == "approved")
-        .map<int>((e) => e["event"]["event_id"])
-        .toSet();
+    loadBookings();
+  }
+
+  void loadBookings() {
+    setState(() {
+      _bookedEvents = apiConnector.get("my-bookings").then((value) {
+        Set<int> events = (value["data"]["bookings"] as List<dynamic>)
+            .where((v) => v["booking"]["status"] == "approved")
+            .map<int>((e) => e["event"]["event_id"])
+            .toSet();
         return events;
+      });
     });
   }
 
-  void setEventRegistration(int eventId, bool value) {
-    print("Setting registration for event $eventId to $value");
+  void popupDialog(String text) {
+    showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => createDialog(context, text));
+  }
+
+  Widget createDialog(BuildContext context, String text) {
+    return Dialog(
+        child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(text),
+          // const SizedBox(height: 15),
+          Container(
+            margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+            child: TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Close'),
+            ),
+          )
+        ],
+      ),
+    ));
+  }
+
+  void sendToast(String text) {
+    // Based on https://stackoverflow.com/questions/45948168/how-to-create-toast-in-flutter
+    // answer by https://stackoverflow.com/users/8394265/r%c3%a9mi-rousselet
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: Text(text),
+        // action: SnackBarAction(label: 'UNDO', onPressed: scaffold.hideCurrentSnackBar),
+        action: SnackBarAction(
+            label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+      ),
+    );
+  }
+
+  void setEventRegistration(int eventId, bool value) async {
+    // showDialog<String>(
+    //     context: context,
+    //     builder: (BuildContext context) => Dialog(
+    //             child: Padding(
+    //           padding: const EdgeInsets.all(8.0),
+    //           child: Column(
+    //             mainAxisSize: MainAxisSize.min,
+    //             mainAxisAlignment: MainAxisAlignment.center,
+    //             children: <Widget>[
+    //               const Text('This is a typical dialog.'),
+    //               const SizedBox(height: 15),
+    //               TextButton(
+    //                 onPressed: () {
+    //                   Navigator.pop(context);
+    //                 },
+    //                 child: const Text('Close'),
+    //               ),
+    //             ],
+    //           ),
+    //         )));
+
+    if (value) {
+      Map res;
+      try {
+        res = await apiConnector.post("add-booking?event_id=$eventId");
+
+        bool isSuccess = res["status"] == "success";
+        assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
+
+        if (isSuccess) {
+          sendToast("Registered for event $eventId");
+        }
+      } catch (e) {
+        popupDialog("Failed to register for event $eventId: $e");
+      } finally {
+        loadBookings();
+      }
+    }
+
+    if (!value) {
+      Map res;
+      try {
+        res = await apiConnector.put("cancel-booking?event_id=$eventId");
+
+        bool isSuccess = res["status"] == "success";
+        assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
+
+        if (isSuccess) {
+          sendToast("Cancelled registration for event $eventId");
+        }
+      } catch (e) {
+        popupDialog("Failed to cancel registration for event $eventId: $e");
+      } finally {
+        loadBookings();
+      }
+    }
+
+    // popupDialog("Setting registration for event $eventId to $value");
+
+    // print("Setting registration for event $eventId to $value");
     // var apiConnector = APIConnector();
     // apiConnector.post("bookings", {"event_id": eventId}).then((value) {
     //   print("Registered for event $eventId");
@@ -198,39 +305,33 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-    FutureBuilder<(Map, Set<int>)>(
-        future: Future.wait([_apiResult, _bookedEvents])
-        .then((value) => (value[0] as Map, value[1] as Set<int>)),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            // return Text(jsonEncode(snapshot.data!["data"]["events"]));
-            var (events_response, booked_events) = snapshot.data!;
+      FutureBuilder<(Map, Set<int>)>(
+          future: Future.wait([_apiResult, _bookedEvents])
+              .then((value) => (value[0] as Map, value[1] as Set<int>)),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              // return Text(jsonEncode(snapshot.data!["data"]["events"]));
+              var (events_response, booked_events) = snapshot.data!;
 
+              return Column(
+                  children: events_response["data"]["events"]
+                      // .map<Widget>((e) => Text(jsonEncode(e)))
+                      // .map<Widget>((e) => Text("Test"))
+                      .map<Widget>((e) => ActivityView(
+                          activity: e,
+                          isParticipating:
+                              booked_events.contains(e["event_id"]),
+                          setParticipating: (value) =>
+                              setEventRegistration(e["event_id"], value)))
+                      .toList());
 
-            return Column(
-                children: events_response["data"]["events"]
-                    // .map<Widget>((e) => Text(jsonEncode(e)))
-                    // .map<Widget>((e) => Text("Test"))
-                    .map<Widget>((e) => ActivityView(
-                      activity: e,
-                      isParticipating: booked_events.contains(e["event_id"]),
-                      setParticipating:
-                        (value) => setEventRegistration(e["event_id"], value)
-                    ))
-                    .toList()
-                // const <Widget>[
-                //   Text("Activity 1"),
-                //   Text("Activity 2"),
-                // ]
-                );
-
-            // return _buildActivities(snapshot.data!);
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
-          }
-          return const CircularProgressIndicator();
-        }),
-        FutureBuilder<Set<int>>(
+              // return _buildActivities(snapshot.data!);
+            } else if (snapshot.hasError) {
+              return Text("${snapshot.error}");
+            }
+            return const CircularProgressIndicator();
+          }),
+      FutureBuilder<Set<int>>(
           future: _bookedEvents,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
@@ -239,8 +340,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
               return Text("${snapshot.error}");
             }
             return const CircularProgressIndicator();
-          }
-        ),
+          }),
     ]);
 
     // return Column(children: const <Widget>[

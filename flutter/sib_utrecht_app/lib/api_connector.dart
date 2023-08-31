@@ -24,6 +24,70 @@ class APIConnector {
         });
 
     if (response.statusCode != 200) {
+      dynamic message;
+      try {
+        message = jsonDecode(response.body) as Map;
+      } catch (e) {
+        throw Exception(
+            "Got status code ${response.statusCode}: ${response.body}");
+      }
+
+      throw Exception("${message['message']}");
+    }
+
+    Map obj = jsonDecode(response.body);
+    if (obj.containsKey("error")) {
+      throw Exception("Request returned error: ${obj['error']}");
+    }
+
+    return obj;
+  }
+
+  Future<Map> post(url) async {
+    final response = await http
+        .post(Uri.parse("$apiAddress/$url"), headers: <String, String>{
+          'authorization': basicAuth
+        });
+
+    if (response.statusCode != 200) {
+      throw Exception(
+          "Got status code ${response.statusCode}, ${response.body}");
+    }
+
+    Map obj = jsonDecode(response.body);
+    if (obj.containsKey("error")) {
+      throw Exception("Request returned error: ${obj['error']}");
+    }
+
+    return obj;
+  }
+
+  Future<Map> put(url) async {
+    final response = await http
+        .put(Uri.parse("$apiAddress/$url"), headers: <String, String>{
+          'authorization': basicAuth
+        });
+
+    if (response.statusCode != 200) {
+      throw Exception(
+          "Got status code ${response.statusCode}, ${response.body}");
+    }
+
+    Map obj = jsonDecode(response.body);
+    if (obj.containsKey("error")) {
+      throw Exception("Request returned error: ${obj['error']}");
+    }
+
+    return obj;
+  }
+
+  Future<Map> delete(url) async {
+    final response = await http
+        .delete(Uri.parse("$apiAddress/$url"), headers: <String, String>{
+          'authorization': basicAuth
+        });
+
+    if (response.statusCode != 200) {
       throw Exception(
           "Got status code ${response.statusCode}, ${response.body}");
     }
