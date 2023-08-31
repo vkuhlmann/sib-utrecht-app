@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:tuple/tuple.dart';
 
 part 'api_connector.dart';
+part 'activities.dart';
 
 void main() {
   runApp(const MyApp());
@@ -140,18 +141,19 @@ class _MyHomePageState extends State<MyHomePage> {
             // wireframe for each widget.
             // mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Center(
-                  child: FutureBuilder<String>(
-                future: _debugOutput,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Text(snapshot.data!);
-                  } else if (snapshot.hasError) {
-                    return Text("${snapshot.error}");
-                  }
-                  return const CircularProgressIndicator();
-                },
-              )),
+              // Center(
+              //     child: FutureBuilder<String>(
+              //   future: _debugOutput,
+              //   builder: (context, snapshot) {
+              //     if (snapshot.hasData) {
+              //       return Text(snapshot.data!);
+              //     } else if (snapshot.hasError) {
+              //       return Text("${snapshot.error}");
+              //     }
+              //     return const CircularProgressIndicator();
+              //   },
+              // )),
+              const ActivitiesPage(),
               Column(children: [
                 const Text(
                   'You have pushed the button this many times:',
