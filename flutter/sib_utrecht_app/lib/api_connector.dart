@@ -17,22 +17,17 @@ class APIConnector {
     basicAuth = 'Basic ${base64.encode(utf8.encode('$user:$apiSecret'))}';
   }
 
-  Future<Map> get(url) async {
-    final response = await http
-        .get(Uri.parse("$apiAddress/$url"), headers: <String, String>{
-          'authorization': basicAuth
-        });
-
+  Map _handleResponse(http.Response response) {
     if (response.statusCode != 200) {
       dynamic message;
       try {
-        message = jsonDecode(response.body) as Map;
+        message = (jsonDecode(response.body) as Map)["message"];
       } catch (e) {
         throw Exception(
             "Got status code ${response.statusCode}: ${response.body}");
       }
 
-      throw Exception("${message['message']}");
+      throw Exception("$message");
     }
 
     Map obj = jsonDecode(response.body);
@@ -41,62 +36,37 @@ class APIConnector {
     }
 
     return obj;
+  }
+
+  Future<Map> get(url) async {
+    final response = await http.get(Uri.parse("$apiAddress/$url"),
+        headers: <String, String>{'authorization': basicAuth});
+    return _handleResponse(response);
   }
 
   Future<Map> post(url) async {
-    final response = await http
-        .post(Uri.parse("$apiAddress/$url"), headers: <String, String>{
-          'authorization': basicAuth
-        });
-
-    if (response.statusCode != 200) {
-      throw Exception(
-          "Got status code ${response.statusCode}, ${response.body}");
+    var response;
+    try {
+      response = await http.post(Uri.parse("$apiAddress/$url"),
+          headers: <String, String>{'authorization': basicAuth});
+    } catch (e) {
+      print("HTTP post errored");
     }
 
-    Map obj = jsonDecode(response.body);
-    if (obj.containsKey("error")) {
-      throw Exception("Request returned error: ${obj['error']}");
-    }
-
-    return obj;
+    return _handleResponse(response);
   }
 
   Future<Map> put(url) async {
-    final response = await http
-        .put(Uri.parse("$apiAddress/$url"), headers: <String, String>{
-          'authorization': basicAuth
-        });
+    final response = await http.put(Uri.parse("$apiAddress/$url"),
+        headers: <String, String>{'authorization': basicAuth});
 
-    if (response.statusCode != 200) {
-      throw Exception(
-          "Got status code ${response.statusCode}, ${response.body}");
-    }
-
-    Map obj = jsonDecode(response.body);
-    if (obj.containsKey("error")) {
-      throw Exception("Request returned error: ${obj['error']}");
-    }
-
-    return obj;
+    return _handleResponse(response);
   }
 
   Future<Map> delete(url) async {
-    final response = await http
-        .delete(Uri.parse("$apiAddress/$url"), headers: <String, String>{
-          'authorization': basicAuth
-        });
+    final response = await http.delete(Uri.parse("$apiAddress/$url"),
+        headers: <String, String>{'authorization': basicAuth});
 
-    if (response.statusCode != 200) {
-      throw Exception(
-          "Got status code ${response.statusCode}, ${response.body}");
-    }
-
-    Map obj = jsonDecode(response.body);
-    if (obj.containsKey("error")) {
-      throw Exception("Request returned error: ${obj['error']}");
-    }
-
-    return obj;
+    return _handleResponse(response);
   }
 }

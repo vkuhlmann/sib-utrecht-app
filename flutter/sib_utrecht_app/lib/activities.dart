@@ -184,31 +184,48 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   void popupDialog(String text) {
     showDialog<String>(
         context: context,
-        builder: (BuildContext context) => createDialog(context, text));
+        builder: (BuildContext context) => createDialog(text));
   }
 
-  Widget createDialog(BuildContext context, String text) {
-    return Dialog(
-        child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(text),
-          // const SizedBox(height: 15),
-          Container(
-            margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-            child: TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+  Widget createDialog(String text) {
+    return AlertDialog(
+        title: const Text('Error'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text(text),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
               child: const Text('Close'),
-            ),
-          )
-        ],
-      ),
-    ));
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
+        ]);
+
+    // return Dialog(
+    //     child: Padding(
+    //   padding: const EdgeInsets.all(20),
+    //   child: Column(
+    //     mainAxisSize: MainAxisSize.min,
+    //     mainAxisAlignment: MainAxisAlignment.center,
+    //     children: <Widget>[
+    //       Text(text),
+    //       // const SizedBox(height: 15),
+    //       Container(
+    //         margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+    //         child: TextButton(
+    //           onPressed: () {
+    //             Navigator.pop(context);
+    //           },
+    //           child: const Text('Close'),
+    //         ),
+    //       )
+    //     ],
+    //   ),
+    // ));
   }
 
   void sendToast(String text) {
@@ -259,7 +276,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
           sendToast("Registered for event $eventId");
         }
       } catch (e) {
-        popupDialog("Failed to register for event $eventId: $e");
+        popupDialog("Failed to register for event $eventId: \n$e");
       } finally {
         loadBookings();
       }
