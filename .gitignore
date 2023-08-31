@@ -1,3 +1,4 @@
-flake*
-flutter_nix_*
+#flake*
+#flutter_nix_*
+oldflakes/
 my_app/
