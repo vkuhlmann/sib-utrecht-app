@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:tuple/tuple.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 part 'api_connector.dart';
 part 'pages/activities.dart';
@@ -246,6 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
               // ),
               NavigationDestination(
                 icon: Icon(Icons.event_outlined),
+                // icon: Icon(Symbols.calendar_month),
                 label: 'Activities',
                 selectedIcon: Icon(Icons.event),
               ),
