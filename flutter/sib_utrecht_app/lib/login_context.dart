@@ -159,6 +159,29 @@ class LoginManager {
     var uuid = const Uuid();
     final String appName = "sib-utrecht-app_${uuid.v4().substring(0, 6)}";
 
+    // Uri authorize_url = Uri.parse(
+    //     "$AUTHORIZE_APP_URL?app_name=$appName"
+    //     "&success_url=https%3A%2F%2Fvkuhlmann.com"
+    // );
+
+    Uri authorizeUrl = Uri.http(
+        Uri.parse(AUTHORIZE_APP_URL).authority,
+        Uri.parse(AUTHORIZE_APP_URL).path,
+        {
+          "app_name": appName,
+          // "success_url": "https://vkuhlmann.com"
+          "success_url": Uri.base.replace(path: "/authorize").toString()
+        }
+    );
+    
+    print("Authorize url: $authorizeUrl");
+    
+    if (!await launchUrl(authorizeUrl)) {
+      throw Exception("Could not launch url");
+    }
+
+    // await Future.delayed(Duration(seconds: 2));
+
     var queryResults = {
       "user_login": "vincent",
       "password": "PuNZ ZO31 bZCP har0 VYwo cNKP"

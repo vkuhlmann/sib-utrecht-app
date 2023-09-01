@@ -6,8 +6,7 @@ part of 'main.dart';
 //   Modified
 
 class APIConnector {
-  String apiAddress =
-      "http://192.168.50.200/wordpress/wp-json/sib-utrecht-wp-plugin/v1";
+  String apiAddress = API_URL;
 
   final String? user;// = "vincent";
   // final String apiSecret = "PuNZ ZO31 bZCP har0 VYwo cNKP";
