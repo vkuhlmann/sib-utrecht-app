@@ -38,6 +38,15 @@ class LoginManager {
 
   late FlutterSecureStorage storage;
   late Future<LoginState> state;// = Future.error(Exception("Not initialized"));
+  late Future<void> initiatedLogin;
+
+  final LoginState loggedOutState = LoginState(
+          connector: APIConnector(),
+          profiles: {},
+          // activeProfileName: 'Not logged in',
+          // activeProfile: {}
+          activeProfileName: null,
+          activeProfile: null);
 
   // @override
   // void initState() {
@@ -63,13 +72,7 @@ class LoginManager {
     }
 
     if (profiles.isEmpty) {
-      return LoginState(
-          connector: APIConnector(),
-          profiles: {},
-          // activeProfileName: 'Not logged in',
-          // activeProfile: {}
-          activeProfileName: null,
-          activeProfile: null);
+      return loggedOutState;
     }
 
     var activeProfileName = profiles.keys.first;
@@ -149,13 +152,34 @@ class LoginManager {
     // state.catchError((e) {
     //   print("Old error loading profile: $e");
     // });
-    state = _login();
-    state.catchError((e) {
+    state = Future.value(loggedOutState);
+    initiatedLogin = _initiateLogin();
+    initiatedLogin.catchError((e) {
       print("Error logging in: $e");
     });
   }
 
-  Future<LoginState> _login() async {
+  Future<LoginState> _completeLogin({required String user, required String apiSecret}) async {
+      String profileName = "profile1";
+    var prof = (await state).profiles;
+
+    assert(!prof.containsKey(profileName));
+
+    var profile = {
+      "app_name": null,
+      "user": user,
+      "apiSecret": apiSecret,
+      "name": profileName
+    };
+
+    prof[profileName] = profile;
+    await storage.write(key: 'profiles', value: jsonEncode(prof));
+
+    // loadProfiles();
+    return await _loadState();
+  }
+
+  Future<void> _initiateLogin() async {
     var uuid = const Uuid();
     final String appName = "sib-utrecht-app_${uuid.v4().substring(0, 6)}";
 
@@ -165,12 +189,12 @@ class LoginManager {
     // );
 
     Uri authorizeUrl = Uri.http(
-        Uri.parse(AUTHORIZE_APP_URL).authority,
-        Uri.parse(AUTHORIZE_APP_URL).path,
+        Uri.parse(authorizeAppUrl).authority,
+        Uri.parse(authorizeAppUrl).path,
         {
           "app_name": appName,
           // "success_url": "https://vkuhlmann.com"
-          "success_url": Uri.base.replace(path: "/authorize").toString()
+          "success_url": Uri.base.replace(fragment: "/authorize").toString()
         }
     );
     
@@ -182,28 +206,28 @@ class LoginManager {
 
     // await Future.delayed(Duration(seconds: 2));
 
-    var queryResults = {
-      "user_login": "vincent",
-      "password": "PuNZ ZO31 bZCP har0 VYwo cNKP"
-    };
+    // var queryResults = {
+    //   "user_login": "vincent",
+    //   "password": "PuNZ ZO31 bZCP har0 VYwo cNKP"
+    // };
 
-    String profileName = "profile1";
-    var prof = (await state).profiles;
+    // String profileName = "profile1";
+    // var prof = (await state).profiles;
 
-    assert(!prof.containsKey(profileName));
+    // assert(!prof.containsKey(profileName));
 
-    var profile = {
-      "app_name": appName,
-      "user": queryResults["user_login"],
-      "apiSecret": queryResults["password"],
-      "name": profileName
-    };
+    // var profile = {
+    //   "app_name": appName,
+    //   "user": queryResults["user_login"],
+    //   "apiSecret": queryResults["password"],
+    //   "name": profileName
+    // };
 
-    prof[profileName] = profile;
-    await storage.write(key: 'profiles', value: jsonEncode(prof));
+    // prof[profileName] = profile;
+    // await storage.write(key: 'profiles', value: jsonEncode(prof));
 
-    // loadProfiles();
-    return await _loadState();
+    // // loadProfiles();
+    // return await _loadState();
   }
 
   void eraseProfiles() {

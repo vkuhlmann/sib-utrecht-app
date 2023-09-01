@@ -6,7 +6,7 @@ part of 'main.dart';
 //   Modified
 
 class APIConnector {
-  String apiAddress = API_URL;
+  String apiAddress = apiUrl;
 
   final String? user;// = "vincent";
   // final String apiSecret = "PuNZ ZO31 bZCP har0 VYwo cNKP";
