@@ -147,31 +147,43 @@ class ActivitiesPage extends StatefulWidget {
 }
 
 class _ActivitiesPageState extends State<ActivitiesPage> {
-  late APIConnector apiConnector;
+  late Future<APIConnector>? apiConnector = null;
 
-  late Future<Map> _apiResult;
-  late Future<Set<int>> _bookedEvents;
-  late Future<String>? _debugOutput;
+  late Future<Map>? _apiResult;
+  late Future<Set<int>>? _bookedEvents;
+  // late Future<String>? _debugOutput;
 
   @override
   void initState() {
     super.initState();
+  }
 
-    apiConnector = APIConnector();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
+    if (this.apiConnector != apiConnector) {
+      this.apiConnector = apiConnector;
+     
+      loadEvents();
+      loadBookings();
+    }
+  }
 
-    _apiResult = apiConnector.get("events");
-
-    _debugOutput = _apiResult.then((value) {
-      const encoder = JsonEncoder.withIndent("    ");
-      return encoder.convert(value);
+  void loadEvents() {
+    setState(() {
+      _apiResult = apiConnector?.then((value) => value.get("events"));
     });
-
-    loadBookings();
+    // _debugOutput = _apiResult.then((value) {
+    //   const encoder = JsonEncoder.withIndent("    ");
+    //   return encoder.convert(value);
+    // });
   }
 
   void loadBookings() {
     setState(() {
-      _bookedEvents = apiConnector.get("my-bookings").then((value) {
+      _bookedEvents = apiConnector?.then((api) => api.get("my-bookings")).then((value) {
         Set<int> events = (value["data"]["bookings"] as List<dynamic>)
             .where((v) => v["booking"]["status"] == "approved")
             .map<int>((e) => e["event"]["event_id"])
@@ -264,10 +276,12 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     //           ),
     //         )));
 
+    var api = await apiConnector;
+
     if (value) {
       Map res;
       try {
-        res = await apiConnector.post("add-booking?event_id=$eventId");
+        res = await api!.post("add-booking?event_id=$eventId");
 
         bool isSuccess = res["status"] == "success";
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
@@ -285,7 +299,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     if (!value) {
       Map res;
       try {
-        res = await apiConnector.put("cancel-booking?event_id=$eventId");
+        res = await api!.put("cancel-booking?event_id=$eventId");
 
         bool isSuccess = res["status"] == "success";
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
@@ -321,9 +335,13 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_apiResult == null || _bookedEvents == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Column(children: [
       FutureBuilder<(Map, Set<int>)>(
-          future: Future.wait([_apiResult, _bookedEvents])
+          future: Future.wait([_apiResult!, _bookedEvents!])
               .then((value) => (value[0] as Map, value[1] as Set<int>)),
           builder: (context, snapshot) {
             if (snapshot.hasData) {

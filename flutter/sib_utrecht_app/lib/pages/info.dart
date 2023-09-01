@@ -50,7 +50,7 @@ class _InfoPageState extends State<InfoPage> {
                 // Card(child: ListTile(title: const Text("Over app"))),
               ])
             ),
-            SliverFillRemaining(
+            const SliverFillRemaining(
               hasScrollBody: false,
               child: Padding(padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
               child:

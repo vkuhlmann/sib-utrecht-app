@@ -8,8 +8,11 @@ import 'package:http/http.dart' as http;
 import 'package:tuple/tuple.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:material_symbols_icons/symbols.dart';
+// import 'package:material_symbols_icons/symbols.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
 
+part 'login_context.dart';
 part 'api_connector.dart';
 part 'pages/activities.dart';
 part 'pages/debug.dart';
@@ -105,133 +108,136 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-enum SampleItem { itemOne, itemTwo, itemThree }
+// enum SampleItem { itemOne, itemTwo, itemThree }
 
 class _MyHomePageState extends State<MyHomePage> {
   int currentPageIndex = 0;
-  SampleItem? selectedMenu;
+  late LoginManager loginManager;
+
+  // SampleItem? selectedMenu;
 
   @override
   void initState() {
     super.initState();
+    loginManager = LoginManager();
   }
 
-  void createHighlightOverlay({
-    required AlignmentDirectional alignment,
-    required Color borderColor,
-  }) {
-    // Remove the existing OverlayEntry.
-    // removeHighlightOverlay();
+  // void createHighlightOverlay({
+  //   required AlignmentDirectional alignment,
+  //   required Color borderColor,
+  // }) {
+  //   // Remove the existing OverlayEntry.
+  //   // removeHighlightOverlay();
 
-    // assert(overlayEntry == null);
+  //   // assert(overlayEntry == null);
 
-    var overlayEntry = OverlayEntry(
-      // Create a new OverlayEntry.
-      builder: (BuildContext context) {
-        // Align is used to position the highlight overlay
-        // relative to the NavigationBar destination.
-        return SafeArea(
-          child: Align(
-            alignment: alignment,
-            heightFactor: 1.0,
-            child: DefaultTextStyle(
-              style: const TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.bold,
-                fontSize: 14.0,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Text('Tap here for'),
-                  Builder(builder: (BuildContext context) {
-                    switch (currentPageIndex) {
-                      case 0:
-                        return const Column(
-                          children: <Widget>[
-                            Text(
-                              'Explore page',
-                              style: TextStyle(
-                                color: Colors.red,
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_downward,
-                              color: Colors.red,
-                            ),
-                          ],
-                        );
-                      case 1:
-                        return const Column(
-                          children: <Widget>[
-                            Text(
-                              'Commute page',
-                              style: TextStyle(
-                                color: Colors.green,
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_downward,
-                              color: Colors.green,
-                            ),
-                          ],
-                        );
-                      case 2:
-                        return const Column(
-                          children: <Widget>[
-                            Text(
-                              'Saved page',
-                              style: TextStyle(
-                                color: Colors.orange,
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_downward,
-                              color: Colors.orange,
-                            ),
-                          ],
-                        );
-                      default:
-                        return const Text('No page selected.');
-                    }
-                  }),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
-                    height: 80.0,
-                    child: Center(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: borderColor,
-                            width: 4.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
+  //   var overlayEntry = OverlayEntry(
+  //     // Create a new OverlayEntry.
+  //     builder: (BuildContext context) {
+  //       // Align is used to position the highlight overlay
+  //       // relative to the NavigationBar destination.
+  //       return SafeArea(
+  //         child: Align(
+  //           alignment: AlignmentDirectional.topEnd.add(const Alignment(0, 0.1)),
+  //           heightFactor: 1.0,
+  //           child: DefaultTextStyle(
+  //             style: const TextStyle(
+  //               color: Colors.blue,
+  //               fontWeight: FontWeight.bold,
+  //               fontSize: 14.0,
+  //             ),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: <Widget>[
+  //                 const Text('Tap here for'),
+  //                 Builder(builder: (BuildContext context) {
+  //                   switch (currentPageIndex) {
+  //                     case 0:
+  //                       return const Column(
+  //                         children: <Widget>[
+  //                           Text(
+  //                             'Explore page',
+  //                             style: TextStyle(
+  //                               color: Colors.red,
+  //                             ),
+  //                           ),
+  //                           Icon(
+  //                             Icons.arrow_downward,
+  //                             color: Colors.red,
+  //                           ),
+  //                         ],
+  //                       );
+  //                     case 1:
+  //                       return const Column(
+  //                         children: <Widget>[
+  //                           Text(
+  //                             'Commute page',
+  //                             style: TextStyle(
+  //                               color: Colors.green,
+  //                             ),
+  //                           ),
+  //                           Icon(
+  //                             Icons.arrow_downward,
+  //                             color: Colors.green,
+  //                           ),
+  //                         ],
+  //                       );
+  //                     case 2:
+  //                       return const Column(
+  //                         children: <Widget>[
+  //                           Text(
+  //                             'Saved page',
+  //                             style: TextStyle(
+  //                               color: Colors.orange,
+  //                             ),
+  //                           ),
+  //                           Icon(
+  //                             Icons.arrow_downward,
+  //                             color: Colors.orange,
+  //                           ),
+  //                         ],
+  //                       );
+  //                     default:
+  //                       return const Text('No page selected.');
+  //                   }
+  //                 }),
+  //                 SizedBox(
+  //                   width: MediaQuery.of(context).size.width / 3,
+  //                   height: 80.0,
+  //                   child: Center(
+  //                     child: Container(
+  //                       decoration: BoxDecoration(
+  //                         border: Border.all(
+  //                           color: borderColor,
+  //                           width: 4.0,
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
 
-    // Add the OverlayEntry to the Overlay.
-    Overlay.of(context, debugRequiredFor: widget).insert(overlayEntry!);
-  }
+  //   // Add the OverlayEntry to the Overlay.
+  //   Overlay.of(context, debugRequiredFor: widget).insert(overlayEntry!);
+  // }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Preferences(
         locale: "nl_NL",
-        child: Scaffold(
+        child: APIAccess(
+          // profileName: loginManager.activeProfileName,
+          // profile: loginManager.activeProfile,
+          // connector: loginManager.connector,
+          state: loginManager.state,
+          // child: LoginContext(
+            child: Scaffold(
           bottomNavigationBar: NavigationBar(
             onDestinationSelected: (int index) {
               setState(() {
@@ -257,9 +263,9 @@ class _MyHomePageState extends State<MyHomePage> {
               //   selectedIcon: Icon(Icons.person_outline),
               // ),
               NavigationDestination(
-                icon: Icon(Icons.view_timeline_outlined),
+                icon: Icon(Icons.timeline_outlined),
                 label: 'Timeline',
-                selectedIcon: Icon(Icons.view_timeline),
+                selectedIcon: Icon(Icons.timeline),
               ),
               NavigationDestination(
                 icon: Icon(Icons.tab_outlined),
@@ -269,72 +275,184 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           appBar: AppBar(
-              // TRY THIS: Try changing the color here to a specific color (to
-              // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-              // change color while the other colors stay the same.
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-              // Here we take the value from the MyHomePage object that was created by
-              // the App.build method, and use it to set our appbar title.
               title: Row(children: <Widget>[
                 Text(widget.title),
                 const Spacer(),
                 // Text("Test")
-                // OverlayEntry(builder: 
+                // OverlayEntry(builder:
                 // Positioned.directional(
                 //   textDirection: Directionality.of(outerContext),
                 //   top: 0,
                 //   start: 0,
                 //   child: Directionality()
                 // )),
-                ElevatedButton(onPressed: () {
-                  createHighlightOverlay(alignment: AlignmentDirectional.bottomStart, borderColor: Colors.red);
-                }, child: const Text("AA")),
-                MenuAnchor(
-                  builder: (BuildContext context, MenuController controller, Widget? child) {
-                    return IconButton(onPressed: () {
-                      if (controller.isOpen) {
-                        controller.close();
-                      } else {
-                        controller.open();
-                      }
-                    },
-                    icon: CircleAvatar(backgroundColor: Colors.blue),
-                    tooltip: "Profile",
-                    );
-                  },
-                  // menuChildren: List<MenuItemButton>.generate(10,
-                  //   (int index) => MenuItemButton(
-                  //     onPressed: () =>
-                  //         setState(() => selectedMenu = SampleItem.values[index]),
-                  //     child: Text('Item ${index + 1}'),
-                  //   ),
-                  // )
-                  menuChildren: <MenuItemButton> [
-                    MenuItemButton(
-                      onPressed: () =>
-                          setState(() => selectedMenu = SampleItem.itemOne),
-                      child: Text('Item 1'),
-                    ),
-                    MenuItemButton(
-                      onPressed: () =>
-                          setState(() => selectedMenu = SampleItem.itemTwo),
-                      child: Text('Item 2'),
-                    ),
-                    MenuItemButton(
-                      onPressed: () =>
-                          setState(() => selectedMenu = SampleItem.itemThree),
-                      child: Text('Item 3'),
-                    ),
-                  ]
-                    // icon: 
-                    // itemBuilder: (BuildContext context) {
-                    //   return <PopupMenuEntry>[
-                    //     const PopupMenuItem(
-                    //       child: Text("Test"),
-                    //     )
-                    //   ];
-                  )
-              ])),
+                FutureBuilder(future: loginManager.state,
+                builder:(context, snapshot) {
+                  Color backgroundColor = Colors.grey;
+                  if (snapshot.hasData) {
+                    backgroundColor = Colors.white;
+                    if (snapshot.data?.activeProfileName != null) {
+                      backgroundColor = Colors.blue;
+                    }
+                  }
+
+                  if (snapshot.hasError) {
+                    backgroundColor = Colors.red;
+                  }
+
+                  return IconButton(
+                    icon: CircleAvatar(backgroundColor: backgroundColor),
+                    onPressed: () {
+                      // createHighlightOverlay(alignment: AlignmentDirectional.bottomStart, borderColor: Colors.red);
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return Dialog(
+                                alignment: AlignmentDirectional.topEnd,
+                                insetPadding:
+                                    const EdgeInsets.fromLTRB(16, 70, 16, 16),
+                                child: Container(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 16, 16, 32),
+                                    width: 200,
+                                    // child: const Text("test")
+                                    // child: ListView(children: [const Text("test")],)
+                                    child: CustomScrollView(
+                                        shrinkWrap: true,
+                                        slivers: <Widget>[
+                                          SliverList(
+                                              delegate:
+                                                  SliverChildListDelegate(<Widget>[
+                                            Row(
+                                              children: [
+                                                if (snapshot.data?.activeProfileName != null)
+                                                  Text(
+                                                      "Hoi ${snapshot.data!.activeProfile!['user']}!")
+                                                else
+                                                  const Text("Not logged in!"),
+                                                // Text("Hoi $username!"),
+                                                const Spacer(),
+                                                const CircleAvatar(
+                                                    backgroundColor:
+                                                        Colors.blue)
+                                              ],
+                                            ),
+                                            SizedBox(height: 15),
+                                            const Text("test"),
+                                            ...((snapshot.data?.activeProfileName != null) ?
+                                            ([
+                                              SizedBox(height: 15),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                  setState(() {
+                                                    loginManager.eraseProfiles();
+                                                  });
+                                                },
+                                                child: const Text('Logout'),
+                                              ),
+                                            ]) : ([])),
+                                            ...((snapshot.data?.activeProfileName == null) ?
+                                            ([
+                                              SizedBox(height: 15),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                  setState(() {
+                                                    loginManager.login();
+                                                  });
+                                                },
+                                                child: const Text('Login'),
+                                              ),
+                                            ]) : ([])),
+                                            ...((snapshot.hasError) ?
+                                            ([
+                                              SizedBox(height: 15),
+                                              Text("Error: ${snapshot.error}")
+                                            ]) : ([])),
+                                          ]))
+                                        ])
+                                    // Container(
+                                    //     // mainAxisSize: MainAxisSize.min,
+                                    //     // mainAxisAlignment:
+                                    //     //     MainAxisAlignment.start,
+                                    //     // crossAxisAlignment: CrossAxisAlignment.end,
+                                    //     children: <Widget>[
+                                    //       const Text(
+                                    //           'This is a typical dialog.'),
+                                    //       const SizedBox(height: 15),
+                                    //       TextButton(
+                                    //         onPressed: () {
+                                    //           Navigator.pop(context);
+                                    //         },
+                                    //         child: const Text('Close'),
+                                    //       ),
+                                    //     ])
+                                    ));
+
+                            // title: const Text("Test"),
+                            // content: const Text("Test"),
+                            // actions: <Widget>[
+                            //   TextButton(onPressed: () {
+                            //     Navigator.of(context).pop();
+                            //   }, child: const Text("OK"))
+                            // ],
+                            // );
+                          });
+                    });
+  }),
+                //   MenuAnchor(
+                //       builder: (BuildContext context, MenuController controller,
+                //           Widget? child) {
+                //         return IconButton(
+                //           onPressed: () {
+                //             if (controller.isOpen) {
+                //               controller.close();
+                //             } else {
+                //               controller.open();
+                //             }
+                //           },
+                //           icon: CircleAvatar(backgroundColor: Colors.blue),
+                //           tooltip: "Profile",
+                //         );
+                //       },
+                //       // menuChildren: List<MenuItemButton>.generate(10,
+                //       //   (int index) => MenuItemButton(
+                //       //     onPressed: () =>
+                //       //         setState(() => selectedMenu = SampleItem.values[index]),
+                //       //     child: Text('Item ${index + 1}'),
+                //       //   ),
+                //       // )
+                //       menuChildren: <MenuItemButton>[
+                //         MenuItemButton(
+                //           onPressed: () =>
+                //               setState(() => selectedMenu = SampleItem.itemOne),
+                //           child: Text('Item 1'),
+                //         ),
+                //         MenuItemButton(
+                //           onPressed: () =>
+                //               setState(() => selectedMenu = SampleItem.itemTwo),
+                //           child: Text('Item 2'),
+                //         ),
+                //         MenuItemButton(
+                //           onPressed: () =>
+                //               setState(() => selectedMenu = SampleItem.itemThree),
+                //           child: Text('Item 3'),
+                //         ),
+                //       ]
+                //       // icon:
+                //       // itemBuilder: (BuildContext context) {
+                //       //   return <PopupMenuEntry>[
+                //       //     const PopupMenuItem(
+                //       //       child: Text("Test"),
+                //       //     )
+                //       //   ];
+                //       )
+                //
+              ],
+                )
+                ),
           body: <Widget>[
             const ActivitiesPage(),
             // const Text("Profile"),
@@ -347,6 +465,6 @@ class _MyHomePageState extends State<MyHomePage> {
           //   tooltip: 'Increment',
           //   child: const Icon(Icons.add),
           // ), // This trailing comma makes auto-formatting nicer for build methods.
-        ));
+        )));
   }
 }

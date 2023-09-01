@@ -9,12 +9,18 @@ class APIConnector {
   String apiAddress =
       "http://192.168.50.200/wordpress/wp-json/sib-utrecht-wp-plugin/v1";
 
-  final String user = "vincent";
-  final String apiSecret = "PuNZ ZO31 bZCP har0 VYwo cNKP";
-  late String basicAuth;
+  final String? user;// = "vincent";
+  // final String apiSecret = "PuNZ ZO31 bZCP har0 VYwo cNKP";
+  late final String? basicAuth;
+  late Map<String, String> headers;
 
-  APIConnector() {
-    basicAuth = 'Basic ${base64.encode(utf8.encode('$user:$apiSecret'))}';
+  APIConnector({this.user, String? apiSecret}) {
+    headers = {};
+    if (user != null) {
+      basicAuth = 'Basic ${base64.encode(utf8.encode('$user:$apiSecret'))}';
+
+      headers["authorization"] = basicAuth!;
+    }
   }
 
   Map _handleResponse(http.Response response) {
@@ -39,33 +45,32 @@ class APIConnector {
   }
 
   Future<Map> get(url) async {
-    final response = await http.get(Uri.parse("$apiAddress/$url"),
-        headers: <String, String>{'authorization': basicAuth});
+    final response = await http.get(Uri.parse("$apiAddress/$url"), headers: headers);
     return _handleResponse(response);
   }
 
   Future<Map> post(url) async {
-    var response;
-    try {
-      response = await http.post(Uri.parse("$apiAddress/$url"),
-          headers: <String, String>{'authorization': basicAuth});
-    } catch (e) {
-      print("HTTP post errored");
-    }
+    // var response;
+    // try {
+    final response = await http.post(Uri.parse("$apiAddress/$url"),
+        headers: headers);
+    // } catch (e) {
+    //   print("HTTP post errored");
+    // }
 
     return _handleResponse(response);
   }
 
   Future<Map> put(url) async {
     final response = await http.put(Uri.parse("$apiAddress/$url"),
-        headers: <String, String>{'authorization': basicAuth});
+        headers: headers);
 
     return _handleResponse(response);
   }
 
   Future<Map> delete(url) async {
     final response = await http.delete(Uri.parse("$apiAddress/$url"),
-        headers: <String, String>{'authorization': basicAuth});
+        headers: headers);
 
     return _handleResponse(response);
   }

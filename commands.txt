@@ -1,0 +1,7 @@
+flutter build web
+flutter run --release -d web-server --web-hostname 0.0.0.0 --web-port 3080
+
+sshd
+ssh u0_a277@localhost -p 8022 -N -L 3081:192.168.50.119:3080
+pkill sshd
+
