@@ -45,6 +45,8 @@ class APIConnector {
   }
 
   Future<Map> get(url) async {
+    print("Doing GET on $url");
+    // await Future.delayed(Duration(seconds: 2));
     final response = await http.get(Uri.parse("$apiAddress/$url"), headers: headers);
     return _handleResponse(response);
   }
@@ -52,6 +54,8 @@ class APIConnector {
   Future<Map> post(url) async {
     // var response;
     // try {
+    print("Doing POST on $url");
+    // await Future.delayed(Duration(seconds: 3));
     final response = await http.post(Uri.parse("$apiAddress/$url"),
         headers: headers);
     // } catch (e) {
@@ -62,6 +66,8 @@ class APIConnector {
   }
 
   Future<Map> put(url) async {
+    print("Doing PUT on $url");
+    // await Future.delayed(Duration(seconds: 3));
     final response = await http.put(Uri.parse("$apiAddress/$url"),
         headers: headers);
 

@@ -9,12 +9,14 @@ class ActivityView extends StatefulWidget {
 
   final bool isParticipating;
   final ValueSetter<bool> setParticipating;
+  final bool isDirty;
 
   ActivityView(
       {Key? key,
       required this.activity,
       required this.isParticipating,
-      required this.setParticipating})
+      required this.setParticipating,
+      required this.isDirty})
       : start = DateTime.parse('${activity["event_start"]}Z').toLocal(),
         end = DateTime.parse('${activity["event_end"]}Z').toLocal(),
         super(key: key);
@@ -40,81 +42,85 @@ class _ActivityViewState extends State<ActivityView> {
     // final TimeOfDay start_time = TimeOfDay.fromDateTime(widget.start);
     // final TimeOfDay end_time = TimeOfDay.fromDateTime(widget.end);
 
-    return Container(
-        alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
-        child: Row(children: [
-          // Container(
-          //     width: 100,
-          //     height: 100,
-          //     decoration: BoxDecoration(
-          //         image: DecorationImage(
-          //             image: NetworkImage(widget.activity["image_url"]),
-          //             fit: BoxFit.cover))),
-          // Row(children: <Widget>[
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.all(10),
-            margin: const EdgeInsets.all(5),
-            color: Colors.lightBlueAccent,
-            child: Text('${widget.start.day}'),
-          ),
-          Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.all(10),
-              margin: const EdgeInsets.all(5),
-              child:
-                  // Text(DateFormat("MMM", "nl_NL").format(widget.start))
-                  Text(DateFormat("MMM", Preferences.of(context).locale)
-                      .format(widget.start))
-              // Text('${widget.start.month}')
+    return FutureBuilder(
+        future: dateFormattingInitialization,
+        builder: (context, snapshot) => Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
+            child: Row(children: [
+              // Container(
+              //     width: 100,
+              //     height: 100,
+              //     decoration: BoxDecoration(
+              //         image: DecorationImage(
+              //             image: NetworkImage(widget.activity["image_url"]),
+              //             fit: BoxFit.cover))),
+              // Row(children: <Widget>[
+              Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(5),
+                color: Colors.lightBlueAccent,
+                child: Text('${widget.start.day}'),
               ),
-          // Text('${widget.start.day} ${widget.start.month}'),
-          Expanded(
-              child: Container(
+              Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(5),
+                  child:
+                      // Text(DateFormat("MMM", "nl_NL").format(widget.start))
+                      Text(DateFormat("MMM", Preferences.of(context).locale)
+                          .format(widget.start))
+                  // Text('${widget.start.month}')
+                  ),
+              // Text('${widget.start.day} ${widget.start.month}'),
+              Expanded(
+                  child: Container(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(5),
+                      child: Text(widget.activity["event_name"]))),
+              Container(
+                  alignment: Alignment.center,
+                  // child: IconButton(
+                  //   icon: const Icon(Icons.add),
+                  //   onPressed: () {
+                  //     // Navigator.push(
+                  //     //   context,
+                  //     //   MaterialPageRoute(builder: (context) => ActivityView(activity: widget.activity)),
+                  //     // );
+                  //     // Navigator.pushNamed(context, '/activity', arguments: widget.activity);
+                  //   },
+                  // )
+                  child: widget.isDirty
+                      ? const CircularProgressIndicator()
+                      : Checkbox(
+                          value: widget.isParticipating,
+                          onChanged: (value) {
+                            print("Checkbox changed to $value");
+                            widget.setParticipating(value!);
+                          },
+                        )),
+              Container(
                   alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.all(10),
                   margin: const EdgeInsets.all(5),
-                  child: Text(widget.activity["event_name"]))),
-          Container(
-              alignment: Alignment.center,
-              // child: IconButton(
-              //   icon: const Icon(Icons.add),
-              //   onPressed: () {
-              //     // Navigator.push(
-              //     //   context,
-              //     //   MaterialPageRoute(builder: (context) => ActivityView(activity: widget.activity)),
-              //     // );
-              //     // Navigator.pushNamed(context, '/activity', arguments: widget.activity);
-              //   },
-              // )
-              child: Checkbox(
-                value: widget.isParticipating,
-                onChanged: (value) {
-                  print("Checkbox changed to $value");
-                  widget.setParticipating(value!);
-                },
-              )),
-          Container(
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.all(10),
-              margin: const EdgeInsets.all(5),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_timeFormat.format(widget.start)),
-                    // Text(_timeFormat.format(widget.end)),
-                    // Text(start_time.format(context)),
-                    // Text(end_time.format(context))
-                    // Text('${widget.start.hour:2d}:${widget.start.minute}'),
-                    // Text('${widget.end.hour}:${widget.end.minute}'),
-                  ])),
-          // Text(widget.activity["event_start"]),
-          // Text(widget.activity["event_time"]),
-          // Text(widget.activity["event_location"]),
-          // Text(widget.activity["event_description"]),
-          // ])
-        ]));
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_timeFormat.format(widget.start)),
+                        // Text(_timeFormat.format(widget.end)),
+                        // Text(start_time.format(context)),
+                        // Text(end_time.format(context))
+                        // Text('${widget.start.hour:2d}:${widget.start.minute}'),
+                        // Text('${widget.end.hour}:${widget.end.minute}'),
+                      ])),
+              // Text(widget.activity["event_start"]),
+              // Text(widget.activity["event_time"]),
+              // Text(widget.activity["event_location"]),
+              // Text(widget.activity["event_description"]),
+              // ])
+            ])));
   }
 }
 
@@ -147,49 +153,115 @@ class ActivitiesPage extends StatefulWidget {
 }
 
 class _ActivitiesPageState extends State<ActivitiesPage> {
-  late Future<APIConnector>? apiConnector = null;
+  late Future<APIConnector>? apiConnector;
 
-  late Future<Map>? _apiResult;
-  late Future<Set<int>>? _bookedEvents;
+  // late Future<Map>? _apiResult;
+
+  int sequenceId = 0;
+
+  (int, List<Map>, Set<int>)? _cached;
+  Future<(int, List<Map>, Set<int>)?> _staging = Future.value(null);
+  int? _refreshingSequence = null;
+
+  Set<int> _dirtyBookState = {};
+  int _dirtyStateSequence = 0;
+
+  List<Future> _pendingMutations = [];
+
+  // late Future<Set<int>>? _bookedEvents;
   // late Future<String>? _debugOutput;
+
+  // late List<Map> _cachedEvents;
+  // late Set<int> _cachedBookedEvents;
 
   @override
   void initState() {
     super.initState();
+
+    apiConnector = null;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
       this.apiConnector = apiConnector;
-     
-      loadEvents();
-      loadBookings();
+      scheduleRefresh();
     }
   }
 
-  void loadEvents() {
-    setState(() {
-      _apiResult = apiConnector?.then((value) => value.get("events"));
-    });
-    // _debugOutput = _apiResult.then((value) {
-    //   const encoder = JsonEncoder.withIndent("    ");
-    //   return encoder.convert(value);
-    // });
+  Future<(List<Map>, Set<int>)?> _loadData() async {
+    // return null;
+    print("Loading activity data");
+    var conn = apiConnector;
+    if (conn == null) {
+      return null;
+    }
+
+    var [eventsRes, bookingsRes] = await Future.wait([
+      conn.then((api) => api.get("events")),
+      conn.then((api) => api.get("my-bookings"))
+    ]);
+
+    // var eventsRes = await conn.then((api) => api.get("events"));
+    // var bookingsRes = await conn.then((api) => api.get("my-bookings"));
+
+    var events = (eventsRes["data"]["events"] as List<dynamic>)
+        .map((e) => e as Map)
+        .toList();
+    var bookings = (bookingsRes["data"]["bookings"] as List<dynamic>)
+        .where((v) => v["booking"]["status"] == "approved")
+        .map<int>((e) => e["event"]["event_id"])
+        .toSet();
+
+    return (events, bookings);
   }
 
-  void loadBookings() {
+  void scheduleRefresh() {
     setState(() {
-      _bookedEvents = apiConnector?.then((api) => api.get("my-bookings")).then((value) {
-        Set<int> events = (value["data"]["bookings"] as List<dynamic>)
-            .where((v) => v["booking"]["status"] == "approved")
-            .map<int>((e) => e["event"]["event_id"])
-            .toSet();
-        return events;
+      print("Refreshing");
+      int thisSequence = sequenceId++;
+      _refreshingSequence = thisSequence;
+
+      var fut = _loadData().then((value) {
+        if (value == null) {
+          return null;
+        }
+
+        var v = (thisSequence, value.$1, value.$2);
+        setState(() {
+          if (thisSequence != _refreshingSequence) {
+            print(
+                "Discarding activity data result: sequence id was $thisSequence, now $_refreshingSequence");
+            return;
+          }
+
+          _cached = v;
+        });
+
+        return v;
       });
+      // .onError((e) {
+      //   print("Error while loading data: $e");
+      //   // popupDialog("Error while loading data: $e");
+      // });
+
+      var fut2 = fut.whenComplete(() {
+        setState(() {
+          if (thisSequence != _refreshingSequence) {
+            return;
+          }
+
+          _refreshingSequence = null;
+          if (thisSequence > _dirtyStateSequence) {
+            _dirtyBookState = {};
+          }
+        });
+      });
+
+      _staging = fut;
     });
   }
 
@@ -216,28 +288,6 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                 Navigator.of(context).pop();
               }),
         ]);
-
-    // return Dialog(
-    //     child: Padding(
-    //   padding: const EdgeInsets.all(20),
-    //   child: Column(
-    //     mainAxisSize: MainAxisSize.min,
-    //     mainAxisAlignment: MainAxisAlignment.center,
-    //     children: <Widget>[
-    //       Text(text),
-    //       // const SizedBox(height: 15),
-    //       Container(
-    //         margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-    //         child: TextButton(
-    //           onPressed: () {
-    //             Navigator.pop(context);
-    //           },
-    //           child: const Text('Close'),
-    //         ),
-    //       )
-    //     ],
-    //   ),
-    // ));
   }
 
   void sendToast(String text) {
@@ -254,7 +304,32 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     );
   }
 
-  void setEventRegistration(int eventId, bool value) async {
+  void scheduleEventRegistration(int eventId, bool value) {
+    setState(() {
+      _dirtyStateSequence = sequenceId++;
+      _dirtyBookState.add(eventId);
+    });
+
+    var fut = _setEventRegistration(eventId, value).then((value) {
+      setState(() {
+        _dirtyBookState.remove(eventId);
+      });
+      return value;
+    });
+
+    _pendingMutations.add(fut);
+    fut.whenComplete(() {
+      setState(() {
+        _pendingMutations.remove(fut);
+        _dirtyStateSequence = sequenceId++;
+        _dirtyBookState.add(eventId);
+
+        scheduleRefresh();
+      });
+    });
+  }
+
+  Future<void> _setEventRegistration(int eventId, bool value) async {
     // showDialog<String>(
     //     context: context,
     //     builder: (BuildContext context) => Dialog(
@@ -292,7 +367,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       } catch (e) {
         popupDialog("Failed to register for event $eventId: \n$e");
       } finally {
-        loadBookings();
+        // scheduleRefresh();
       }
     }
 
@@ -310,7 +385,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       } catch (e) {
         popupDialog("Failed to cancel registration for event $eventId: $e");
       } finally {
-        loadBookings();
+        // scheduleRefresh();
       }
     }
 
@@ -335,47 +410,79 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_apiResult == null || _bookedEvents == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    // if (_) {
+    //   return const Center(child: CircularProgressIndicator());
+    // }
 
-    return Column(children: [
-      FutureBuilder<(Map, Set<int>)>(
-          future: Future.wait([_apiResult!, _bookedEvents!])
-              .then((value) => (value[0] as Map, value[1] as Set<int>)),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
+    return FutureBuilder(
+        future: _staging,
+        builder: (contextStaging, snapshotStaging) {
+          return Column(children: [
+            // FutureBuilder<(List<Map>, Set<int>)?>(
+            //     future: _cached,
+            // builder: (contextCached, snapshotCached) {
+            // if (snapshotCached.hasError) {
+            //   return Text("${snapshotCached.error}");
+            // }
+            (contextCached) {
+              var data = _cached;
+              if (data == null) {
+                return const SizedBox();
+              }
+
               // return Text(jsonEncode(snapshot.data!["data"]["events"]));
-              var (events_response, booked_events) = snapshot.data!;
+              var (sequenceId, events, bookedEvents) = data;
 
               return Column(
-                  children: events_response["data"]["events"]
-                      // .map<Widget>((e) => Text(jsonEncode(e)))
-                      // .map<Widget>((e) => Text("Test"))
+                  children: events
                       .map<Widget>((e) => ActivityView(
+                          key: ValueKey(e["event_id"]),
                           activity: e,
-                          isParticipating:
-                              booked_events.contains(e["event_id"]),
+                          isParticipating: bookedEvents.contains(e["event_id"]),
+                          isDirty: _dirtyBookState.contains(e["event_id"]),
                           setParticipating: (value) =>
-                              setEventRegistration(e["event_id"], value)))
+                              scheduleEventRegistration(e["event_id"], value)))
                       .toList());
 
               // return _buildActivities(snapshot.data!);
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            return const CircularProgressIndicator();
-          }),
-      // FutureBuilder<Set<int>>(
-      //     future: _bookedEvents,
-      //     builder: (context, snapshot) {
-      //       if (snapshot.hasData) {
-      //         return Text(jsonEncode(snapshot.data!.toList()));
-      //       } else if (snapshot.hasError) {
-      //         return Text("${snapshot.error}");
-      //       }
-      //       return const CircularProgressIndicator();
-      //     }),
-    ]);
+              // if (snapshotStaging.hasError) {
+              // return Text(jsonEncode(snapshotCached.data));
+              // }
+
+              // return const CircularProgressIndicator();
+            }(contextStaging),
+
+            // if (snapshot.hasData) {
+            //   return Text(jsonEncode(snapshot.data));
+            // } else
+            (_refreshingSequence != null)
+                ? const Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Center(child: CircularProgressIndicator()))
+                : ((snapshotStaging.hasError)
+                    ? Text("${snapshotStaging.error}")
+                    : const SizedBox()),
+            // ((snapshotStaging.hasError)
+            //     ? Text("${snapshotStaging.error}")
+            //     : (snapshotStaging.hasData
+            //         ? SizedBox()
+            //         : const Center(child: CircularProgressIndicator()))),
+            // Text("snapshotStaging.hasData: ${snapshotStaging.hasData}"),
+            // Text("snapshotStaging.hasError: ${snapshotStaging.hasError}"),
+            Text("sequence id: $sequenceId"),
+            Text("refreshing sequence: $_refreshingSequence"),
+          ]);
+        });
+    // FutureBuilder<Set<int>>(
+    //     future: _bookedEvents,
+    //     builder: (context, snapshot) {
+    //       if (snapshot.hasData) {
+    //         return Text(jsonEncode(snapshot.data!.toList()));
+    //       } else if (snapshot.hasError) {
+    //         return Text("${snapshot.error}");
+    //       }
+    //       return const CircularProgressIndicator();
+    //     }),
+    // ]);
   }
 }

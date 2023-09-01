@@ -20,12 +20,11 @@ class LoginState {
   final String? activeProfileName;
   final Map<String, dynamic>? activeProfile;
 
-  const LoginState({
-    required this.connector,
-    required this.profiles,
-    required this.activeProfileName,
-    required this.activeProfile
-  });
+  const LoginState(
+      {required this.connector,
+      required this.profiles,
+      required this.activeProfileName,
+      required this.activeProfile});
 }
 
 class LoginManager {
@@ -38,20 +37,20 @@ class LoginManager {
   // late Future<Map<String, dynamic>?> activeProfile;
 
   late FlutterSecureStorage storage;
-  late Future<LoginState> state;
+  late Future<LoginState> state;// = Future.error(Exception("Not initialized"));
 
   // @override
   // void initState() {
   //   super.initState();
 
   //   storage = const FlutterSecureStorage();
-    
+
   //   loadProfiles();
   // }
 
   LoginManager() {
     storage = const FlutterSecureStorage();
-    
+
     loadProfiles();
   }
 
@@ -65,83 +64,98 @@ class LoginManager {
 
     if (profiles.isEmpty) {
       return LoginState(
-        connector: APIConnector(),
-        profiles: {},
-        // activeProfileName: 'Not logged in',
-        // activeProfile: {}
-        activeProfileName: null,
-        activeProfile: null
-      );
+          connector: APIConnector(),
+          profiles: {},
+          // activeProfileName: 'Not logged in',
+          // activeProfile: {}
+          activeProfileName: null,
+          activeProfile: null);
     }
 
     var activeProfileName = profiles.keys.first;
     var activeProfile = profiles[activeProfileName]!;
 
     return LoginState(
-      connector: APIConnector(
-        user: activeProfile["user"], apiSecret: activeProfile["apiSecret"]),
-        profiles: profiles.map((key, value) => MapEntry(key, value as Map<String, dynamic>)),
+        connector: APIConnector(
+            user: activeProfile["user"], apiSecret: activeProfile["apiSecret"]),
+        profiles: profiles
+            .map((key, value) => MapEntry(key, value as Map<String, dynamic>)),
         activeProfileName: activeProfileName,
-        activeProfile: activeProfile
-      );
+        activeProfile: activeProfile);
   }
 
   void loadProfiles() {
-    // setState(() {
-    state = _loadState();
+    // state.catchError((e) {
+    //   print("Old error loading profile: $e");
     // });
     // setState(() {
-      // _profiles = storage.read(key: 'profiles').then((value) {
-      //   if (value == null) {
-      //     return {};
-      //   }
+    state = _loadState();
+    state.catchError((e) {
+      print("Error loading profile: $e");
+    });
+    // });
+    // setState(() {
+    // _profiles = storage.read(key: 'profiles').then((value) {
+    //   if (value == null) {
+    //     return {};
+    //   }
 
-      //   // activeProfile = profiles.keys.first;
-      //   return jsonDecode(value);
-      // });
+    //   // activeProfile = profiles.keys.first;
+    //   return jsonDecode(value);
+    // });
 
-      // activeProfileName = _profiles.then((value) {
-      //   if (value.isEmpty) {
-      //     return 'Not logged in';
-      //   }
-      //   return value.keys.first;
-      // });
+    // activeProfileName = _profiles.then((value) {
+    //   if (value.isEmpty) {
+    //     return 'Not logged in';
+    //   }
+    //   return value.keys.first;
+    // });
 
-      // _activeProfileFull = Future.wait([_profiles, activeProfileName]).then((a) {
-      //   var (prof, activeProfName) = (a[0], a[1]) as (Map<String, Map>, String);
+    // _activeProfileFull = Future.wait([_profiles, activeProfileName]).then((a) {
+    //   var (prof, activeProfName) = (a[0], a[1]) as (Map<String, Map>, String);
 
-      //   if (prof.isEmpty) {
-      //     return null;
-      //   }
+    //   if (prof.isEmpty) {
+    //     return null;
+    //   }
 
-      //   return prof[activeProfName]?.update("name", (value) => activeProfName);
-      // });
+    //   return prof[activeProfName]?.update("name", (value) => activeProfName);
+    // });
 
-      // connector = _activeProfileFull.then((activeProf) {
-      //   if (activeProf == null) {
-      //     return APIConnector();
-      //   }
+    // connector = _activeProfileFull.then((activeProf) {
+    //   if (activeProf == null) {
+    //     return APIConnector();
+    //   }
 
-      //   return APIConnector(user: activeProf["user"], apiSecret: activeProf["apiSecret"]);
-      // });
+    //   return APIConnector(user: activeProf["user"], apiSecret: activeProf["apiSecret"]);
+    // });
 
-      // activeProfile = _activeProfileFull.then((a) {
-      //   if (a == null) {
-      //     return null;
-      //   }
+    // activeProfile = _activeProfileFull.then((a) {
+    //   if (a == null) {
+    //     return null;
+    //   }
 
-      //   var copy = Map<String, dynamic>.from(a);
-      //   copy.remove("apiSecret");
+    //   var copy = Map<String, dynamic>.from(a);
+    //   copy.remove("apiSecret");
 
-      //   return copy;
-      // });
+    //   return copy;
+    // });
     // });
   }
 
   // void logout() {
   // }
 
-  void login() async {
+  void scheduleLogin() {
+    // state.catchError((e) {
+    //   print("Old error loading profile: $e");
+    // });
+    state = _login();
+    state.catchError((e) {
+      print("Error logging in: $e");
+    });
+  }
+
+  Future<LoginState> _login() async {
     var uuid = const Uuid();
     final String appName = "sib-utrecht-app_${uuid.v4().substring(0, 6)}";
 
@@ -153,7 +167,7 @@ class LoginManager {
     String profileName = "profile1";
     var prof = (await state).profiles;
 
-    assert (!prof.containsKey(profileName));
+    assert(!prof.containsKey(profileName));
 
     var profile = {
       "app_name": appName,
@@ -165,7 +179,8 @@ class LoginManager {
     prof[profileName] = profile;
     await storage.write(key: 'profiles', value: jsonEncode(prof));
 
-    loadProfiles();
+    // loadProfiles();
+    return await _loadState();
   }
 
   void eraseProfiles() {
@@ -188,16 +203,11 @@ class LoginManager {
 }
 
 class APIAccess extends InheritedWidget {
-  const APIAccess(
-      {
-        super.key,
-        required super.child,
-        required this.state
-        // required this.profileName,
-        // required this.profile,
-        // required this.connector
-      }
-    );
+  const APIAccess({super.key, required super.child, required this.state
+      // required this.profileName,
+      // required this.profile,
+      // required this.connector
+      });
 
   final Future<LoginState> state;
   // final Future<String?> profileName;

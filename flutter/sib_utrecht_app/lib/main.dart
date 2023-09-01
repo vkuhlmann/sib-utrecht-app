@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 // import 'package:christmas2022_management/evadePresenceDetector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:tuple/tuple.dart';
@@ -18,11 +20,13 @@ part 'pages/activities.dart';
 part 'pages/debug.dart';
 part 'pages/info.dart';
 
+late Future<void> dateFormattingInitialization;
+
 void main() {
-  initializeDateFormatting("nl_NL", null)
-      .then((_) => initializeDateFormatting("en_GB"))
-      .then((_) => runApp(const MyApp()));
-  // runApp(const MyApp());
+  dateFormattingInitialization = 
+    Future.wait([initializeDateFormatting("nl_NL", null), initializeDateFormatting("en_GB")]);
+      // .then((_) => runApp(const MyApp()));
+  runApp(const MyApp());
 }
 
 // TODO https://pub.dev/packages/go_router/example
@@ -360,7 +364,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 onPressed: () {
                                                   Navigator.pop(context);
                                                   setState(() {
-                                                    loginManager.login();
+                                                    loginManager.scheduleLogin();
                                                   });
                                                 },
                                                 child: const Text('Login'),
