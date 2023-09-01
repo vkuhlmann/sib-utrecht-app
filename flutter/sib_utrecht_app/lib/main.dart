@@ -97,6 +97,14 @@ class Preferences extends InheritedWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
+  // final Map<int, Widget> pages = [
+  //   // const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
+  //   const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
+  //   const Placeholder(),
+  //   const InfoPage(key: PageStorageKey('InfoPage')),
+  //   // const DebugPage(key: PageStorageKey('DebugPage')),
+  // ].asMap();
+
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
   // how it looks.
@@ -117,6 +125,20 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int currentPageIndex = 0;
   late LoginManager loginManager;
+
+  // List<Key> pageKeys = [
+  //   const PageStorageKey('ActivitiesPage'),
+  //   const PageStorageKey('InfoPage'),
+  //   const PageStorageKey('DebugPage'),
+  // ];
+
+    final Map<int, Widget> pages = [
+    // const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
+    const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
+    const Placeholder(),
+    const InfoPage(key: PageStorageKey('InfoPage')),
+    // const DebugPage(key: PageStorageKey('DebugPage')),
+  ].asMap();
 
   // SampleItem? selectedMenu;
 
@@ -457,13 +479,15 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
                 )
                 ),
-          body: <Widget>[
-            const ActivitiesPage(),
-            // const Text("Profile"),
-            const Placeholder(),
-            const InfoPage()
-            // DebugPage()
-          ][currentPageIndex],
+          // body: <Widget>[
+          //   const ActivitiesPage(),
+          //   // const Text("Profile"),
+          //   const Placeholder(),
+          //   const InfoPage()
+          //   // DebugPage()
+          // ][currentPageIndex],
+          // body: Stack(children: widget.pages.map<int, Widget>((key, value) => key == currentPageIndex ? MapEntry(key, value) : MapEntry(key, Offstage(child: value))).values.toList())// [currentPageIndex]
+          body: Stack(children: pages.map<int, Widget>((key, value) => MapEntry(key, Offstage(offstage: key != currentPageIndex, child: value))).values.toList())// [currentPageIndex]
           // floatingActionButton: FloatingActionButton(
           //   onPressed: _incrementCounter,
           //   tooltip: 'Increment',

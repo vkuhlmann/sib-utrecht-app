@@ -187,6 +187,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
+      print("API connector changed from ${this.apiConnector} to ${apiConnector}");
       this.apiConnector = apiConnector;
       scheduleRefresh();
     }
