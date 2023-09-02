@@ -136,10 +136,96 @@ class _EventPageState extends State<EventPage> {
                     //     event.data["thumbnail"]["path"] +
                     //     "?width=200")
                     // return Image.network("$wordpressUrl/${event.data["thumbnail"]["url"]}");
-                    return InteractiveViewer(child: 
-                     Image.network("$wordpressUrl/${event.data["thumbnail"]["url"]}")
-                    );
+                    // return InteractiveViewer(child:
+                    //  Image.network("$wordpressUrl/${event.data["thumbnail"]["url"]}")
+                    // );
 
+                    // return PhotoView(
+                    //   imageProvider: NetworkImage("$wordpressUrl/${event.data["thumbnail"]["url"]}"),
+                    // );
+
+                    return InkWell(
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return Dialog(
+                                    alignment: AlignmentDirectional.center,
+                                    // insetPadding: const EdgeInsets.fromLTRB(
+                                    //     16, 70, 16, 16),
+                                    insetPadding: const EdgeInsets.all(0),
+                                    child:
+//                                     Stack(alignment: AlignmentDirectional.center,
+//                                     children: [
+// Container(
+//                                       constraints: const BoxConstraints.expand(),
+//                                       child: GestureDetector(
+//                                       // padding: const EdgeInsets.fromLTRB(
+//                                       //     16, 16, 16, 32),
+//                                       // width: 200,
+//                                       onTap: () => Navigator.pop(context)
+//                                       )),
+//                                     Center(child: InteractiveViewer(
+//                                         clipBehavior: Clip.none,
+//                                           child: GestureDetector(
+//                                             child: Image.network(
+//                                               "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
+//                                       ))
+//                                     ])
+                                        Center(
+                                            child: InteractiveViewer(
+                                                // clipBehavior: Clip.none,
+                                                child: Stack(
+                                                  alignment:
+                                                      AlignmentDirectional
+                                                          .center,
+                                                  children: [
+                                                    Container(
+                                                        constraints:
+                                                            const BoxConstraints
+                                                                .expand(),
+                                                        child: GestureDetector(
+                                                            // padding: const EdgeInsets.fromLTRB(
+                                                            //     16, 16, 16, 32),
+                                                            // width: 200,
+                                                            onTap: () =>
+                                                                Navigator.pop(
+                                                                    context))),
+                                                    Image.network(
+                                                        "$wordpressUrl/${event.data["thumbnail"]["url"]}")
+                                                  ],
+                                                ))));
+                                // return Dialog(
+                                //     alignment: AlignmentDirectional.center,
+                                //     // insetPadding: const EdgeInsets.fromLTRB(
+                                //     //     16, 70, 16, 16),
+                                //     insetPadding: const EdgeInsets.all(0),
+                                //     child: Container(
+                                //       constraints: const BoxConstraints.expand(),
+                                //       child: GestureDetector(
+                                //       // padding: const EdgeInsets.fromLTRB(
+                                //       //     16, 16, 16, 32),
+                                //       // width: 200,
+                                //       onTap: () => Navigator.pop(context),
+                                //       child: Center(child: InteractiveViewer(
+                                //         clipBehavior: Clip.none,
+                                //           child: GestureDetector(
+                                //             child: Image.network(
+                                //               "$wordpressUrl/${event.data["thumbnail"]["url"]}"))))),
+                                //     ));
+                              });
+
+                          // Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //         builder: (context) => InteractiveViewer(
+                          //             child: Image.network(
+                          //                 "$wordpressUrl/${event.data["thumbnail"]["url"]}"))));
+                        },
+                        child: Image.network(
+                            "$wordpressUrl/${event.data["thumbnail"]["url"]}"));
+
+                    // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
                   } catch (e) {
                     try {
                       return Text("Error: ${event.data["thumbnail"]["error"]}");
@@ -251,7 +337,7 @@ class _EventPageState extends State<EventPage> {
                                         event.data["post_content"] ?? "")))),
 
                         buildThumbnailCard(context, event),
-                        // Card(child: 
+                        // Card(child:
                         // FutureBuilder(future: _image, builder: (context, snapshot) {
                         //   if (snapshot.hasData) {
                         //     return Image.memory(snapshot.data!.bodyBytes);
