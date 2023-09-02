@@ -35,6 +35,10 @@ class APIConnector {
       throw Exception("$message");
     }
 
+    if (response.body.startsWith('<div id="error">')) {
+      throw Exception("Unhandled error on server, please contact Vincent");
+    }
+
     Map obj = jsonDecode(response.body);
     if (obj.containsKey("error")) {
       throw Exception("Request returned error: ${obj['error']}");

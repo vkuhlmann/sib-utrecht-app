@@ -3,23 +3,25 @@ part of '../main.dart';
 // Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
 
 class ActivityView extends StatefulWidget {
-  final Map activity;
-  final DateTime start;
-  final DateTime end;
+  final Event event;
+
+  // final Map activity;
+  // final DateTime start;
+  // final DateTime end;
 
   final bool isParticipating;
   final ValueSetter<bool> setParticipating;
   final bool isDirty;
 
-  ActivityView(
+  const ActivityView(
       {Key? key,
-      required this.activity,
+      required this.event,
       required this.isParticipating,
       required this.setParticipating,
       required this.isDirty})
-      : start = DateTime.parse('${activity["event_start"]}Z').toLocal(),
-        end = DateTime.parse('${activity["event_end"]}Z').toLocal(),
-        super(key: key);
+      // : start = DateTime.parse('${activity["event_start"]}Z').toLocal(),
+      //   end = DateTime.parse('${activity["event_end"]}Z').toLocal(),
+      : super(key: key);
 
   @override
   State<ActivityView> createState() => _ActivityViewState();
@@ -62,87 +64,96 @@ class _ActivityViewState extends State<ActivityView> {
           //   ),
           // );
 
-          context.push("/event/${widget.activity["event_id"]}");
+          // context.push("/event/${widget.activity["event_id"]}");
+          // context
+          _sectionNavigatorKey.currentContext!
+              // _sectionNavigatorKey.currentContext!
+              .push("/event/${widget.event.eventId}");
+
+          // _rootNavigatorKey
+          // _sectionNavigatorKey.currentContext!
+          // context.push("/event/:event_id",
+          //     pathParameters: {"event_id": widget.activity["event_id"].toString()});
         },
-        child: FutureBuilder(
-            future: dateFormattingInitialization,
-            builder: (context, snapshot) => Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
-                child: Row(children: [
-                  // Container(
-                  //     width: 100,
-                  //     height: 100,
-                  //     decoration: BoxDecoration(
-                  //         image: DecorationImage(
-                  //             image: NetworkImage(widget.activity["image_url"]),
-                  //             fit: BoxFit.cover))),
-                  // Row(children: <Widget>[
-                  Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.all(10),
-                    margin: const EdgeInsets.all(5),
-                    color: Colors.lightBlueAccent,
-                    child: Text('${widget.start.day}'),
+        child: Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
+            child: Row(children: [
+              // Container(
+              //     width: 100,
+              //     height: 100,
+              //     decoration: BoxDecoration(
+              //         image: DecorationImage(
+              //             image: NetworkImage(widget.activity["image_url"]),
+              //             fit: BoxFit.cover))),
+              // Row(children: <Widget>[
+              Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(5),
+                color: Colors.lightBlueAccent,
+                child: Text('${widget.event.start.day}'),
+              ),
+              Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(5),
+                  // child: Text(
+                  //     DateFormat("MMM", "nl_NL").format(widget.event.start))
+                  child: LocaleDateFormat(
+                      format: "MMM", date: widget.event.start)
+                  // Text(DateFormat("MMM", Preferences.of(context).locale)
+                  //     .format(widget.event.start))
+                  // Text('${widget.start.month}')
                   ),
-                  Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(10),
-                      margin: const EdgeInsets.all(5),
-                      child:
-                          // Text(DateFormat("MMM", "nl_NL").format(widget.start))
-                          Text(DateFormat("MMM", Preferences.of(context).locale)
-                              .format(widget.start))
-                      // Text('${widget.start.month}')
-                      ),
-                  // Text('${widget.start.day} ${widget.start.month}'),
-                  Expanded(
-                      child: Container(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.all(10),
-                          margin: const EdgeInsets.all(5),
-                          child: Text(widget.activity["event_name"]))),
-                  Container(
-                      alignment: Alignment.center,
-                      // child: IconButton(
-                      //   icon: const Icon(Icons.add),
-                      //   onPressed: () {
-                      //     // Navigator.push(
-                      //     //   context,
-                      //     //   MaterialPageRoute(builder: (context) => ActivityView(activity: widget.activity)),
-                      //     // );
-                      //     // Navigator.pushNamed(context, '/activity', arguments: widget.activity);
-                      //   },
-                      // )
-                      child: widget.isDirty
-                          ? const CircularProgressIndicator()
-                          : Checkbox(
-                              value: widget.isParticipating,
-                              onChanged: (value) {
-                                print("Checkbox changed to $value");
-                                widget.setParticipating(value!);
-                              },
-                            )),
-                  Container(
+              // Text('${widget.start.day} ${widget.start.month}'),
+              Expanded(
+                  child: Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.all(10),
                       margin: const EdgeInsets.all(5),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(_timeFormat.format(widget.start)),
-                            // Text(_timeFormat.format(widget.end)),
-                            // Text(start_time.format(context)),
-                            // Text(end_time.format(context))
-                            // Text('${widget.start.hour:2d}:${widget.start.minute}'),
-                            // Text('${widget.end.hour}:${widget.end.minute}'),
-                          ])),
-                  // Text(widget.activity["event_start"]),
-                  // Text(widget.activity["event_time"]),
-                  // Text(widget.activity["event_location"]),
-                  // Text(widget.activity["event_description"]),
-                  // ])
-                ]))));
+                      child: Text(widget.event.eventName))),
+              Container(
+                  alignment: Alignment.center,
+                  // child: IconButton(
+                  //   icon: const Icon(Icons.add),
+                  //   onPressed: () {
+                  //     // Navigator.push(
+                  //     //   context,
+                  //     //   MaterialPageRoute(builder: (context) => ActivityView(activity: widget.activity)),
+                  //     // );
+                  //     // Navigator.pushNamed(context, '/activity', arguments: widget.activity);
+                  //   },
+                  // )
+                  child: widget.isDirty
+                      ? const CircularProgressIndicator()
+                      : Checkbox(
+                          value: widget.isParticipating,
+                          onChanged: (value) {
+                            print("Checkbox changed to $value");
+                            widget.setParticipating(value!);
+                          },
+                        )),
+              Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(5),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_timeFormat.format(widget.event.start)),
+                        // Text(_timeFormat.format(widget.end)),
+                        // Text(start_time.format(context)),
+                        // Text(end_time.format(context))
+                        // Text('${widget.start.hour:2d}:${widget.start.minute}'),
+                        // Text('${widget.end.hour}:${widget.end.minute}'),
+                      ])),
+              // Text(widget.activity["event_start"]),
+              // Text(widget.activity["event_time"]),
+              // Text(widget.activity["event_location"]),
+              // Text(widget.activity["event_description"]),
+              // ])
+            ])));
   }
 }
 
@@ -181,8 +192,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
   int sequenceId = 0;
 
-  (int, List<Map>, Set<int>)? _cached;
-  Future<(int, List<Map>, Set<int>)?> _staging = Future.value(null);
+  (int, List<Event>, Set<int>)? _cached;
+  Future<(int, List<Event>, Set<int>)?> _staging = Future.value(null);
   int? _refreshingSequence = null;
 
   Set<int> _dirtyBookState = {};
@@ -216,7 +227,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     }
   }
 
-  Future<(List<Map>, Set<int>)?> _loadData() async {
+  Future<(List<Event>, Set<int>)?> _loadData() async {
     // return null;
     print("Loading activity data");
     var conn = apiConnector;
@@ -233,7 +244,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     // var bookingsRes = await conn.then((api) => api.get("my-bookings"));
 
     var events = (eventsRes["data"]["events"] as List<dynamic>)
-        .map((e) => e as Map)
+        .map((e) => e as Map<String, dynamic>)
+        .map((e) => Event.fromJson(e))
         .toList();
     var bookings = (bookingsRes["data"]["bookings"] as List<dynamic>)
         .where((v) => v["booking"]["status"] == "approved")
@@ -460,12 +472,12 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
               return Column(
                   children: events
                       .map<Widget>((e) => ActivityView(
-                          key: ValueKey(e["event_id"]),
-                          activity: e,
-                          isParticipating: bookedEvents.contains(e["event_id"]),
-                          isDirty: _dirtyBookState.contains(e["event_id"]),
+                          key: ValueKey(e.eventId),
+                          event: e,
+                          isParticipating: bookedEvents.contains(e.eventId),
+                          isDirty: _dirtyBookState.contains(e.eventId),
                           setParticipating: (value) =>
-                              scheduleEventRegistration(e["event_id"], value)))
+                              scheduleEventRegistration(e.eventId, value)))
                       .toList());
 
               // return _buildActivities(snapshot.data!);

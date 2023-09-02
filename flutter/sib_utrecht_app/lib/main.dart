@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+// import 'dart:ffi';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -15,6 +16,10 @@ import 'package:uuid/uuid.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 
+// import 'package:flutter_html/flutter_html.dart';
+// import 'package:flutter_html/style.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+
 part 'login_context.dart';
 part 'api_connector.dart';
 part 'pages/activities.dart';
@@ -23,6 +28,9 @@ part 'pages/info.dart';
 part 'pages/authorize.dart';
 part 'pages/event.dart';
 
+part 'event.dart';
+part 'locale_date_format.dart';
+
 late Future<void> dateFormattingInitialization;
 const String wordpressUrl = "http://192.168.50.200/wordpress";
 const String apiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
@@ -30,10 +38,13 @@ const String authorizeAppUrl =
     "$wordpressUrl/wp-admin/authorize-application.php";
 
 void main() {
-  dateFormattingInitialization = Future.wait([
-    initializeDateFormatting("nl_NL", null),
-    initializeDateFormatting("en_GB")
-  ]);
+  dateFormattingInitialization =
+    Future.delayed(const Duration(seconds: 0))
+    .then((_) => Future.wait([
+      initializeDateFormatting("nl_NL"),
+      initializeDateFormatting("en_GB")
+      ]));
+    // .then((_) => Future.value());
   // .then((_) => runApp(const MyApp()));
   runApp(const MyApp());
 }
@@ -67,6 +78,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
   // int currentPageIndex = 0;
   late LoginManager loginManager;
+  // bool canPop = false;
 
   // List<Key> pageKeys = [
   //   const PageStorageKey('ActivitiesPage'),
@@ -87,6 +99,19 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
     super.initState();
 
     loginManager = LoginManager();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // BuildContext? navContext = _sectionNavigatorKey.currentContext;
+    // bool newCanPop = navContext != null && (false || navContext.canPop()); 
+    // if (newCanPop != canPop) {
+    //   setState(() {
+    //     canPop = newCanPop;
+    //   });
+    // }
   }
 
   Widget buildLoginMenu(
@@ -333,12 +358,28 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                         Theme.of(context).colorScheme.inversePrimary,
                     title: Row(
                       children: <Widget>[
+                        // if (canPop)
+                        // if (_sectionNavigatorKey.currentState != null
+                        // && _sectionNavigatorKey.currentState!.canPop())
+                          // BackButton(),
+                        // (cont) {
+                        //   BuildContext? navContext = _rootNavigatorKey.currentContext;
+
+                        // if (navContext != null && false && navContext.canPop()) {
+                        //                             return SizedBox();
+                        //   return (
                         BackButton(onPressed: () {
                           // Navigator.maybePop(context);
                           // context.pop();
-                          _rootNavigatorKey.currentContext!.pop();
-                          // widget.
-                        },),
+                          if (_rootNavigatorKey.currentContext!.canPop()) {
+                            _rootNavigatorKey.currentContext!.pop();
+                          }
+                          }),
+                        // );
+                        //   // widget.
+                        // }
+                        // return SizedBox();
+                        // }(context),
                         Text(widget.title),
                         const Spacer(),
                         // Text("Test")
