@@ -42,85 +42,107 @@ class _ActivityViewState extends State<ActivityView> {
     // final TimeOfDay start_time = TimeOfDay.fromDateTime(widget.start);
     // final TimeOfDay end_time = TimeOfDay.fromDateTime(widget.end);
 
-    return FutureBuilder(
-        future: dateFormattingInitialization,
-        builder: (context, snapshot) => Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
-            child: Row(children: [
-              // Container(
-              //     width: 100,
-              //     height: 100,
-              //     decoration: BoxDecoration(
-              //         image: DecorationImage(
-              //             image: NetworkImage(widget.activity["image_url"]),
-              //             fit: BoxFit.cover))),
-              // Row(children: <Widget>[
-              Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.all(5),
-                color: Colors.lightBlueAccent,
-                child: Text('${widget.start.day}'),
-              ),
-              Container(
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.all(5),
-                  child:
-                      // Text(DateFormat("MMM", "nl_NL").format(widget.start))
-                      Text(DateFormat("MMM", Preferences.of(context).locale)
-                          .format(widget.start))
-                  // Text('${widget.start.month}')
+    // InkWell (
+    //     onTap: () {
+    //       sendToast("Hoi!!!");
+    //     },
+    //     child:
+
+    return InkWell(
+        onTap: () {
+          // Based on https://stackoverflow.com/questions/45948168/how-to-create-toast-in-flutter
+          // answer by https://stackoverflow.com/users/8394265/r%c3%a9mi-rousselet
+          // final scaffold = ScaffoldMessenger.of(context);
+          // scaffold.showSnackBar(
+          //   SnackBar(
+          //     content: const Text("Hoiii!"),
+          //     // action: SnackBarAction(label: 'UNDO', onPressed: scaffold.hideCurrentSnackBar),
+          //     action: SnackBarAction(
+          //         label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+          //   ),
+          // );
+
+          context.push("/event/${widget.activity["event_id"]}");
+        },
+        child: FutureBuilder(
+            future: dateFormattingInitialization,
+            builder: (context, snapshot) => Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
+                child: Row(children: [
+                  // Container(
+                  //     width: 100,
+                  //     height: 100,
+                  //     decoration: BoxDecoration(
+                  //         image: DecorationImage(
+                  //             image: NetworkImage(widget.activity["image_url"]),
+                  //             fit: BoxFit.cover))),
+                  // Row(children: <Widget>[
+                  Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(10),
+                    margin: const EdgeInsets.all(5),
+                    color: Colors.lightBlueAccent,
+                    child: Text('${widget.start.day}'),
                   ),
-              // Text('${widget.start.day} ${widget.start.month}'),
-              Expanded(
-                  child: Container(
+                  Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(5),
+                      child:
+                          // Text(DateFormat("MMM", "nl_NL").format(widget.start))
+                          Text(DateFormat("MMM", Preferences.of(context).locale)
+                              .format(widget.start))
+                      // Text('${widget.start.month}')
+                      ),
+                  // Text('${widget.start.day} ${widget.start.month}'),
+                  Expanded(
+                      child: Container(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.all(10),
+                          margin: const EdgeInsets.all(5),
+                          child: Text(widget.activity["event_name"]))),
+                  Container(
+                      alignment: Alignment.center,
+                      // child: IconButton(
+                      //   icon: const Icon(Icons.add),
+                      //   onPressed: () {
+                      //     // Navigator.push(
+                      //     //   context,
+                      //     //   MaterialPageRoute(builder: (context) => ActivityView(activity: widget.activity)),
+                      //     // );
+                      //     // Navigator.pushNamed(context, '/activity', arguments: widget.activity);
+                      //   },
+                      // )
+                      child: widget.isDirty
+                          ? const CircularProgressIndicator()
+                          : Checkbox(
+                              value: widget.isParticipating,
+                              onChanged: (value) {
+                                print("Checkbox changed to $value");
+                                widget.setParticipating(value!);
+                              },
+                            )),
+                  Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.all(10),
                       margin: const EdgeInsets.all(5),
-                      child: Text(widget.activity["event_name"]))),
-              Container(
-                  alignment: Alignment.center,
-                  // child: IconButton(
-                  //   icon: const Icon(Icons.add),
-                  //   onPressed: () {
-                  //     // Navigator.push(
-                  //     //   context,
-                  //     //   MaterialPageRoute(builder: (context) => ActivityView(activity: widget.activity)),
-                  //     // );
-                  //     // Navigator.pushNamed(context, '/activity', arguments: widget.activity);
-                  //   },
-                  // )
-                  child: widget.isDirty
-                      ? const CircularProgressIndicator()
-                      : Checkbox(
-                          value: widget.isParticipating,
-                          onChanged: (value) {
-                            print("Checkbox changed to $value");
-                            widget.setParticipating(value!);
-                          },
-                        )),
-              Container(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.all(5),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_timeFormat.format(widget.start)),
-                        // Text(_timeFormat.format(widget.end)),
-                        // Text(start_time.format(context)),
-                        // Text(end_time.format(context))
-                        // Text('${widget.start.hour:2d}:${widget.start.minute}'),
-                        // Text('${widget.end.hour}:${widget.end.minute}'),
-                      ])),
-              // Text(widget.activity["event_start"]),
-              // Text(widget.activity["event_time"]),
-              // Text(widget.activity["event_location"]),
-              // Text(widget.activity["event_description"]),
-              // ])
-            ])));
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_timeFormat.format(widget.start)),
+                            // Text(_timeFormat.format(widget.end)),
+                            // Text(start_time.format(context)),
+                            // Text(end_time.format(context))
+                            // Text('${widget.start.hour:2d}:${widget.start.minute}'),
+                            // Text('${widget.end.hour}:${widget.end.minute}'),
+                          ])),
+                  // Text(widget.activity["event_start"]),
+                  // Text(widget.activity["event_time"]),
+                  // Text(widget.activity["event_location"]),
+                  // Text(widget.activity["event_description"]),
+                  // ])
+                ]))));
   }
 }
 
@@ -187,7 +209,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
-      print("API connector changed from ${this.apiConnector} to ${apiConnector}");
+      print(
+          "API connector changed from ${this.apiConnector} to ${apiConnector}");
       this.apiConnector = apiConnector;
       scheduleRefresh();
     }

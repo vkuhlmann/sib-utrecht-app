@@ -39,9 +39,9 @@ class _InfoPageState extends State<InfoPage> {
           slivers: [
             SliverList(
               delegate: SliverChildListDelegate([
-                Card(child: ListTile(title: const Text("Bestuur"))),
-                Card(child: ListTile(title: const Text("Commissies"))),
-                Card(child: ListTile(title: const Text("Sociëteiten"))),
+                const Card(child: ListTile(title: Text("Bestuur"))),
+                const Card(child: ListTile(title: Text("Commissies"))),
+                const Card(child: ListTile(title: Text("Disputen"))),
                 // Expanded(child: Container()),
                 // Spacer(),
                 // Divider(),
@@ -52,15 +52,15 @@ class _InfoPageState extends State<InfoPage> {
             ),
             const SliverFillRemaining(
               hasScrollBody: false,
-              child: Padding(padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+              child: Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
               child:
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Divider(),
-                  Card(child: ListTile(title: const Text("Vertrouwenspersonen"))),
-                  Card(child: ListTile(title: const Text("Over SIB"))),
-                  Card(child: ListTile(title: const Text("Over app"))),
+                  Card(child: ListTile(title: Text("Vertrouwenspersonen"))),
+                  Card(child: ListTile(title: Text("Over SIB"))),
+                  Card(child: ListTile(title: Text("Over app"))),
                 ]
               ))
               

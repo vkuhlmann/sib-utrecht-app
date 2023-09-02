@@ -21,6 +21,7 @@ part 'pages/activities.dart';
 part 'pages/debug.dart';
 part 'pages/info.dart';
 part 'pages/authorize.dart';
+part 'pages/event.dart';
 
 late Future<void> dateFormattingInitialization;
 const String wordpressUrl = "http://192.168.50.200/wordpress";
@@ -54,6 +55,8 @@ class ScaffoldWithNavbar extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
   final String title;
   final String currentPage;
+
+  // final BuildContext? rootContext = _rootNavigatorKey.currentContext;
 
   @override
   State<ScaffoldWithNavbar> createState() => _ScaffoldWithNavbarState();
@@ -266,12 +269,12 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
     //   ),
     // );
 
-    var pages = ["/", "/feed", "/info"];
-    print("Current page is ${widget.currentPage}");
-    int currentPageIndex = pages.indexOf(widget.currentPage);
-    if (currentPageIndex == -1) {
-      currentPageIndex = 0;
-    }
+    // var pages = ["/", "/feed", "/info"];
+    // print("Current page is ${widget.currentPage}");
+    // int currentPageIndex = pages.indexOf(widget.currentPage);
+    // if (currentPageIndex == -1) {
+    //   currentPageIndex = 0;
+    // }
 
     return Preferences(
         locale: "nl_NL",
@@ -284,12 +287,18 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
             child: Scaffold(
                 bottomNavigationBar: NavigationBar(
                   onDestinationSelected: (int index) {
-                    setState(() {
-                      currentPageIndex = index;
-                    });
-                    context.go(pages[index]);
+                    // setState(() {
+                    //   currentPageIndex = index;
+                    // });
+                    // context.go(pages[index]);
+                    _onTap(index);
                   },
-                  selectedIndex: currentPageIndex,
+                  selectedIndex: (({
+                    0: 0,
+                    1: 1,
+                    2: 2,
+                    3: 0
+                  })[widget.navigationShell.currentIndex]!),
                   destinations: const <Widget>[
                     // NavigationDestination(
                     //   icon: Icon(Icons.home),
@@ -324,6 +333,12 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                         Theme.of(context).colorScheme.inversePrimary,
                     title: Row(
                       children: <Widget>[
+                        BackButton(onPressed: () {
+                          // Navigator.maybePop(context);
+                          // context.pop();
+                          _rootNavigatorKey.currentContext!.pop();
+                          // widget.
+                        },),
                         Text(widget.title),
                         const Spacer(),
                         // Text("Test")
@@ -381,14 +396,34 @@ final GoRouter _router = GoRouter(
   routes: <RouteBase>[
     GoRoute(
       path: '/authorize',
-      builder: (context, state) => AuthorizePage(params: state.uri.queryParameters),
-    ),  
+      builder: (context, state) =>
+          AuthorizePage(params: state.uri.queryParameters),
+    ),
     StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNavbar(navigationShell,
-              currentPage: state.matchedLocation ?? "/", title: "SIB-Utrecht");
+              currentPage: state.matchedLocation, title: "SIB-Utrecht");
         },
         branches: [
+          StatefulShellBranch(
+              navigatorKey: _sectionNavigatorKey,
+              initialLocation: '/',
+              routes: <RouteBase>[
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const ActivitiesPage(),
+                ),
+                GoRoute(
+                    path: '/event/:event_id',
+                    builder: (context, state) {
+                      int? eventId;
+                      if (state.pathParameters.containsKey('event_id')) {
+                        eventId =
+                            int.tryParse(state.pathParameters['event_id']!);
+                      }
+                      return EventPage(eventId: eventId);
+                    })
+              ]),
           StatefulShellBranch(routes: <RouteBase>[
             GoRoute(
                 path: '/feed',
@@ -398,14 +433,17 @@ final GoRouter _router = GoRouter(
             GoRoute(
                 path: '/info', builder: (context, state) => const InfoPage()),
           ]),
-          StatefulShellBranch(
-              navigatorKey: _sectionNavigatorKey,
-              routes: <RouteBase>[
-                GoRoute(
-                  path: '/',
-                  builder: (context, state) => const ActivitiesPage(),
-                )
-              ]),
+          // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
+          //   GoRoute(
+          //       path: "/event/:event_id",
+          //       builder: (context, state) {
+          //         int? eventId;
+          //         if (state.pathParameters.containsKey('event_id')) {
+          //           eventId = int.tryParse(state.pathParameters['event_id']!);
+          //         }
+          //         return EventPage(eventId: eventId);
+          //       })
+          // ]),
         ])
 
     // GoRoute(
