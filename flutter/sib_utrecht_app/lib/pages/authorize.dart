@@ -15,16 +15,16 @@ class _AuthorizePageState extends State<AuthorizePage> {
     super.initState();
 
     bool isSuccess = widget.params["success"] != false && widget.params["user_login"] != null;
-    print("isSuccess: $isSuccess");
+    log.info("isSuccess: $isSuccess");
 
     if (isSuccess) {
       WidgetsBinding.instance.addPostFrameCallback((_){
-        print("Completing login");
+        log.info("Completing login");
         LoginManager()._completeLogin(
           user: widget.params["user_login"],
           apiSecret: widget.params["password"],
         );
-        print("Completed login");
+        log.info("Completed login");
         // context.go("/");
       });
     }

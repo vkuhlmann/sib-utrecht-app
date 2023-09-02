@@ -5,10 +5,6 @@ part of '../main.dart';
 class ActivityView extends StatefulWidget {
   final Event event;
 
-  // final Map activity;
-  // final DateTime start;
-  // final DateTime end;
-
   final bool isParticipating;
   final ValueSetter<bool> setParticipating;
   final bool isDirty;
@@ -19,8 +15,6 @@ class ActivityView extends StatefulWidget {
       required this.isParticipating,
       required this.setParticipating,
       required this.isDirty})
-      // : start = DateTime.parse('${activity["event_start"]}Z').toLocal(),
-      //   end = DateTime.parse('${activity["event_end"]}Z').toLocal(),
       : super(key: key);
 
   @override
@@ -28,28 +22,10 @@ class ActivityView extends StatefulWidget {
 }
 
 class _ActivityViewState extends State<ActivityView> {
-  // final TimeOfDayFormat _timeFormat = TimeOfDayFormat.HH_colon_mm;
   final _timeFormat = DateFormat("HH:mm");
-  // late Future
-
-  _ActivitiesPageState() {
-    // initializeDateFormatting("nl_NL", null);
-  }
 
   @override
   Widget build(BuildContext context) {
-    // return Text(jsonEncode(widget.activity));
-    // return Text(widget.activity["event_name"]);
-
-    // final TimeOfDay start_time = TimeOfDay.fromDateTime(widget.start);
-    // final TimeOfDay end_time = TimeOfDay.fromDateTime(widget.end);
-
-    // InkWell (
-    //     onTap: () {
-    //       sendToast("Hoi!!!");
-    //     },
-    //     child:
-
     return InkWell(
         onTap: () {
           // Based on https://stackoverflow.com/questions/45948168/how-to-create-toast-in-flutter
@@ -79,14 +55,6 @@ class _ActivityViewState extends State<ActivityView> {
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
             child: Row(children: [
-              // Container(
-              //     width: 100,
-              //     height: 100,
-              //     decoration: BoxDecoration(
-              //         image: DecorationImage(
-              //             image: NetworkImage(widget.activity["image_url"]),
-              //             fit: BoxFit.cover))),
-              // Row(children: <Widget>[
               Container(
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(10),
@@ -98,15 +66,9 @@ class _ActivityViewState extends State<ActivityView> {
                   alignment: Alignment.center,
                   padding: const EdgeInsets.all(10),
                   margin: const EdgeInsets.all(5),
-                  // child: Text(
-                  //     DateFormat("MMM", "nl_NL").format(widget.event.start))
                   child: LocaleDateFormat(
                       format: "MMM", date: widget.event.start)
-                  // Text(DateFormat("MMM", Preferences.of(context).locale)
-                  //     .format(widget.event.start))
-                  // Text('${widget.start.month}')
                   ),
-              // Text('${widget.start.day} ${widget.start.month}'),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,
@@ -115,22 +77,11 @@ class _ActivityViewState extends State<ActivityView> {
                       child: Text(widget.event.eventName))),
               Container(
                   alignment: Alignment.center,
-                  // child: IconButton(
-                  //   icon: const Icon(Icons.add),
-                  //   onPressed: () {
-                  //     // Navigator.push(
-                  //     //   context,
-                  //     //   MaterialPageRoute(builder: (context) => ActivityView(activity: widget.activity)),
-                  //     // );
-                  //     // Navigator.pushNamed(context, '/activity', arguments: widget.activity);
-                  //   },
-                  // )
                   child: widget.isDirty
                       ? const CircularProgressIndicator()
                       : Checkbox(
                           value: widget.isParticipating,
                           onChanged: (value) {
-                            print("Checkbox changed to $value");
                             widget.setParticipating(value!);
                           },
                         )),
@@ -148,35 +99,9 @@ class _ActivityViewState extends State<ActivityView> {
                         // Text('${widget.start.hour:2d}:${widget.start.minute}'),
                         // Text('${widget.end.hour}:${widget.end.minute}'),
                       ])),
-              // Text(widget.activity["event_start"]),
-              // Text(widget.activity["event_time"]),
-              // Text(widget.activity["event_location"]),
-              // Text(widget.activity["event_description"]),
-              // ])
             ])));
   }
 }
-
-// class ActivityManager extends InheritedWidget {
-//   late Future<Map> events;
-//   late List<int> bookedEvents;
-
-//   ActivityManager({super.key, required super.child});
-
-//   @override
-//   void initState() {
-
-//   }
-
-//   static ActivityManager? of(BuildContext context) {
-//     return context.dependOnInheritedWidgetOfExactType<ActivityManager>();
-//   }
-
-//   @override
-//   bool updateShouldNotify(ActivityManager oldWidget) {
-//     return bookedEvents != oldWidget.bookedEvents;
-//   }
-// }
 
 class ActivitiesPage extends StatefulWidget {
   const ActivitiesPage({Key? key}) : super(key: key);
@@ -188,8 +113,6 @@ class ActivitiesPage extends StatefulWidget {
 class _ActivitiesPageState extends State<ActivitiesPage> {
   late Future<APIConnector>? apiConnector;
 
-  // late Future<Map>? _apiResult;
-
   int sequenceId = 0;
 
   (int, List<Event>, Set<int>)? _cached;
@@ -200,12 +123,6 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   int _dirtyStateSequence = 0;
 
   List<Future> _pendingMutations = [];
-
-  // late Future<Set<int>>? _bookedEvents;
-  // late Future<String>? _debugOutput;
-
-  // late List<Map> _cachedEvents;
-  // late Set<int> _cachedBookedEvents;
 
   @override
   void initState() {
@@ -220,7 +137,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
-      print(
+      log.fine(
           "API connector changed from ${this.apiConnector} to ${apiConnector}");
       this.apiConnector = apiConnector;
       scheduleRefresh();
@@ -228,8 +145,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   }
 
   Future<(List<Event>, Set<int>)?> _loadData() async {
-    // return null;
-    print("Loading activity data");
+    log.fine("Loading activity data");
     var conn = apiConnector;
     if (conn == null) {
       return null;
@@ -237,11 +153,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
     var [eventsRes, bookingsRes] = await Future.wait([
       conn.then((api) => api.get("events")),
-      conn.then((api) => api.get("my-bookings"))
+      conn.then((api) => api.get("users/me/bookings"))
     ]);
-
-    // var eventsRes = await conn.then((api) => api.get("events"));
-    // var bookingsRes = await conn.then((api) => api.get("my-bookings"));
 
     var events = (eventsRes["data"]["events"] as List<dynamic>)
         .map((e) => e as Map<String, dynamic>)
@@ -257,7 +170,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
   void scheduleRefresh() {
     setState(() {
-      print("Refreshing");
+      log.fine("Refreshing");
       int thisSequence = sequenceId++;
       _refreshingSequence = thisSequence;
 
@@ -269,7 +182,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         var v = (thisSequence, value.$1, value.$2);
         setState(() {
           if (thisSequence != _refreshingSequence) {
-            print(
+            log.fine(
                 "Discarding activity data result: sequence id was $thisSequence, now $_refreshingSequence");
             return;
           }
@@ -279,10 +192,6 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
         return v;
       });
-      // .onError((e) {
-      //   print("Error while loading data: $e");
-      //   // popupDialog("Error while loading data: $e");
-      // });
 
       var fut2 = fut.whenComplete(() {
         setState(() {
@@ -366,33 +275,12 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   }
 
   Future<void> _setEventRegistration(int eventId, bool value) async {
-    // showDialog<String>(
-    //     context: context,
-    //     builder: (BuildContext context) => Dialog(
-    //             child: Padding(
-    //           padding: const EdgeInsets.all(8.0),
-    //           child: Column(
-    //             mainAxisSize: MainAxisSize.min,
-    //             mainAxisAlignment: MainAxisAlignment.center,
-    //             children: <Widget>[
-    //               const Text('This is a typical dialog.'),
-    //               const SizedBox(height: 15),
-    //               TextButton(
-    //                 onPressed: () {
-    //                   Navigator.pop(context);
-    //                 },
-    //                 child: const Text('Close'),
-    //               ),
-    //             ],
-    //           ),
-    //         )));
-
     var api = await apiConnector;
 
     if (value) {
       Map res;
       try {
-        res = await api!.post("add-booking?event_id=$eventId");
+        res = await api!.post("users/me/bookings/?event_id=$eventId");
 
         bool isSuccess = res["status"] == "success";
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
@@ -402,15 +290,13 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         }
       } catch (e) {
         popupDialog("Failed to register for event $eventId: \n$e");
-      } finally {
-        // scheduleRefresh();
       }
     }
 
     if (!value) {
       Map res;
       try {
-        res = await api!.put("cancel-booking?event_id=$eventId");
+        res = await api!.delete("users/me/bookings/by-event-id/$eventId");
 
         bool isSuccess = res["status"] == "success";
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
@@ -420,36 +306,12 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         }
       } catch (e) {
         popupDialog("Failed to cancel registration for event $eventId: $e");
-      } finally {
-        // scheduleRefresh();
       }
     }
-
-    // popupDialog("Setting registration for event $eventId to $value");
-
-    // print("Setting registration for event $eventId to $value");
-    // var apiConnector = APIConnector();
-    // apiConnector.post("bookings", {"event_id": eventId}).then((value) {
-    //   print("Registered for event $eventId");
-    //   setState(() {
-    //     _bookedEvents = apiConnector.get("my-bookings").then((value) {
-    //       List<int> events =
-    //         (value["data"]["bookings"] as List<dynamic>)
-    //         .where((v) => v["booking"]["status"] == "approved")
-    //         .map<int>((e) => e["event"]["event_id"])
-    //         .toList();
-    //         return events;
-    //     });
-    //   });
-    // });
   }
 
   @override
   Widget build(BuildContext context) {
-    // if (_) {
-    //   return const Center(child: CircularProgressIndicator());
-    // }
-
     return FutureBuilder(
         future: _staging,
         builder: (contextStaging, snapshotStaging) {
@@ -466,7 +328,6 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                 return const SizedBox();
               }
 
-              // return Text(jsonEncode(snapshot.data!["data"]["events"]));
               var (sequenceId, events, bookedEvents) = data;
 
               return Column(
@@ -488,9 +349,6 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
               // return const CircularProgressIndicator();
             }(contextStaging),
 
-            // if (snapshot.hasData) {
-            //   return Text(jsonEncode(snapshot.data));
-            // } else
             (_refreshingSequence != null)
                 ? const Padding(
                     padding: EdgeInsets.all(32),
@@ -498,27 +356,10 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                 : ((snapshotStaging.hasError)
                     ? Text("${snapshotStaging.error}")
                     : const SizedBox()),
-            // ((snapshotStaging.hasError)
-            //     ? Text("${snapshotStaging.error}")
-            //     : (snapshotStaging.hasData
-            //         ? SizedBox()
-            //         : const Center(child: CircularProgressIndicator()))),
-            // Text("snapshotStaging.hasData: ${snapshotStaging.hasData}"),
-            // Text("snapshotStaging.hasError: ${snapshotStaging.hasError}"),
-            Text("sequence id: $sequenceId"),
-            Text("refreshing sequence: $_refreshingSequence"),
+            
+            // Text("sequence id: $sequenceId"),
+            // Text("refreshing sequence: $_refreshingSequence"),
           ]);
         });
-    // FutureBuilder<Set<int>>(
-    //     future: _bookedEvents,
-    //     builder: (context, snapshot) {
-    //       if (snapshot.hasData) {
-    //         return Text(jsonEncode(snapshot.data!.toList()));
-    //       } else if (snapshot.hasError) {
-    //         return Text("${snapshot.error}");
-    //       }
-    //       return const CircularProgressIndicator();
-    //     }),
-    // ]);
   }
 }

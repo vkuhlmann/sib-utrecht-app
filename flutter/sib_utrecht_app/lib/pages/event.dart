@@ -52,7 +52,7 @@ class _EventPageState extends State<EventPage> {
   void didChangeDependencies() {
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
-      print(
+      log.fine(
           "[EventPage] API connector changed from ${this.apiConnector} to ${apiConnector}");
       this.apiConnector = apiConnector;
       scheduleRefresh();
@@ -63,7 +63,7 @@ class _EventPageState extends State<EventPage> {
 
   Future<Event?> _loadData() async {
     // return null;
-    print("Loading single event data");
+    log.fine("Loading single event data");
     var conn = apiConnector;
     if (conn == null) {
       return null;
@@ -76,7 +76,7 @@ class _EventPageState extends State<EventPage> {
 
   void scheduleRefresh() {
     setState(() {
-      print("Refreshing");
+      log.fine("Refreshing");
       int thisSequence = sequenceId++;
       _refreshingSequence = thisSequence;
 
@@ -88,7 +88,7 @@ class _EventPageState extends State<EventPage> {
         var v = (thisSequence, value);
         setState(() {
           if (thisSequence != _refreshingSequence) {
-            print(
+            log.info(
                 "Discarding activity data result: sequence id was $thisSequence, now $_refreshingSequence");
             return;
           }
