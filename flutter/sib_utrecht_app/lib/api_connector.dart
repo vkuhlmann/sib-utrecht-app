@@ -8,7 +8,7 @@ part of 'main.dart';
 class APIConnector {
   String apiAddress = apiUrl;
 
-  final String? user;// = "vincent";
+  final String? user; // = "vincent";
   // final String apiSecret = "PuNZ ZO31 bZCP har0 VYwo cNKP";
   late final String? basicAuth;
   late Map<String, String> headers;
@@ -38,29 +38,46 @@ class APIConnector {
     if (response.body.startsWith('<div id="error">')) {
       throw Exception("Unhandled error on server, please contact Vincent");
     }
+    if (response.body.startsWith('<br />')) {
+      throw Exception("Unhandled error on server, please contact Vincent");
+    }
 
     Map obj = jsonDecode(response.body);
     if (obj.containsKey("error")) {
-      throw Exception("Request returned error: ${obj['error']}");
+      if (obj.containsKey("details")) {
+        throw Exception("${obj['error']} (${obj['details'].join(', ')})");
+      }
+      throw Exception("${obj['error']}");
+      // throw Exception("Request returned error: ${obj['error']}");
     }
 
     return obj;
   }
 
   Future<Map> get(url) async {
-    print("Doing GET on $url");
+    log.info("Doing GET on $url");
     // await Future.delayed(Duration(seconds: 2));
-    final response = await http.get(Uri.parse("$apiAddress/$url"), headers: headers);
+
+    http.Response response;
+    try {
+      response =
+          await http.get(Uri.parse("$apiAddress/$url"), headers: headers);
+    } on http.ClientException catch (e) {
+      if (e.message == "XMLHttpRequest error.") {
+        throw Exception("Cannot connect to server.");
+      }
+      throw Exception("Cannot connect to server: ${e.message}");
+    }
     return _handleResponse(response);
   }
 
   Future<Map> post(url) async {
     // var response;
     // try {
-    print("Doing POST on $url");
+    log.info("Doing POST on $url");
     // await Future.delayed(Duration(seconds: 3));
-    final response = await http.post(Uri.parse("$apiAddress/$url"),
-        headers: headers);
+    final response =
+        await http.post(Uri.parse("$apiAddress/$url"), headers: headers);
     // } catch (e) {
     //   print("HTTP post errored");
     // }
@@ -69,17 +86,18 @@ class APIConnector {
   }
 
   Future<Map> put(url) async {
-    print("Doing PUT on $url");
+    log.info("Doing PUT on $url");
     // await Future.delayed(Duration(seconds: 3));
-    final response = await http.put(Uri.parse("$apiAddress/$url"),
-        headers: headers);
+    final response =
+        await http.put(Uri.parse("$apiAddress/$url"), headers: headers);
 
     return _handleResponse(response);
   }
 
   Future<Map> delete(url) async {
-    final response = await http.delete(Uri.parse("$apiAddress/$url"),
-        headers: headers);
+    log.info("Doing DELETE on $url");
+    final response =
+        await http.delete(Uri.parse("$apiAddress/$url"), headers: headers);
 
     return _handleResponse(response);
   }

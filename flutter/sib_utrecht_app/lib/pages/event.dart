@@ -52,7 +52,7 @@ class _EventPageState extends State<EventPage> {
   void didChangeDependencies() {
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
-      print(
+      log.fine(
           "[EventPage] API connector changed from ${this.apiConnector} to ${apiConnector}");
       this.apiConnector = apiConnector;
       scheduleRefresh();
@@ -63,7 +63,7 @@ class _EventPageState extends State<EventPage> {
 
   Future<Event?> _loadData() async {
     // return null;
-    print("Loading single event data");
+    log.fine("Loading single event data");
     var conn = apiConnector;
     if (conn == null) {
       return null;
@@ -76,7 +76,7 @@ class _EventPageState extends State<EventPage> {
 
   void scheduleRefresh() {
     setState(() {
-      print("Refreshing");
+      log.fine("Refreshing");
       int thisSequence = sequenceId++;
       _refreshingSequence = thisSequence;
 
@@ -88,7 +88,7 @@ class _EventPageState extends State<EventPage> {
         var v = (thisSequence, value);
         setState(() {
           if (thisSequence != _refreshingSequence) {
-            print(
+            log.info(
                 "Discarding activity data result: sequence id was $thisSequence, now $_refreshingSequence");
             return;
           }
@@ -173,28 +173,31 @@ class _EventPageState extends State<EventPage> {
 //                                       ))
 //                                     ])
                                         Center(
-                                            child: InteractiveViewer(
-                                                // clipBehavior: Clip.none,
-                                                child: Stack(
-                                                  alignment:
-                                                      AlignmentDirectional
-                                                          .center,
-                                                  children: [
-                                                    Container(
-                                                        constraints:
-                                                            const BoxConstraints
-                                                                .expand(),
-                                                        child: GestureDetector(
-                                                            // padding: const EdgeInsets.fromLTRB(
-                                                            //     16, 16, 16, 32),
-                                                            // width: 200,
-                                                            onTap: () =>
-                                                                Navigator.pop(
-                                                                    context))),
-                                                    Image.network(
-                                                        "$wordpressUrl/${event.data["thumbnail"]["url"]}")
-                                                  ],
-                                                ))));
+                                            child: Builder(
+                                                builder: (context) =>
+                                                    InteractiveViewer(
+                                                        // clipBehavior: Clip.none,
+                                                        child: Stack(
+                                                      alignment:
+                                                          AlignmentDirectional
+                                                              .center,
+                                                      children: [
+                                                        Container(
+                                                            constraints:
+                                                                const BoxConstraints
+                                                                    .expand(),
+                                                            child:
+                                                                GestureDetector(
+                                                                    // padding: const EdgeInsets.fromLTRB(
+                                                                    //     16, 16, 16, 32),
+                                                                    // width: 200,
+                                                                    onTap: () =>
+                                                                        Navigator.pop(
+                                                                            context))),
+                                                        Image.network(
+                                                            "$wordpressUrl/${event.data["thumbnail"]["url"]}")
+                                                      ],
+                                                    )))));
                                 // return Dialog(
                                 //     alignment: AlignmentDirectional.center,
                                 //     // insetPadding: const EdgeInsets.fromLTRB(
@@ -286,25 +289,28 @@ class _EventPageState extends State<EventPage> {
                         //         ListTile(title: Text(event.start.toString()))),
                         Card(
                             child: ListTile(
-                                title: Row(children: [
+                                title: Wrap(children: [
                           const SizedBox(width: 80, child: Text("Start: ")),
-                          SizedBox(
-                              width: 240,
+                          Wrap(children: [SizedBox(
+                              width: 260,
                               child: LocaleDateFormat(
                                   date: event.start, format: "yMMMMEEEEd")),
-                          const SizedBox(width: 20),
+                          // const SizedBox(width: 20),
                           LocaleDateFormat(date: event.start, format: "Hm")
+                          ])
                         ]))),
                         Card(
                             child: ListTile(
-                                title: Row(children: [
+                                title: Wrap(children: [
                           const SizedBox(width: 80, child: Text("Eindigt: ")),
-                          SizedBox(
-                              width: 240,
+                          Wrap(children: [
+                            SizedBox(
+                              width: 260,
                               child: LocaleDateFormat(
                                   date: event.end, format: "yMMMMEEEEd")),
-                          const SizedBox(width: 20),
+                          // const SizedBox(width: 20),
                           LocaleDateFormat(date: event.end, format: "Hm")
+                          ])
                         ]))),
                         // Table(columnWidths: const {
                         //   0: IntrinsicColumnWidth(),

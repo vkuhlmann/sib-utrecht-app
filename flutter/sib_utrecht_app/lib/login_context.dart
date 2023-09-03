@@ -94,7 +94,7 @@ class LoginManager {
     // setState(() {
     state = _loadState();
     state.catchError((e) {
-      print("Error loading profile: $e");
+      log.severe("Error loading profile: $e");
     });
     // });
     // setState(() {
@@ -155,7 +155,7 @@ class LoginManager {
     state = Future.value(loggedOutState);
     initiatedLogin = _initiateLogin();
     initiatedLogin.catchError((e) {
-      print("Error logging in: $e");
+      log.warning("Error logging in: $e");
     });
   }
 
@@ -198,7 +198,7 @@ class LoginManager {
         }
     );
     
-    print("Authorize url: $authorizeUrl");
+    log.info("Authorize url: $authorizeUrl");
     
     if (!await launchUrl(authorizeUrl)) {
       throw Exception("Could not launch url");

@@ -17,6 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:logging/logging.dart';
 
 // import 'package:flutter_html/flutter_html.dart';
 // import 'package:flutter_html/style.dart';
@@ -33,11 +34,14 @@ part 'pages/event.dart';
 part 'event.dart';
 part 'locale_date_format.dart';
 
+
 late Future<void> dateFormattingInitialization;
 const String wordpressUrl = "http://192.168.50.200/wordpress";
 const String apiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
 const String authorizeAppUrl =
     "$wordpressUrl/wp-admin/authorize-application.php";
+
+final log = Logger("main.dart");
 
 void main() {
   dateFormattingInitialization =
