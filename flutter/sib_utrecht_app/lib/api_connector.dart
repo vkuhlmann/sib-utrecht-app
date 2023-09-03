@@ -38,10 +38,17 @@ class APIConnector {
     if (response.body.startsWith('<div id="error">')) {
       throw Exception("Unhandled error on server, please contact Vincent");
     }
+    if (response.body.startsWith('<br />')) {
+      throw Exception("Unhandled error on server, please contact Vincent");
+    }
 
     Map obj = jsonDecode(response.body);
     if (obj.containsKey("error")) {
-      throw Exception("Request returned error: ${obj['error']}");
+      if (obj.containsKey("details")) {
+        throw Exception("${obj['error']} (${obj['details'].join(', ')})");
+      }
+      throw Exception("${obj['error']}");
+      // throw Exception("Request returned error: ${obj['error']}");
     }
 
     return obj;

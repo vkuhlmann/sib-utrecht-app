@@ -67,8 +67,7 @@ class _ActivityViewState extends State<ActivityView> {
                   padding: const EdgeInsets.all(10),
                   margin: const EdgeInsets.all(5),
                   child: LocaleDateFormat(
-                      format: "MMM", date: widget.event.start)
-                  ),
+                      format: "MMM", date: widget.event.start)),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,
@@ -227,11 +226,12 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
           ),
         ),
         actions: <Widget>[
-          TextButton(
-              child: const Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              }),
+          Builder(
+              builder: (context) => TextButton(
+                  child: const Text('Close'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  })),
         ]);
   }
 
@@ -280,7 +280,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     if (value) {
       Map res;
       try {
-        res = await api!.post("users/me/bookings/?event_id=$eventId");
+        res = await api!.post("users/me/bookings/?event_id=$eventId&consent=true");
 
         bool isSuccess = res["status"] == "success";
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
@@ -356,7 +356,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                 : ((snapshotStaging.hasError)
                     ? Text("${snapshotStaging.error}")
                     : const SizedBox()),
-            
+
             // Text("sequence id: $sequenceId"),
             // Text("refreshing sequence: $_refreshingSequence"),
           ]);
