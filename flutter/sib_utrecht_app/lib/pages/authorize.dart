@@ -1,7 +1,7 @@
 part of '../main.dart';
 
 class AuthorizePage extends StatefulWidget {
-  const AuthorizePage({Key? key, required Map<String, dynamic> this.params}) : super(key: key);
+  const AuthorizePage({Key? key, required this.params}) : super(key: key);
 
   final Map<String, dynamic> params;
 
@@ -10,20 +10,28 @@ class AuthorizePage extends StatefulWidget {
 }
 
 class _AuthorizePageState extends State<AuthorizePage> {
+  late bool isSuccess;
+  Future<LoginState>? initiatedLogin;
+
   @override
   void initState() {
     super.initState();
 
-    bool isSuccess = widget.params["success"] != false && widget.params["user_login"] != null;
+    isSuccess = widget.params["success"] != false && widget.params["user_login"] != null;
     log.info("isSuccess: $isSuccess");
 
     if (isSuccess) {
       WidgetsBinding.instance.addPostFrameCallback((_){
         log.info("Completing login");
-        LoginManager()._completeLogin(
-          user: widget.params["user_login"],
-          apiSecret: widget.params["password"],
-        );
+        setState(() {
+          initiatedLogin = loginManager._completeLogin(
+            user: widget.params["user_login"],
+            apiSecret: widget.params["password"],
+          ).then((state) {
+            _router.go("/");
+            return state;
+          });
+        });
         log.info("Completed login");
         // context.go("/");
       });
@@ -46,21 +54,42 @@ class _AuthorizePageState extends State<AuthorizePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Authorize"),
+        title: const Text("Authorization"),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Authorize"),
+            // const Text("Authorize"),
             // const Text("User is ${}"),
-            Text(jsonEncode(widget.params)),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
+            // Text(jsonEncode(widget.params)),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Navigator.pop(context);
+            //   },
+            //   child: const Text("Go back"),
+            // ),
+            if (isSuccess) const Text(
+              "Login successful",
+              style: TextStyle(color: Colors.green, fontSize: 28),
+              ),
+            if (!isSuccess) const Text(
+              "Login failed",
+              style: TextStyle(color: Colors.red, fontSize: 28),
+              ),
+
+            FutureBuilder(future: initiatedLogin,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Text("Logged in as ${snapshot.data?.activeProfile?["user"]}");
+                } else if (snapshot.hasError) {
+                  return Text("Error completing login: \n${snapshot.error}");
+                } else {
+                  return const CircularProgressIndicator();
+                }
               },
-              child: const Text("Go back"),
             ),
+
             ElevatedButton(
               onPressed: () {
                 context.go("/");

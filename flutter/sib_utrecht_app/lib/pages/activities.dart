@@ -280,7 +280,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     if (value) {
       Map res;
       try {
-        res = await api!.post("users/me/bookings/?event_id=$eventId&consent=true");
+        res = await api!
+            .post("users/me/bookings/?event_id=$eventId&consent=true");
 
         bool isSuccess = res["status"] == "success";
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
@@ -349,13 +350,43 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
               // return const CircularProgressIndicator();
             }(contextStaging),
 
-            (_refreshingSequence != null)
-                ? const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(child: CircularProgressIndicator()))
-                : ((snapshotStaging.hasError)
-                    ? Text("${snapshotStaging.error}")
-                    : const SizedBox()),
+            if (_refreshingSequence != null)
+              const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator())),
+            if (_refreshingSequence == null && snapshotStaging.hasError)
+              Expanded(
+                  child: Align(
+                      alignment: _cached == null
+                          ? Alignment.center
+                          : Alignment.topCenter,
+                      child: Builder(
+                        builder: (context) {
+                          if (snapshotStaging.error != null &&
+                              snapshotStaging.error.toString().contains(
+                                  "Sorry, you are not allowed to do that")) {
+                            return ElevatedButton(
+                              onPressed: () {
+                                // Navigator.pushNamed(context, "/login");
+                                // _rootNavigatorKey.currentContext!.push("/login");
+                                // context.push("/login");
+                                _router.go("/login?immediate=true");
+                              },
+                              child: const Text("Please log in")
+                            );
+                          }
+                          return Text("${snapshotStaging.error}");
+                        },
+                      )))
+
+            //  && snapshotStaging.error != null)
+            //     Text("${snapshotStaging.error}"),
+            // if (_refreshingSequence == null && snapshotStaging.hasError)
+            //     Text("${snapshotStaging.error}"),
+            // SizedBox(),
+            //  (if (snapshotStaging.hasError)
+            //         Text("${snapshotStaging.error}"),
+            //         else const SizedBox(),),
 
             // Text("sequence id: $sequenceId"),
             // Text("refreshing sequence: $_refreshingSequence"),

@@ -30,6 +30,7 @@ part 'pages/debug.dart';
 part 'pages/info.dart';
 part 'pages/authorize.dart';
 part 'pages/event.dart';
+part 'pages/login.dart';
 
 part 'event.dart';
 part 'locale_date_format.dart';
@@ -42,6 +43,7 @@ const String authorizeAppUrl =
     "$wordpressUrl/wp-admin/authorize-application.php";
 
 final log = Logger("main.dart");
+late LoginManager loginManager;
 
 void main() {
   dateFormattingInitialization =
@@ -52,6 +54,7 @@ void main() {
       ]));
     // .then((_) => Future.value());
   // .then((_) => runApp(const MyApp()));
+  loginManager = LoginManager();
   runApp(const MyApp());
 }
 
@@ -83,7 +86,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   // _ScaffoldWithNavbarState({super.key});
 
   // int currentPageIndex = 0;
-  late LoginManager loginManager;
+  // late LoginManager loginManager;
   // bool canPop = false;
 
   // List<Key> pageKeys = [
@@ -104,7 +107,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   void initState() {
     super.initState();
 
-    loginManager = LoginManager();
+    loginManager.loadProfiles();
   }
 
   @override
@@ -145,7 +148,12 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                   onPressed: () {
                     Navigator.pop(context);
                     setState(() {
-                      loginManager.eraseProfiles();
+                      // loginManager.eraseProfiles();
+                    loginManager.logout();
+                    loginManager.state.then((value) {
+                      _router.go("/login?immediate=false");
+                    });
+
                     });
                   },
                   child: const Text('Logout'),
@@ -158,9 +166,10 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    setState(() {
-                      loginManager.scheduleLogin();
-                    });
+                    // setState(() {
+                    //   loginManager.scheduleLogin();
+                    // });
+                    _router.go("/login?immediate=true");
                   },
                   child: const Text('Login'),
                 ),
@@ -445,6 +454,11 @@ final GoRouter _router = GoRouter(
       path: '/authorize',
       builder: (context, state) =>
           AuthorizePage(params: state.uri.queryParameters),
+    ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) =>
+          LoginPage(params: state.uri.queryParameters),
     ),
     StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

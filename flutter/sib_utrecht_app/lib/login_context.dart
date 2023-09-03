@@ -40,13 +40,13 @@ class LoginManager {
   late Future<LoginState> state;// = Future.error(Exception("Not initialized"));
   late Future<void> initiatedLogin;
 
-  final LoginState loggedOutState = LoginState(
-          connector: APIConnector(),
-          profiles: {},
-          // activeProfileName: 'Not logged in',
-          // activeProfile: {}
-          activeProfileName: null,
-          activeProfile: null);
+  // final LoginState loggedOutState = LoginState(
+  //         connector: APIConnector(),
+  //         profiles: {},
+  //         // activeProfileName: 'Not logged in',
+  //         // activeProfile: {}
+  //         activeProfileName: null,
+  //         activeProfile: null);
 
   // @override
   // void initState() {
@@ -59,23 +59,33 @@ class LoginManager {
 
   LoginManager() {
     storage = const FlutterSecureStorage();
-
+    // state = Future.value(loggedOutState);
     loadProfiles();
   }
 
   Future<LoginState> _loadState() async {
     var profilesContent = await storage.read(key: 'profiles');
+    String? activeProfileName = await storage.read(key: 'activeProfileName');
 
     Map<String, dynamic> profiles = {};
     if (profilesContent != null) {
       profiles = jsonDecode(profilesContent);
     }
 
-    if (profiles.isEmpty) {
-      return loggedOutState;
+    if (!profiles.keys.contains(activeProfileName)) {
+      activeProfileName = null;
     }
 
-    var activeProfileName = profiles.keys.first;
+    if (profiles.isEmpty || activeProfileName == null) {
+      return LoginState(
+        connector: APIConnector(),
+        profiles: profiles
+            .map((key, value) => MapEntry(key, value as Map<String, dynamic>)),
+        activeProfileName: null,
+        activeProfile: null);
+    }
+
+    // var activeProfileName = activeProfileName;
     var activeProfile = profiles[activeProfileName]!;
 
     return LoginState(
@@ -85,6 +95,13 @@ class LoginManager {
             .map((key, value) => MapEntry(key, value as Map<String, dynamic>)),
         activeProfileName: activeProfileName,
         activeProfile: activeProfile);
+  }
+
+  void setActiveProfile(String? name) {
+    state = state.then((value) async {
+      await storage.write(key: 'activeProfileName', value: name);
+      return _loadState();
+    });
   }
 
   void loadProfiles() {
@@ -152,7 +169,7 @@ class LoginManager {
     // state.catchError((e) {
     //   print("Old error loading profile: $e");
     // });
-    state = Future.value(loggedOutState);
+    setActiveProfile(null);
     initiatedLogin = _initiateLogin();
     initiatedLogin.catchError((e) {
       log.warning("Error logging in: $e");
@@ -162,6 +179,19 @@ class LoginManager {
   Future<LoginState> _completeLogin({required String user, required String apiSecret}) async {
       String profileName = "profile1";
     var prof = (await state).profiles;
+
+    // _rootNavigatorKey.currentContext?.showSnackBar(SnackBar(
+    //   content: Text("Logged in as $user"),
+    // ));
+    // ScaffoldMessenger.of(_rootNavigatorKey.currentContext!).showSnackBar(
+    //   SnackBar( content: Text("Incremented"), duration: Duration(milliseconds: 300), ), );
+
+    profileName = user;
+    int i = 1;
+    while (prof.containsKey(profileName)) {
+      profileName = "$user ($i)";
+      i++;
+    }
 
     assert(!prof.containsKey(profileName));
 
@@ -174,6 +204,10 @@ class LoginManager {
 
     prof[profileName] = profile;
     await storage.write(key: 'profiles', value: jsonEncode(prof));
+    await storage.write(key: 'activeProfileName', value: profileName);
+
+    ScaffoldMessenger.of(_rootNavigatorKey.currentContext!).showSnackBar(
+      const SnackBar( content: Text("Logged in") ) );
 
     // loadProfiles();
     return await _loadState();
@@ -230,10 +264,15 @@ class LoginManager {
     // return await _loadState();
   }
 
-  void eraseProfiles() {
-    storage.delete(key: 'profiles');
+  void logout() {
+    setActiveProfile(null);
     loadProfiles();
   }
+
+  // void eraseProfiles() {
+  //   storage.delete(key: 'profiles');
+  //   loadProfiles();
+  // }
 
   // void switchProfile(String profileName) {
   // }
