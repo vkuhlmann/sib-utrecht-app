@@ -70,11 +70,11 @@ class _AuthorizePageState extends State<AuthorizePage> {
             //   child: const Text("Go back"),
             // ),
             if (isSuccess) const Text(
-              "Login successful",
+              "Approval succeeded",
               style: TextStyle(color: Colors.green, fontSize: 28),
               ),
             if (!isSuccess) const Text(
-              "Login failed",
+              "Approval failed",
               style: TextStyle(color: Colors.red, fontSize: 28),
               ),
 

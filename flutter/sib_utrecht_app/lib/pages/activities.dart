@@ -42,9 +42,11 @@ class _ActivityViewState extends State<ActivityView> {
 
           // context.push("/event/${widget.activity["event_id"]}");
           // context
-          _sectionNavigatorKey.currentContext!
-              // _sectionNavigatorKey.currentContext!
-              .push("/event/${widget.event.eventId}");
+          // _sectionNavigatorKey.currentContext!
+          // _sectionNavigatorKey.currentContext!
+          // _router.go("/event/${widget.event.eventId}");
+
+          GoRouter.of(context).go("/event/${widget.event.eventId}");
 
           // _rootNavigatorKey
           // _sectionNavigatorKey.currentContext!
@@ -55,19 +57,25 @@ class _ActivityViewState extends State<ActivityView> {
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
             child: Row(children: [
-              Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.all(5),
-                color: Colors.lightBlueAccent,
-                child: Text('${widget.event.start.day}'),
+              SizedBox(
+                width: 50,
+                height: 50,
+                child: Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(10),
+                    margin: const EdgeInsets.all(5),
+                    color: Colors.blueAccent,
+                    child: Text('${widget.event.start.day}')),
               ),
+              SizedBox(
+                width: 60,
+                child: 
               Container(
                   alignment: Alignment.center,
                   padding: const EdgeInsets.all(10),
                   margin: const EdgeInsets.all(5),
                   child: LocaleDateFormat(
-                      format: "MMM", date: widget.event.start)),
+                      format: "MMM", date: widget.event.start))),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,
@@ -316,7 +324,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     return FutureBuilder(
         future: _staging,
         builder: (contextStaging, snapshotStaging) {
-          return Column(children: [
+          return ListView(children: [
             // FutureBuilder<(List<Map>, Set<int>)?>(
             //     future: _cached,
             // builder: (contextCached, snapshotCached) {
@@ -331,7 +339,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
               var (sequenceId, events, bookedEvents) = data;
 
-              return Column(
+              return Padding(padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+              child: Column(
                   children: events
                       .map<Widget>((e) => ActivityView(
                           key: ValueKey(e.eventId),
@@ -340,7 +349,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                           isDirty: _dirtyBookState.contains(e.eventId),
                           setParticipating: (value) =>
                               scheduleEventRegistration(e.eventId, value)))
-                      .toList());
+                      .toList()));
 
               // return _buildActivities(snapshot.data!);
               // if (snapshotStaging.hasError) {
@@ -366,14 +375,13 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                               snapshotStaging.error.toString().contains(
                                   "Sorry, you are not allowed to do that")) {
                             return ElevatedButton(
-                              onPressed: () {
-                                // Navigator.pushNamed(context, "/login");
-                                // _rootNavigatorKey.currentContext!.push("/login");
-                                // context.push("/login");
-                                _router.go("/login?immediate=true");
-                              },
-                              child: const Text("Please log in")
-                            );
+                                onPressed: () {
+                                  // Navigator.pushNamed(context, "/login");
+                                  // _rootNavigatorKey.currentContext!.push("/login");
+                                  // context.push("/login");
+                                  _router.go("/login?immediate=true");
+                                },
+                                child: const Text("Please log in"));
                           }
                           return Text("${snapshotStaging.error}");
                         },

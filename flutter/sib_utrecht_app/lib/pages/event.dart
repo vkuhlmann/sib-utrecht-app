@@ -17,6 +17,8 @@ class _EventPageState extends State<EventPage> {
   Future<(int, Event)?> _staging = Future.value(null);
   // late Future<http.Response> _image;
 
+  late Future<List<String>> participants;
+
   int sequenceId = 0;
   int? _refreshingSequence = null;
 
@@ -56,6 +58,15 @@ class _EventPageState extends State<EventPage> {
           "[EventPage] API connector changed from ${this.apiConnector} to ${apiConnector}");
       this.apiConnector = apiConnector;
       scheduleRefresh();
+
+      setState(() {
+        participants = apiConnector.then((conn) =>
+            conn.get("events/${widget.eventId}/participants").then((response) {
+              return (response["data"]["participants"] as List<dynamic>)
+                  .map((e) => e["name"] as String)
+                  .toList();
+            }));
+      });
     }
 
     super.didChangeDependencies();
@@ -241,6 +252,7 @@ class _EventPageState extends State<EventPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("Building event page for event id ${widget.eventId}");
     return FutureBuilder(
         future: _staging,
         builder: (contextStaging, snapshotStaging) =>
@@ -291,12 +303,13 @@ class _EventPageState extends State<EventPage> {
                             child: ListTile(
                                 title: Wrap(children: [
                           const SizedBox(width: 80, child: Text("Start: ")),
-                          Wrap(children: [SizedBox(
-                              width: 260,
-                              child: LocaleDateFormat(
-                                  date: event.start, format: "yMMMMEEEEd")),
-                          // const SizedBox(width: 20),
-                          LocaleDateFormat(date: event.start, format: "Hm")
+                          Wrap(children: [
+                            SizedBox(
+                                width: 260,
+                                child: LocaleDateFormat(
+                                    date: event.start, format: "yMMMMEEEEd")),
+                            // const SizedBox(width: 20),
+                            LocaleDateFormat(date: event.start, format: "Hm")
                           ])
                         ]))),
                         Card(
@@ -305,11 +318,11 @@ class _EventPageState extends State<EventPage> {
                           const SizedBox(width: 80, child: Text("Eindigt: ")),
                           Wrap(children: [
                             SizedBox(
-                              width: 260,
-                              child: LocaleDateFormat(
-                                  date: event.end, format: "yMMMMEEEEd")),
-                          // const SizedBox(width: 20),
-                          LocaleDateFormat(date: event.end, format: "Hm")
+                                width: 260,
+                                child: LocaleDateFormat(
+                                    date: event.end, format: "yMMMMEEEEd")),
+                            // const SizedBox(width: 20),
+                            LocaleDateFormat(date: event.end, format: "Hm")
                           ])
                         ]))),
                         // Table(columnWidths: const {
@@ -396,7 +409,9 @@ class _EventPageState extends State<EventPage> {
                         : ((snapshotStaging.hasError)
                             ? Text("${snapshotStaging.error}")
                             : const SizedBox()),
-                    // Card(child: ListTile(title: const Text("Over app"))),
+
+                    const SizedBox(height: 32),
+                    const Card(child: ListTile(title: Text("Participants:"))),
                   ])),
                   // const SliverFillRemaining(
                   //   hasScrollBody: false,
@@ -413,6 +428,48 @@ class _EventPageState extends State<EventPage> {
                   //   )
                   //   )
                   // )
+                  FutureBuilder(
+                      future: participants,
+                      builder: (context, snapshot) =>
+                          // return
+                          SliverList(
+                              delegate: SliverChildListDelegate(
+                                  //   [const Text("AAA"), const Text("BBB")]
+                                  // ),);
+                                  // const Text(
+                                  //   "Hoi"
+                                  // )
+                                  [
+                                if (snapshot.hasError)
+                                  Text(
+                                      "Error loading participants: ${snapshot.error}"),
+                                if (!snapshot.hasError && !snapshot.hasData)
+                                  const Center(
+                                      child: CircularProgressIndicator()),
+                                if (snapshot.hasData)
+                                  ...snapshot.data!.map<Widget>((e) => Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          32, 0, 0, 0),
+                                      child: Card(
+                                          child: ListTile(
+                                        title: Text(e),
+                                      )))),
+
+                                const SizedBox(height: 32),
+                              ]
+
+                                  // if (!snapshot.hasData || true) {
+                                  //   return const CircularProgressIndicator();
+                                  // }
+
+                                  // return SliverList(
+                                  //     delegate: SliverChildListDelegate(
+                                  //       snapshot.data!.map<Widget>((e) => Card(
+                                  //                 child: ListTile(
+                                  //               title: Text(e),
+                                  //             )))
+                                  //         .toList()));
+                                  )))
                 ])
                 // )
                 ));

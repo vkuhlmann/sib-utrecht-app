@@ -35,9 +35,9 @@ part 'pages/login.dart';
 part 'event.dart';
 part 'locale_date_format.dart';
 
-
 late Future<void> dateFormattingInitialization;
-const String wordpressUrl = "http://192.168.50.200/wordpress";
+// const String wordpressUrl = "http://192.168.50.200/wordpress";
+const String wordpressUrl = "https://sib-utrecht.nl";
 const String apiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
 const String authorizeAppUrl =
     "$wordpressUrl/wp-admin/authorize-application.php";
@@ -46,13 +46,12 @@ final log = Logger("main.dart");
 late LoginManager loginManager;
 
 void main() {
-  dateFormattingInitialization =
-    Future.delayed(const Duration(seconds: 0))
-    .then((_) => Future.wait([
-      initializeDateFormatting("nl_NL"),
-      initializeDateFormatting("en_GB")
-      ]));
-    // .then((_) => Future.value());
+  dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
+      .then((_) => Future.wait([
+            initializeDateFormatting("nl_NL"),
+            initializeDateFormatting("en_GB")
+          ]));
+  // .then((_) => Future.value());
   // .then((_) => runApp(const MyApp()));
   loginManager = LoginManager();
   runApp(const MyApp());
@@ -65,6 +64,7 @@ void main() {
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
+final _eventSpecNavigatorKey = GlobalKey<NavigatorState>();
 
 class ScaffoldWithNavbar extends StatefulWidget {
   const ScaffoldWithNavbar(this.navigationShell,
@@ -115,7 +115,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
     super.didChangeDependencies();
 
     // BuildContext? navContext = _sectionNavigatorKey.currentContext;
-    // bool newCanPop = navContext != null && (false || navContext.canPop()); 
+    // bool newCanPop = navContext != null && (false || navContext.canPop());
     // if (newCanPop != canPop) {
     //   setState(() {
     //     canPop = newCanPop;
@@ -149,11 +149,10 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     Navigator.pop(context);
                     setState(() {
                       // loginManager.eraseProfiles();
-                    loginManager.logout();
-                    loginManager.state.then((value) {
-                      _router.go("/login?immediate=false");
-                    });
-
+                      loginManager.logout();
+                      loginManager.state.then((value) {
+                        _router.go("/login?immediate=false");
+                      });
                     });
                   },
                   child: const Text('Logout'),
@@ -376,7 +375,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                         // if (canPop)
                         // if (_sectionNavigatorKey.currentState != null
                         // && _sectionNavigatorKey.currentState!.canPop())
-                          // BackButton(),
+                        // BackButton(),
                         // (cont) {
                         //   BuildContext? navContext = _rootNavigatorKey.currentContext;
 
@@ -386,10 +385,24 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                         BackButton(onPressed: () {
                           // Navigator.maybePop(context);
                           // context.pop();
-                          if (_rootNavigatorKey.currentContext!.canPop()) {
-                            _rootNavigatorKey.currentContext!.pop();
+                          if (GoRouterState.of(context)
+                              .matchedLocation
+                              .startsWith("/event/")) {
+                            // context.go("/");
+                            // _router.go("/");
+                            // _router.go("/feed");
+                            _router.go("/");
+                            // _sectionNavigatorKey.currentContext!.go("/");
+                            return;
                           }
-                          }),
+
+                          // if (_rootNavigatorKey.currentContext!.canPop()) {
+                          //   _rootNavigatorKey.currentContext!.pop();
+                          // }
+                          // if(_router.canPop()) {
+                          //   _router.pop();
+                          // }
+                        }),
                         // );
                         //   // widget.
                         // }
@@ -446,67 +459,95 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   }
 }
 
+final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _authScreensNav = GlobalKey<NavigatorState>();
+final GlobalKey<_ActivitiesPageState> _activitiesPageKey = GlobalKey<_ActivitiesPageState>();
+final GlobalKey<NavigatorState> _infoNavigatorKey = GlobalKey<NavigatorState>();
+// final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
+
 final GoRouter _router = GoRouter(
-  navigatorKey: _rootNavigatorKey,
+  // navigatorKey: _rootNavigatorKey,
   initialLocation: "/",
   routes: <RouteBase>[
-    GoRoute(
-      path: '/authorize',
-      builder: (context, state) =>
-          AuthorizePage(params: state.uri.queryParameters),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) =>
-          LoginPage(params: state.uri.queryParameters),
-    ),
     StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) {
-          return ScaffoldWithNavbar(navigationShell,
-              currentPage: state.matchedLocation, title: "SIB-Utrecht");
-        },
+        // builder: (context, state, navigationShell) => Padding(padding: const EdgeInsets.all(64), child: navigationShell),
+        builder: (context, state, navigationShell) => navigationShell,
         branches: [
           StatefulShellBranch(
-              navigatorKey: _sectionNavigatorKey,
-              initialLocation: '/',
-              routes: <RouteBase>[
-                GoRoute(
-                  path: '/',
-                  builder: (context, state) => const ActivitiesPage(),
-                ),
-                GoRoute(
-                    path: '/event/:event_id',
-                    builder: (context, state) {
-                      int? eventId;
-                      if (state.pathParameters.containsKey('event_id')) {
-                        eventId =
-                            int.tryParse(state.pathParameters['event_id']!);
-                      }
-                      return EventPage(eventId: eventId);
-                    })
-              ]),
-          StatefulShellBranch(routes: <RouteBase>[
+            // navigatorKey: _authScreensNav,
+            initialLocation: "/login", routes: <RouteBase>[
             GoRoute(
-                path: '/feed',
-                builder: (context, state) => const Placeholder()),
-          ]),
-          StatefulShellBranch(routes: <RouteBase>[
+              path: '/authorize',
+              builder: (context, state) =>
+                  AuthorizePage(params: state.uri.queryParameters),
+            ),
             GoRoute(
-                path: '/info', builder: (context, state) => const InfoPage()),
+              // parentNavigatorKey: _authScreensNav,
+              path: '/login',
+              builder: (context, state) =>
+                  LoginPage(params: state.uri.queryParameters),
+            ),
           ]),
-          // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
-          //   GoRoute(
-          //       path: "/event/:event_id",
-          //       builder: (context, state) {
-          //         int? eventId;
-          //         if (state.pathParameters.containsKey('event_id')) {
-          //           eventId = int.tryParse(state.pathParameters['event_id']!);
-          //         }
-          //         return EventPage(eventId: eventId);
-          //       })
-          // ]),
+          StatefulShellBranch(
+            // navigatorKey: _mainScreensNav,
+            routes: [
+            StatefulShellRoute.indexedStack(
+                builder: (context, state, navigationShell) {
+                  return ScaffoldWithNavbar(navigationShell,
+                      currentPage: state.matchedLocation, title: "SIB-Utrecht");
+                },
+                branches: [
+                  StatefulShellBranch(
+                      // navigatorKey: _sectionNavigatorKey,
+                      initialLocation: '/',
+                      routes: <RouteBase>[
+                        GoRoute(
+                          path: '/',
+                          builder: (context, state) => ActivitiesPage(key: _activitiesPageKey),
+                        ),
+                      ]),
+                  StatefulShellBranch(routes: <RouteBase>[
+                    GoRoute(
+                        path: '/feed',
+                        builder: (context, state) => const Placeholder()),
+                  ]),
+                  StatefulShellBranch(
+                      // navigatorKey: _infoNavigatorKey,                      
+                    routes: <RouteBase>[
+                    GoRoute(
+                        path: '/info',
+                        // parentNavigatorKey: _infoNavigatorKey,
+                        builder: (context, state) => const InfoPage()),
+                  ]),
+                  StatefulShellBranch(
+                    // navigatorKey: _eventSpecNavigatorKey,
+                    initialLocation: "/event/0",
+                    routes: <RouteBase>[
+                    GoRoute(
+                        path: '/event/:event_id',
+                        builder: (context, state) {
+                          int? eventId;
+                          if (state.pathParameters.containsKey('event_id')) {
+                            eventId =
+                                int.tryParse(state.pathParameters['event_id']!);
+                          }
+                          return EventPage(eventId: eventId, key: ValueKey("event/$eventId"));
+                        })
+                  ])
+                  // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
+                  //   GoRoute(
+                  //       path: "/event/:event_id",
+                  //       builder: (context, state) {
+                  //         int? eventId;
+                  //         if (state.pathParameters.containsKey('event_id')) {
+                  //           eventId = int.tryParse(state.pathParameters['event_id']!);
+                  //         }
+                  //         return EventPage(eventId: eventId);
+                  //       })
+                  // ]),
+                ])
+          ])
         ])
-
     // GoRoute(
     //     path: "feed",
     //     builder: (BuildContext context, GoRouterState state) {

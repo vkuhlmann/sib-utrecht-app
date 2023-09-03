@@ -203,11 +203,12 @@ class LoginManager {
     };
 
     prof[profileName] = profile;
-    await storage.write(key: 'profiles', value: jsonEncode(prof));
+    String a = jsonEncode(prof);
+    await storage.write(key: 'profiles', value: a);
     await storage.write(key: 'activeProfileName', value: profileName);
 
-    ScaffoldMessenger.of(_rootNavigatorKey.currentContext!).showSnackBar(
-      const SnackBar( content: Text("Logged in") ) );
+    // ScaffoldMessenger.of(_rootNavigatorKey.currentContext!).showSnackBar(
+    //   const SnackBar( content: Text("Logged in") ) );
 
     // loadProfiles();
     return await _loadState();
@@ -228,7 +229,7 @@ class LoginManager {
         {
           "app_name": appName,
           // "success_url": "https://vkuhlmann.com"
-          "success_url": Uri.base.replace(fragment: "/authorize").toString()
+          // "success_url": Uri.base.replace(fragment: "/authorize").toString()
         }
     );
     

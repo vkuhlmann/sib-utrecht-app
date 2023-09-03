@@ -51,8 +51,10 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const Text('Login')
         ])),
+        // bottomNavigationBar: const SizedBox(height:56),
         body: SafeArea(
             child: Container(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 90),
                 constraints: const BoxConstraints.expand(),
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

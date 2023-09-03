@@ -56,7 +56,7 @@ class APIConnector {
 
   Future<Map> get(url) async {
     log.info("Doing GET on $url");
-    // await Future.delayed(Duration(seconds: 2));
+    // await Future.delayed(Duration(seconds: 3));
 
     http.Response response;
     try {
