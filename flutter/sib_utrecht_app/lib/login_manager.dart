@@ -219,6 +219,35 @@ class LoginManager {
     return await _loadState();
   }
 
+
+  (String, Uri) getAuthorizationUrl({required bool withRedirect}) {
+    var uuid = const Uuid();
+    final String appName = "sib-utrecht-app_${uuid.v4().substring(0, 6)}";
+
+    // Uri authorize_url = Uri.parse(
+    //     "$AUTHORIZE_APP_URL?app_name=$appName"
+    //     "&success_url=https%3A%2F%2Fvkuhlmann.com"
+    // );
+
+    Map<String, dynamic> queryParams = {
+      "app_name": appName,
+    };
+
+    if (canLoginByRedirect && withRedirect) {
+      queryParams["success_url"] = Uri.base.replace(fragment: "/authorize").toString();
+    }
+
+    Uri authorizeUrl = Uri.https(
+        Uri.parse(authorizeAppUrl).authority,
+        Uri.parse(authorizeAppUrl).path,
+        queryParams
+    );
+    return (Uri.https(
+      Uri.parse(authorizeAppUrl).authority, Uri.parse(authorizeAppUrl).path).toString(),
+      authorizeUrl)
+    ;
+  }
+
   Future<void> _initiateLogin() async {
     var uuid = const Uuid();
     final String appName = "sib-utrecht-app_${uuid.v4().substring(0, 6)}";

@@ -5,6 +5,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 // import 'package:flutter/scheduler.dart';
 // import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -28,6 +30,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 part 'login_manager.dart';
 part 'api_connector.dart';
+part 'async_patch.dart';
 part 'pages/activities.dart';
 part 'pages/debug.dart';
 part 'pages/info.dart';
@@ -60,10 +63,10 @@ void main() {
 
   // Seems like LicenseRegistry is not available in my current version of Flutter =/
   //
-  //  LicenseRegistry.addLicense(() async* {
-  //   final license = await rootBundle.loadString('google_fonts/Apache.txt');
-  //   yield LicenseEntryWithLineBreaks(['google_fonts'], license);
-  // });
+  LicenseRegistry.addLicense(() async* {
+    final license = await rootBundle.loadString('google_fonts/Apache.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+  });
   // .then((_) => Future.value());
   // .then((_) => runApp(const MyApp()));
   loginManager = LoginManager();

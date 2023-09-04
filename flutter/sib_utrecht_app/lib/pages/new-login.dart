@@ -29,15 +29,41 @@ class _NewLoginPageState extends State<NewLoginPage> {
   final RegExp applicationPasswordFormat =
       RegExp("^([a-zA-Z0-9]{4} ){5}[a-zA-Z0-9]{4}\$");
 
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _applicationPasswordController =
       TextEditingController();
 
   final Icon startIcon = const Icon(Icons.start);
   final Icon doneIcon = const Icon(Icons.done, color: Colors.green);
 
+  bool useRedirect = true;
+  late Uri authorizationUrl;
+  late String authorizationUrlDisplay;
+
+  Future<bool>? _step1LaunchUrl;
+
+  // String? _step2UsernameError;
+
+  bool _step2IsUsernameNonEmpty = false;
+  bool _step2IsPasswordComplete = false;
+
+  Future<void>? _step3_substep1;
+  Future<void>? _step3_substep2;
+
+  int nextLoginAttempt = 0;
+  int? activeLoginAttempt;
+
   @override
   void initState() {
     super.initState();
+
+    String disp;
+    Uri url;
+
+    (disp, url) = loginManager.getAuthorizationUrl(withRedirect: useRedirect);
+
+    authorizationUrlDisplay = disp;
+    authorizationUrl = url;
   }
 
   @override
@@ -68,23 +94,72 @@ class _NewLoginPageState extends State<NewLoginPage> {
         child: ExpansionTile(
             title: const Text("Step 1: Create a new application password"),
             controller: _step1Expansion,
-            leading:
-                step1Done ? doneIcon : startIcon,
+            leading: step1Done ? doneIcon : startIcon,
             initiallyExpanded: !step1Done,
             children: <Widget>[
               Container(
                   margin: const EdgeInsets.all(8),
-                  child: ElevatedButton(
-                      onPressed: step1Done
-                          ? null
-                          : () {
+                  child: Column(children: [
+                    // const Text("You can link ")
+                    // const Text("Go to the WordPress application authorization page on sib-utrecht.nl:"),
+                    // const Text("To log into your sib-utrecht.nl account, open the following link:"),
+                    const Text("Open the following link:"),
+                    ElevatedButton(
+                      onPressed: () {
+                        _step1LaunchUrl = launchUrl(authorizationUrl);
+                        // (
+                        //     "https://sib-utrecht.nl/wp-admin/profile.php?page=application-passwords");
+                        // },
+                      },
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.open_in_browser_outlined,
+                                size: 20),
+                            const SizedBox(width: 5),
+                            Text(authorizationUrlDisplay.toString())
+                          ]),
+                    ),
+                    // RichText(
+                    //   text: TextSpan(text: "Authorize via a different device or browser.",
+                    //   style: TextStyle(color: Colors.blue),
+                    //   recognizer: _step1SwitchUrl),
+                    // ),
+                    const SizedBox(height: 10),
+                    FilledButton(
+                        onPressed: step1Done
+                            ? null
+                            : () {
+                                setState(() {
+                                  step1Done = true;
+                                  _step1Expansion.collapse();
+                                  _step2Expansion.expand();
+                                });
+                              },
+                        child: const Text("Done")),
+
+                    if (useRedirect) ...[
+                      const SizedBox(height: 10),
+                      TextButton(
+                          child: const Text(
+                              "Authorize via a different device or browser.",
+                              style: TextStyle(fontSize: 10)),
+                          onPressed: () {
+                            setState(() {
+                              String disp;
+                              Uri url;
+                              (disp, url) = loginManager.getAuthorizationUrl(
+                                  withRedirect: false);
                               setState(() {
-                                step1Done = true;
-                                _step1Expansion.collapse();
-                                _step2Expansion.expand();
+                                authorizationUrlDisplay = disp;
+                                authorizationUrl = url;
+                                authorizationUrlDisplay = "sib-utrecht.nl/app";
+                                useRedirect = false;
                               });
-                            },
-                      child: const Text("Done"))),
+                            });
+                          })
+                    ],
+                  ])),
             ]),
       );
 
@@ -98,8 +173,6 @@ class _NewLoginPageState extends State<NewLoginPage> {
           if (RegExp("[^a-zA-Z0-9 ]").hasMatch(newValue.text)) {
             return oldValue;
           }
-
-          Clipboard.getData(Clipboard.kTextPlain).then((value) {});
 
           String newText = newValue.text;
 
@@ -227,41 +300,160 @@ class _NewLoginPageState extends State<NewLoginPage> {
         // })
       ];
 
-  bool checkIfAppPasswordComplete() {
+  bool trySubmit() {
+    final String username = _usernameController.value.text;
     final String applicationPassword =
         _applicationPasswordController.value.text;
     if (!applicationPasswordFormat.hasMatch(applicationPassword)) {
       return false;
     }
 
-    print("Not implemented: connection test verification");
     setState(() {
-      step1Done = true;
-      step2Done = true;
+      _step2IsPasswordComplete = true;
+    });
 
-      _step1Expansion.collapse();
-      _step2Expansion.collapse();
-      _step3Expansion.expand();
+    if (username.isEmpty) {
+      return false;
+    }
 
-      step3Result = Future.delayed(const Duration(seconds: 5)).then((value) {
-          setState(() {
-            completed = true;
+    print("Attempting login");
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      cancelStep3();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        int thisLoginAttempt = ++nextLoginAttempt;
+
+        activeLoginAttempt = thisLoginAttempt;
+
+        // print("Not implemented: connection test verification");
+        setState(() {
+          step1Done = true;
+          step2Done = true;
+
+          _step1Expansion.collapse();
+          _step2Expansion.collapse();
+          _step3Expansion.expand();
+
+          _step3_substep1 = null;
+          _step3_substep2 = null;
+
+          step3Result =
+              Future.delayed(const Duration(seconds: 0)).then((value) async {
+            // throw Exception("This is a test");
+
+            if (activeLoginAttempt != thisLoginAttempt) {
+              throw Exception("Login attempt has been cancelled");
+            }
+
+            Future<LoginState> st_fut = loginManager._completeLogin(
+                user: username, apiSecret: applicationPassword);
+            setState(() {
+              _step3_substep1 = st_fut;
+            });
+
+            LoginState st = await st_fut;
+
+            if (activeLoginAttempt != thisLoginAttempt) {
+              throw Exception("Login attempt has been cancelled");
+            }
+
+            Future<void> testConnection() async {
+              // throw Exception("Test aborting");
+              var result = await st.connector.get("events");
+              if (result["data"]?["events"] == null) {
+                throw Exception("Could not load events");
+              }
+            }
+
+            Future<void> substep2 = testConnection();
+
+            setState(() {
+              _step3_substep2 = substep2;
+            });
+
+            await substep2;
+
+            if (activeLoginAttempt != thisLoginAttempt) {
+              throw Exception("Login attempt has been cancelled");
+            }
+
+            setState(() {
+              completed = true;
+            });
+          }).whenComplete(() {
+            if (activeLoginAttempt == thisLoginAttempt) {
+              activeLoginAttempt = null;
+            }
+          }).catchError((e) {
+            if (e.toString().contains("Unkown username")) {
+              _step2Expansion.expand();
+            }
+
+            throw e;
           });
+          // .catchError((e) {
+          //   if (activeLoginAttempt == thisLoginAttempt) {
+          //     activeLoginAttempt = null;
+          //   }
+          //   throw e;
+          // });
+        });
       });
     });
+
     return true;
+  }
+
+  void cancelStep3() {
+    setState(() {
+      activeLoginAttempt = null;
+
+      step3Result = null;
+      _step3_substep1 = null;
+      _step3_substep2 = null;
+      // var pending = step3Result;
+
+      // if (pending != null) {
+      //   pending.whenComplete(() {
+      //     setState(() {
+      //       step3Result = null;
+      //       _step3_substep1 = null;
+      //       _step3_substep2 = null;
+      //     });
+      //   });
+      // }
+    });
+
+    // setState(() {
+    //   step3Result = Future.value();
+    //   _step3_substep1 = Future.value();
+    //   _step3_substep2 = Future.value();
+    // });
+
+    // setState(() {
+    //   step3Result = null;
+    //   _step3_substep1 = null;
+    //   _step3_substep2 = null;
+    // });
   }
 
   @override
   Widget buildStep2(BuildContext context) => Card(
+          child: Focus(
+        onFocusChange: (value) {
+          if (!value) {
+            return;
+          }
+          print("Got focus!!");
+          attemptFillAppPasswordFromClipboard();
+        },
         child: ExpansionTile(
           title: const Text("Step 2: Enter application password"),
           controller: _step2Expansion,
           leading: step2Done
               ? doneIcon
-              : (step1Done
-                  ? startIcon
-                  : const Icon(Icons.schedule)),
+              : (step1Done ? startIcon : const Icon(Icons.schedule)),
           initiallyExpanded: step1Done,
           children: <Widget>[
             // InternationalPhoneNumberInput(
@@ -275,6 +467,35 @@ class _NewLoginPageState extends State<NewLoginPage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(children: [
                   TextField(
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText: 'Username',
+                        errorText: (_step2IsPasswordComplete &&
+                                !_step2IsUsernameNonEmpty)
+                            ? "Username is required"
+                            : null),
+                    onChanged: (value) {
+                      if (value.isNotEmpty != _step2IsUsernameNonEmpty) {
+                        setState(() {
+                          _step2IsUsernameNonEmpty = value.isNotEmpty;
+                        });
+                      }
+
+                      if (activeLoginAttempt == null) {
+                        cancelStep3();
+                        setState(() {
+                          step2Done = false;
+                        });
+                      }
+                    },
+                    onSubmitted: (value) {
+                      print("Received onSubmitted from username field");
+                      trySubmit();
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
                     controller: _applicationPasswordController,
                     style: const TextStyle(
                         fontFamily: 'RobotoMono'), //GoogleFonts.robotoMono(),
@@ -287,12 +508,26 @@ class _NewLoginPageState extends State<NewLoginPage> {
                     obscureText: false,
                     onChanged: (value) {
                       // print(value);
-                      if (step2Done) {
-                        step2Done = false;
-                        step3Result = null;
-                      }
+                      // if (step2Done) {
+                      //   setState(() {
+                      //     step2Done = false;
+                      //     // step3Result = null;
+                      //     // cancelStep3();
+                      //   });
+                      // }
 
-                      checkIfAppPasswordComplete();
+                      cancelStep3();
+                      setState(() {
+                        step2Done = false;
+                        _step2IsPasswordComplete = false;
+                      });
+
+                      // if (value.isNotEmpty && _step2IsUsernameNonEmpty) {
+                      //   setState(() {
+                      //     _step2UsernameError = "Username is required";
+                      //   });
+                      // }
+                      trySubmit();
 
                       // if (applicationPasswordFormat.hasMatch(value) !=
                       //     step2Done) {
@@ -305,7 +540,27 @@ class _NewLoginPageState extends State<NewLoginPage> {
                       //   // });
                       // }
                     },
-                  )
+                  ),
+                  const SizedBox(height: 10),
+                  FilledButton(
+                      onPressed: (_step2IsPasswordComplete &&
+                              _usernameController.text.isNotEmpty)
+                          ? () {
+                              cancelStep3();
+                              trySubmit();
+
+                              // setState(() {
+                              //   if () {
+                              //     _step2Expansion.collapse();
+                              //     _step3Expansion.expand();
+                              //   }
+                              //   // step1Done = true;
+                              //   // _step1Expansion.collapse();
+                              //   // _step2Expansion.expand();
+                              // });
+                            }
+                          : null,
+                      child: const Text("Done"))
                 ])),
 
             // TextField(
@@ -320,52 +575,154 @@ class _NewLoginPageState extends State<NewLoginPage> {
             // )
           ],
         ),
-      );
+      ));
 
   @override
   Widget buildStep3(BuildContext context) => Card(
-      child: FutureBuilder(
+      child: FutureBuilderPatched(
           future: step3Result,
-          builder: (context, snapshot) => ExpansionTile(
-                title: const Text("Step 3: Connection test"),
-                controller: _step3Expansion,
-                leading: step2Done
-                    ? ((step3Result == null)
-                        ? startIcon
-                        : snapshot.hasError
-                            ? const Icon(Icons.error)
-                            : (snapshot.connectionState == ConnectionState.done
-                                ? doneIcon
-                                : const SizedBox(width: 16,height: 16, child: Center(child: CircularProgressIndicator()))))
-                    : const Icon(Icons.schedule),
-                // subtitle: const Text("This step is automatic")
-              )));
+          builder: (context, snapshot) {
+            String? errorMessage;
+            if (snapshot.hasError) {
+              errorMessage = snapshot.error.toString();
+
+              var m = RegExp(
+                      r"^(Exception: )?(<strong>Error:</strong> )?(?<message>.*)$")
+                  .firstMatch(errorMessage);
+
+              errorMessage = m?.namedGroup("message") ?? errorMessage;
+            }
+
+            return ExpansionTile(
+              title: const Text("Step 3: Connection test"),
+              controller: _step3Expansion,
+              leading: step2Done
+                  ? ((step3Result == null)
+                      ? startIcon
+                      : snapshot.hasError
+                          ? const Icon(Icons.error)
+                          : (snapshot.connectionState == ConnectionState.done
+                              ? doneIcon
+                              : const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: Center(
+                                      child: CircularProgressIndicator()))))
+                  : const Icon(Icons.schedule),
+              children: [
+                Padding(
+                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
+                    child: Column(
+                      children: [
+                        FutureBuilderPatched(
+                            future: _step3_substep1,
+                            builder: (context, snapshot) {
+                              Widget ic = const Icon(Icons.schedule);
+
+                              if (snapshot.hasError) {
+                                ic = const Icon(Icons.error);
+                              }
+
+                              if (snapshot.connectionState ==
+                                  ConnectionState.active) {
+                                ic = const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: Center(
+                                        child: CircularProgressIndicator()));
+                              }
+
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                ic = const Icon(Icons.done);
+                              }
+
+                              return ListTile(
+                                  leading: ic,
+                                  title: const Text("Store credentials"));
+                            }),
+                        FutureBuilderPatched(
+                            future: _step3_substep2,
+                            builder: (context, snapshot) {
+                              Widget ic = const Icon(Icons.schedule);
+
+                              if (snapshot.hasError) {
+                                ic = const Icon(Icons.error);
+                              }
+
+                              if (!snapshot.hasError &&
+                                  snapshot.connectionState ==
+                                      ConnectionState.active) {
+                                ic = const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: Center(
+                                        child: CircularProgressIndicator()));
+                              }
+
+                              if (!snapshot.hasError &&
+                                  snapshot.connectionState ==
+                                      ConnectionState.done) {
+                                ic = const Icon(Icons.done);
+                              }
+
+                              return ListTile(
+                                  leading: ic,
+                                  title: const Text("Test access"));
+                            }),
+                        (snapshot.hasError)
+                            ? Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+                                child: ListTile(
+                                    leading: const Icon(Icons.error,
+                                        color: Colors.redAccent),
+                                    title: Text(errorMessage ??
+                                        "No error description")))
+                            : const SizedBox(),
+                        const SizedBox(height: 10),
+                        OutlinedButton(
+                            onPressed: (snapshot.connectionState ==
+                                    ConnectionState.active)
+                                ? (() {
+                                    cancelStep3();
+                                  })
+                                : null,
+                            child: const Text("Cancel"))
+                      ],
+                    ))
+              ],
+              // subtitle: const Text("This step is automatic")
+            );
+          }));
 
   Future<bool> attemptFillAppPasswordFromClipboard() async {
     if (step2Done) {
       return false;
     }
+    if (_step2IsPasswordComplete) {
+      return false;
+    }
 
-    print("Attempting fill password from clipboard");
+    // print("Attempting fill password from clipboard");
     ClipboardData? data = await Clipboard.getData("text/plain");
 
     String? text = data?.text;
     if (text == null) {
-      print("No text on clipboard");
+      // print("No text on clipboard");
       return false;
     }
 
     if (!applicationPasswordFormat.hasMatch(text)) {
-      print("Clipboard data is no application password");
+      // print("Clipboard data is no application password");
       return false;
     }
 
-    print("Found application password in clipboard data");
+    // print("Found application password in clipboard data");
     setState(() {
       _applicationPasswordController.text = text;
     });
     // scheduleVerifyStep3();
-    checkIfAppPasswordComplete();
+    trySubmit();
     return true;
   }
 
@@ -396,32 +753,46 @@ class _NewLoginPageState extends State<NewLoginPage> {
         ])),
         // bottomNavigationBar: const SizedBox(height:56),
         body: SafeArea(
-            child: Focus(
-                onFocusChange: (value) {
-                  if (!value) {
-                    return;
-                  }
-                  print("Got focus!!");
-                  attemptFillAppPasswordFromClipboard();
-                },
-                child: Container(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 90),
-                    constraints: const BoxConstraints.expand(),
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverFillRemaining(
-                            child: Center(
-                                child: Container(
-                                    constraints:
-                                        const BoxConstraints(maxWidth: 600),
-                                    child: buildSteps(context))))
-                      ],
+            child: Container(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 90),
+                constraints: const BoxConstraints.expand(),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverFillRemaining(
+                        child: Center(
+                            child: Container(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 600),
+                                child: CustomScrollView(slivers: [SliverList(
+                                    delegate: SliverChildListDelegate([
+                                  // mainAxisAlignment: MainAxisAlignment.center,
+                                  // children: [
+                                  buildSteps(context),
+                                  if (completed)
+                                    Padding(padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+                                    child: 
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          ConstrainedBox(
+                                              constraints: const BoxConstraints(
+                                                  maxWidth: 300),
+                                              child: FilledButton(
+                                                  onPressed: () {
+                                                    _router.go("/");
+                                                  },
+                                                  child: const Text(
+                                                      "Go to home screen")))
+                                        ]))
+                                ]))]))))
+                  ],
 
-                      // mainAxisAlignment: MainAxisAlignment.center,
-                      // crossAxisAlignment: CrossAxisAlignment.center,
-                      // children: [
-                      //   Text("Hoi!")
-                      // ]
-                    )))));
+                  // mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  // children: [
+                  //   Text("Hoi!")
+                  // ]
+                ))));
   }
 }

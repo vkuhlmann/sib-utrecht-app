@@ -52,49 +52,67 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const Text('Login')
         ])),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _router.go("/new-login");
+          },
+          child: const Icon(Icons.add),
+        ),
         // bottomNavigationBar: const SizedBox(height:56),
         body: SafeArea(
             child: Container(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 90),
-                constraints: const BoxConstraints.expand(),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      FutureBuilder(
-                          future: loginManager.state,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasError) {
-                              return const Text('Error loading login profiles');
-                            }
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                // constraints: const BoxConstraints.expand(),
+                child: CustomScrollView(slivers: [
+                  SliverFillRemaining(
+                    child: 
+                    Center(
+                        child: ListView(children:[
+                          FutureBuilder(
+                              future: loginManager.state,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasError) {
+                                  return const Text(
+                                      'Error loading login profiles');
+                                }
 
-                            if (!snapshot.hasData) {
-                              return const CircularProgressIndicator();
-                            }
+                                if (!snapshot.hasData) {
+                                  return const CircularProgressIndicator();
+                                }
 
-                            return Padding(
-                                padding: const EdgeInsets.all(32),
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: snapshot.data!.profiles.entries
-                                        .map<Widget>((pair) => Card(
-                                            child: ListTile(
-                                                title: Text(pair.key),
-                                                onTap: () {
-                                                  loginManager.setActiveProfile(
-                                                      pair.key);
-                                                  _router.go("/");
-                                                })))
-                                        .toList()));
-                          }),
-                      const SizedBox(height:20),
-                      ElevatedButton(
-                          onPressed: () {
-                            // loginManager.scheduleLogin();
-                            _router.go("/new-login");
-                          },
-                          child: const Text("New login"))
-                    ]))));
+                                return Padding(
+                                    padding: const EdgeInsets.all(32),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children:
+                                            snapshot.data!.profiles.entries
+                                                .map<Widget>((pair) => Card(
+                                                    child: ListTile(
+                                                        title: Text(pair.key),
+                                                        onTap: () {
+                                                          loginManager
+                                                              .setActiveProfile(
+                                                                  pair.key);
+                                                          _router.go("/");
+                                                        })))
+                                                .toList()));
+                              }),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                          ConstrainedBox(constraints: const BoxConstraints(maxWidth: 300),
+                          child: 
+                          FilledButton(
+                              onPressed: () {
+                                // loginManager.scheduleLogin();
+                                _router.go("/new-login");
+                              },
+                              child: const Text("New login")))])
+                        ])),
+                  ),
+                  // SliverAppBar()
+                ]))));
   }
 }
