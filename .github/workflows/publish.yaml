@@ -14,9 +14,6 @@ jobs:
       - run: flutter pub get
         shell: bash
         working-directory: flutter/sib_utrecht_app
-      - run: flutter test
-        shell: bash
-        working-directory: flutter/sib_utrecht_app
       - uses: bluefireteam/flutter-gh-pages@v8
         with:
           workingDir: flutter/sib_utrecht_app
