@@ -1,173 +1,607 @@
 import 'dart:async';
 import 'dart:convert';
+// import 'dart:ffi';
+import 'dart:math';
 
-// import 'package:christmas2022_management/evadePresenceDetector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+// import 'package:flutter/scheduler.dart';
+// import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:tuple/tuple.dart';
+// import 'package:tuple/tuple.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
+// import 'package:material_symbols_icons/symbols.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
+import 'package:logging/logging.dart';
 
+// import 'package:flutter_html/flutter_html.dart';
+// import 'package:flutter_html/style.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+
+part 'login_context.dart';
 part 'api_connector.dart';
+part 'pages/activities.dart';
+part 'pages/debug.dart';
+part 'pages/info.dart';
+part 'pages/authorize.dart';
+part 'pages/event.dart';
+part 'pages/login.dart';
+
+part 'event.dart';
+part 'locale_date_format.dart';
+
+late Future<void> dateFormattingInitialization;
+// const String wordpressUrl = "http://192.168.50.200/wordpress";
+const String wordpressUrl = "https://sib-utrecht.nl";
+const String apiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
+const String authorizeAppUrl =
+    "$wordpressUrl/wp-admin/authorize-application.php";
+
+final log = Logger("main.dart");
+late LoginManager loginManager;
 
 void main() {
+  dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
+      .then((_) => Future.wait([
+            initializeDateFormatting("nl_NL"),
+            initializeDateFormatting("en_GB")
+          ]));
+  // .then((_) => Future.value());
+  // .then((_) => runApp(const MyApp()));
+  loginManager = LoginManager();
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// Go router code based on https://medium.com/@antonio.tioypedro1234/flutter-go-router-the-essential-guide-349ef39ec5b3
+// and https://pub.dev/packages/go_router/example
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+// Navigation bar code based on https://api.flutter.dev/flutter/material/NavigationBar-class.html
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _sectionNavigatorKey = GlobalKey<NavigatorState>();
+final _eventSpecNavigatorKey = GlobalKey<NavigatorState>();
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+class ScaffoldWithNavbar extends StatefulWidget {
+  const ScaffoldWithNavbar(this.navigationShell,
+      {Key? key, required this.title, required this.currentPage})
+      : super(key: key);
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
+  /// The navigation shell and container for the branch Navigators.
+  final StatefulNavigationShell navigationShell;
   final String title;
+  final String currentPage;
+
+  // final BuildContext? rootContext = _rootNavigatorKey.currentContext;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ScaffoldWithNavbar> createState() => _ScaffoldWithNavbarState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
+  // _ScaffoldWithNavbarState({super.key});
 
-  late Future<Map> _apiResult;
-  late Future<String>? _debugOutput;
+  // int currentPageIndex = 0;
+  // late LoginManager loginManager;
+  // bool canPop = false;
+
+  // List<Key> pageKeys = [
+  //   const PageStorageKey('ActivitiesPage'),
+  //   const PageStorageKey('InfoPage'),
+  //   const PageStorageKey('DebugPage'),
+  // ];
+
+  // final Map<int, Widget> pages = [
+  //   // const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
+  //   const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
+  //   const Placeholder(),
+  //   const InfoPage(key: PageStorageKey('InfoPage')),
+  //   // const DebugPage(key: PageStorageKey('DebugPage')),
+  // ].asMap();
 
   @override
   void initState() {
     super.initState();
-    _apiResult = APIConnector().get("events");
-    // _debugOutput = Future<String>.value("No debug output yet");
 
-    // _apiResult.then((value) => null)
-    // _debugOutput = jsonEncode(_apiResult);
-    // _debugOutput = _apiResult.then((value) => jsonEncode(value, ));
-    _debugOutput = _apiResult.then((value) {
-      const encoder = JsonEncoder.withIndent("    ");
-      return encoder.convert(value);
-      // jsonEncode(value, )
-    });
+    loginManager.loadProfiles();
   }
 
-  // void setDebugOutput(String val) {
-  //   setState(() {
-  //     _debugOutput = Future<String>.value(val);
-  //     // _debugOutput = jsonEncode(_apiResult);
-  //   });
-  // }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+    // BuildContext? navContext = _sectionNavigatorKey.currentContext;
+    // bool newCanPop = navContext != null && (false || navContext.canPop());
+    // if (newCanPop != canPop) {
+    //   setState(() {
+    //     canPop = newCanPop;
+    //   });
+    // }
+  }
+
+  Widget buildLoginMenu(
+      BuildContext context, AsyncSnapshot<LoginState> snapshot) {
+    return CustomScrollView(shrinkWrap: true, slivers: <Widget>[
+      SliverList(
+          delegate: SliverChildListDelegate(<Widget>[
+        Row(
+          children: [
+            if (snapshot.data?.activeProfileName != null)
+              Text("Hoi ${snapshot.data!.activeProfile!['user']}!")
+            else
+              const Text("Not logged in!"),
+            // Text("Hoi $username!"),
+            const Spacer(),
+            const CircleAvatar(backgroundColor: Colors.blue)
+          ],
+        ),
+        const SizedBox(height: 15),
+        const Text("test"),
+        ...((snapshot.data?.activeProfileName != null)
+            ? ([
+                const SizedBox(height: 15),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() {
+                      // loginManager.eraseProfiles();
+                      loginManager.logout();
+                      loginManager.state.then((value) {
+                        _router.go("/login?immediate=false");
+                      });
+                    });
+                  },
+                  child: const Text('Logout'),
+                ),
+              ])
+            : ([])),
+        ...((snapshot.data?.activeProfileName == null)
+            ? ([
+                const SizedBox(height: 15),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // setState(() {
+                    //   loginManager.scheduleLogin();
+                    // });
+                    _router.go("/login?immediate=true");
+                  },
+                  child: const Text('Login'),
+                ),
+              ])
+            : ([])),
+        ...((snapshot.hasError)
+            ? ([const SizedBox(height: 15), Text("Error: ${snapshot.error}")])
+            : ([])),
+      ]))
+    ]);
+  }
+
+  Widget buildLoginIcon(BuildContext context) {
+    return FutureBuilder(
+        future: loginManager.state,
+        builder: (context, snapshot) {
+          Color backgroundColor = Colors.grey;
+          if (snapshot.hasData) {
+            backgroundColor = Colors.white;
+            if (snapshot.data?.activeProfileName != null) {
+              backgroundColor = Colors.blue;
+            }
+          }
+
+          if (snapshot.hasError) {
+            backgroundColor = Colors.red;
+          }
+
+          return IconButton(
+              icon: CircleAvatar(backgroundColor: backgroundColor),
+              onPressed: () {
+                // createHighlightOverlay(alignment: AlignmentDirectional.bottomStart, borderColor: Colors.red);
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Dialog(
+                          alignment: AlignmentDirectional.topEnd,
+                          insetPadding:
+                              const EdgeInsets.fromLTRB(16, 70, 16, 16),
+                          child: Container(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                              width: 200,
+                              // child: const Text("test")
+                              // child: ListView(children: [const Text("test")],)
+                              child: buildLoginMenu(context, snapshot)
+                              // Container(
+                              //     // mainAxisSize: MainAxisSize.min,
+                              //     // mainAxisAlignment:
+                              //     //     MainAxisAlignment.start,
+                              //     // crossAxisAlignment: CrossAxisAlignment.end,
+                              //     children: <Widget>[
+                              //       const Text(
+                              //           'This is a typical dialog.'),
+                              //       const SizedBox(height: 15),
+                              //       TextButton(
+                              //         onPressed: () {
+                              //           Navigator.pop(context);
+                              //         },
+                              //         child: const Text('Close'),
+                              //       ),
+                              //     ])
+                              ));
+
+                      // title: const Text("Test"),
+                      // content: const Text("Test"),
+                      // actions: <Widget>[
+                      //   TextButton(onPressed: () {
+                      //     Navigator.of(context).pop();
+                      //   }, child: const Text("OK"))
+                      // ],
+                      // );
+                    });
+              });
+        });
+    //   MenuAnchor(
+    //       builder: (BuildContext context, MenuController controller,
+    //           Widget? child) {
+    //         return IconButton(
+    //           onPressed: () {
+    //             if (controller.isOpen) {
+    //               controller.close();
+    //             } else {
+    //               controller.open();
+    //             }
+    //           },
+    //           icon: CircleAvatar(backgroundColor: Colors.blue),
+    //           tooltip: "Profile",
+    //         );
+    //       },
+    //       // menuChildren: List<MenuItemButton>.generate(10,
+    //       //   (int index) => MenuItemButton(
+    //       //     onPressed: () =>
+    //       //         setState(() => selectedMenu = SampleItem.values[index]),
+    //       //     child: Text('Item ${index + 1}'),
+    //       //   ),
+    //       // )
+    //       menuChildren: <MenuItemButton>[
+    //         MenuItemButton(
+    //           onPressed: () =>
+    //               setState(() => selectedMenu = SampleItem.itemOne),
+    //           child: Text('Item 1'),
+    //         ),
+    //         MenuItemButton(
+    //           onPressed: () =>
+    //               setState(() => selectedMenu = SampleItem.itemTwo),
+    //           child: Text('Item 2'),
+    //         ),
+    //         MenuItemButton(
+    //           onPressed: () =>
+    //               setState(() => selectedMenu = SampleItem.itemThree),
+    //           child: Text('Item 3'),
+    //         ),
+    //       ]
+    //       // icon:
+    //       // itemBuilder: (BuildContext context) {
+    //       //   return <PopupMenuEntry>[
+    //       //     const PopupMenuItem(
+    //       //       child: Text("Test"),
+    //       //     )
+    //       //   ];
+    //       )
+    //
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: ListView(
-            // Column is also a layout widget. It takes a list of children and
-            // arranges them vertically. By default, it sizes itself to fit its
-            // children horizontally, and tries to be as tall as its parent.
-            //
-            // Column has various properties to control how it sizes itself and
-            // how it positions its children. Here we use mainAxisAlignment to
-            // center the children vertically; the main axis here is the vertical
-            // axis because Columns are vertical (the cross axis would be
-            // horizontal).
-            //
-            // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-            // action in the IDE, or press "p" in the console), to see the
-            // wireframe for each widget.
-            // mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Center(
-                  child: FutureBuilder<String>(
-                future: _debugOutput,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Text(snapshot.data!);
-                  } else if (snapshot.hasError) {
-                    return Text("${snapshot.error}");
-                  }
-                  return const CircularProgressIndicator();
-                },
-              )),
-              Column(children: [
-                const Text(
-                  'You have pushed the button this many times:',
+    // return Scaffold(
+    //   body: navigationShell,
+    //   bottomNavigationBar: BottomNavigationBar(
+    //     currentIndex: navigationShell.currentIndex,
+    //     items: const [
+    //       BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+    //       BottomNavigationBarItem(icon: Icon(Icons.shop), label: 'Shope'),
+    //     ],
+    //     onTap: _onTap,
+    //   ),
+    // );
+
+    // var pages = ["/", "/feed", "/info"];
+    // print("Current page is ${widget.currentPage}");
+    // int currentPageIndex = pages.indexOf(widget.currentPage);
+    // if (currentPageIndex == -1) {
+    //   currentPageIndex = 0;
+    // }
+
+    return Preferences(
+        locale: "nl_NL",
+        child: APIAccess(
+            // profileName: loginManager.activeProfileName,
+            // profile: loginManager.activeProfile,
+            // connector: loginManager.connector,
+            state: loginManager.state,
+            // child: LoginContext(
+            child: Scaffold(
+                bottomNavigationBar: NavigationBar(
+                  onDestinationSelected: (int index) {
+                    // setState(() {
+                    //   currentPageIndex = index;
+                    // });
+                    // context.go(pages[index]);
+                    _onTap(index);
+                  },
+                  selectedIndex: (({
+                    0: 0,
+                    1: 1,
+                    2: 2,
+                    3: 0
+                  })[widget.navigationShell.currentIndex]!),
+                  destinations: const <Widget>[
+                    // NavigationDestination(
+                    //   icon: Icon(Icons.home),
+                    //   label: 'Home',
+                    //   selectedIcon: Icon(Icons.home_filled),
+                    // ),
+                    NavigationDestination(
+                      icon: Icon(Icons.event_outlined),
+                      // icon: Icon(Symbols.calendar_month),
+                      label: 'Activities',
+                      selectedIcon: Icon(Icons.event),
+                    ),
+                    // NavigationDestination(
+                    //   icon: Icon(Icons.person),
+                    //   label: 'Profile',
+                    //   selectedIcon: Icon(Icons.person_outline),
+                    // ),
+                    NavigationDestination(
+                      icon: Icon(Icons.timeline_outlined),
+                      label: 'Feed',
+                      selectedIcon: Icon(Icons.timeline),
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.tab_outlined),
+                      label: "Info",
+                      selectedIcon: Icon(Icons.tab),
+                    )
+                  ],
                 ),
-                Text(
-                  '$_counter',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                )
-              ])
-            ]),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+                appBar: AppBar(
+                    backgroundColor:
+                        Theme.of(context).colorScheme.inversePrimary,
+                    title: Row(
+                      children: <Widget>[
+                        // if (canPop)
+                        // if (_sectionNavigatorKey.currentState != null
+                        // && _sectionNavigatorKey.currentState!.canPop())
+                        // BackButton(),
+                        // (cont) {
+                        //   BuildContext? navContext = _rootNavigatorKey.currentContext;
+
+                        // if (navContext != null && false && navContext.canPop()) {
+                        //                             return SizedBox();
+                        //   return (
+                        BackButton(onPressed: () {
+                          // Navigator.maybePop(context);
+                          // context.pop();
+                          if (GoRouterState.of(context)
+                              .matchedLocation
+                              .startsWith("/event/")) {
+                            // context.go("/");
+                            // _router.go("/");
+                            // _router.go("/feed");
+                            _router.go("/");
+                            // _sectionNavigatorKey.currentContext!.go("/");
+                            return;
+                          }
+
+                          // if (_rootNavigatorKey.currentContext!.canPop()) {
+                          //   _rootNavigatorKey.currentContext!.pop();
+                          // }
+                          // if(_router.canPop()) {
+                          //   _router.pop();
+                          // }
+                        }),
+                        // );
+                        //   // widget.
+                        // }
+                        // return SizedBox();
+                        // }(context),
+                        Text(widget.title),
+                        const Spacer(),
+                        // Text("Test")
+                        // OverlayEntry(builder:
+                        // Positioned.directional(
+                        //   textDirection: Directionality.of(outerContext),
+                        //   top: 0,
+                        //   start: 0,
+                        //   child: Directionality()
+                        // )),
+                        buildLoginIcon(context)
+                      ],
+                    )),
+                // body: <Widget>[
+                //   const ActivitiesPage(),
+                //   // const Text("Profile"),
+                //   const Placeholder(),
+                //   const InfoPage()
+                //   // DebugPage()
+                // ][currentPageIndex],
+                // body: Stack(children: widget.pages.map<int, Widget>((key, value) => key == currentPageIndex ? MapEntry(key, value) : MapEntry(key, Offstage(child: value))).values.toList())// [currentPageIndex]
+                body: widget.navigationShell
+                // body: Stack(
+                //     children: pages
+                //         .map<int, Widget>((key, value) => MapEntry(
+                //             key,
+                //             Offstage(
+                //                 offstage: key != currentPageIndex,
+                //                 child: value)))
+                //         .values
+                //         .toList()) // [currentPageIndex]
+                // floatingActionButton: FloatingActionButton(
+                //   onPressed: _incrementCounter,
+                //   tooltip: 'Increment',
+                //   child: const Icon(Icons.add),
+                // ), // This trailing comma makes auto-formatting nicer for build methods.
+                )));
+  }
+
+  void _onTap(index) {
+    widget.navigationShell.goBranch(
+      index,
+      // A common pattern when using bottom navigation bars is to support
+      // navigating to the initial location when tapping the item that is
+      // already active. This example demonstrates how to support this behavior,
+      // using the initialLocation parameter of goBranch.
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
+}
+
+final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _authScreensNav = GlobalKey<NavigatorState>();
+final GlobalKey<_ActivitiesPageState> _activitiesPageKey = GlobalKey<_ActivitiesPageState>();
+final GlobalKey<NavigatorState> _infoNavigatorKey = GlobalKey<NavigatorState>();
+// final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
+
+final GoRouter _router = GoRouter(
+  // navigatorKey: _rootNavigatorKey,
+  initialLocation: "/",
+  routes: <RouteBase>[
+    StatefulShellRoute.indexedStack(
+        // builder: (context, state, navigationShell) => Padding(padding: const EdgeInsets.all(64), child: navigationShell),
+        builder: (context, state, navigationShell) => navigationShell,
+        branches: [
+          StatefulShellBranch(
+            // navigatorKey: _authScreensNav,
+            initialLocation: "/login", routes: <RouteBase>[
+            GoRoute(
+              path: '/authorize',
+              builder: (context, state) =>
+                  AuthorizePage(params: state.uri.queryParameters),
+            ),
+            GoRoute(
+              // parentNavigatorKey: _authScreensNav,
+              path: '/login',
+              builder: (context, state) =>
+                  LoginPage(params: state.uri.queryParameters),
+            ),
+          ]),
+          StatefulShellBranch(
+            // navigatorKey: _mainScreensNav,
+            routes: [
+            StatefulShellRoute.indexedStack(
+                builder: (context, state, navigationShell) {
+                  return ScaffoldWithNavbar(navigationShell,
+                      currentPage: state.matchedLocation, title: "SIB-Utrecht");
+                },
+                branches: [
+                  StatefulShellBranch(
+                      // navigatorKey: _sectionNavigatorKey,
+                      initialLocation: '/',
+                      routes: <RouteBase>[
+                        GoRoute(
+                          path: '/',
+                          builder: (context, state) => ActivitiesPage(key: _activitiesPageKey),
+                        ),
+                      ]),
+                  StatefulShellBranch(routes: <RouteBase>[
+                    GoRoute(
+                        path: '/feed',
+                        builder: (context, state) => const Placeholder()),
+                  ]),
+                  StatefulShellBranch(
+                      // navigatorKey: _infoNavigatorKey,                      
+                    routes: <RouteBase>[
+                    GoRoute(
+                        path: '/info',
+                        // parentNavigatorKey: _infoNavigatorKey,
+                        builder: (context, state) => const InfoPage()),
+                  ]),
+                  StatefulShellBranch(
+                    // navigatorKey: _eventSpecNavigatorKey,
+                    initialLocation: "/event/0",
+                    routes: <RouteBase>[
+                    GoRoute(
+                        path: '/event/:event_id',
+                        builder: (context, state) {
+                          int? eventId;
+                          if (state.pathParameters.containsKey('event_id')) {
+                            eventId =
+                                int.tryParse(state.pathParameters['event_id']!);
+                          }
+                          return EventPage(eventId: eventId, key: ValueKey("event/$eventId"));
+                        })
+                  ])
+                  // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
+                  //   GoRoute(
+                  //       path: "/event/:event_id",
+                  //       builder: (context, state) {
+                  //         int? eventId;
+                  //         if (state.pathParameters.containsKey('event_id')) {
+                  //           eventId = int.tryParse(state.pathParameters['event_id']!);
+                  //         }
+                  //         return EventPage(eventId: eventId);
+                  //       })
+                  // ]),
+                ])
+          ])
+        ])
+    // GoRoute(
+    //     path: "feed",
+    //     builder: (BuildContext context, GoRouterState state) {
+    //       return const Placeholder();
+    //     }),
+    // GoRoute(
+    //   path: 'info',
+    //   builder: (BuildContext context, GoRouterState state) {
+    //     return const InfoPage();
+    //   },
+    // ),
+  ],
+);
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+        routerConfig: _router,
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.deepPurple, brightness: Brightness.light),
+          useMaterial3: true,
+          brightness: Brightness.light,
+        ),
+        darkTheme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.deepPurple, brightness: Brightness.dark),
+          useMaterial3: true,
+          brightness: Brightness.dark,
+        ),
+        themeMode: ThemeMode.dark,
+        debugShowCheckedModeBanner: true);
+  }
+}
+
+class Preferences extends InheritedWidget {
+  const Preferences({super.key, required super.child, required this.locale});
+
+  final String locale;
+
+  static Preferences? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<Preferences>();
+  }
+
+  static Preferences of(BuildContext context) {
+    final Preferences? result = maybeOf(context);
+    assert(result != null, 'No Preferences found in context');
+    return result!;
+  }
+
+  @override
+  bool updateShouldNotify(Preferences old) => locale != old.locale;
 }
