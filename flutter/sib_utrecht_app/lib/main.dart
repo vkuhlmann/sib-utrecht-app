@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // import 'package:flutter/scheduler.dart';
 // import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -18,12 +19,14 @@ import 'package:go_router/go_router.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:logging/logging.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+// import 'package:google_fonts/google_fonts.dart';
 
 // import 'package:flutter_html/flutter_html.dart';
 // import 'package:flutter_html/style.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
-part 'login_context.dart';
+part 'login_manager.dart';
 part 'api_connector.dart';
 part 'pages/activities.dart';
 part 'pages/debug.dart';
@@ -31,6 +34,7 @@ part 'pages/info.dart';
 part 'pages/authorize.dart';
 part 'pages/event.dart';
 part 'pages/login.dart';
+part 'pages/new-login.dart';
 
 part 'event.dart';
 part 'locale_date_format.dart';
@@ -51,6 +55,15 @@ void main() {
             initializeDateFormatting("nl_NL"),
             initializeDateFormatting("en_GB")
           ]));
+
+  // GoogleFonts.config.allowRuntimeFetching = false;
+
+  // Seems like LicenseRegistry is not available in my current version of Flutter =/
+  //
+  //  LicenseRegistry.addLicense(() async* {
+  //   final license = await rootBundle.loadString('google_fonts/Apache.txt');
+  //   yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+  // });
   // .then((_) => Future.value());
   // .then((_) => runApp(const MyApp()));
   loginManager = LoginManager();
@@ -486,6 +499,12 @@ final GoRouter _router = GoRouter(
               path: '/login',
               builder: (context, state) =>
                   LoginPage(params: state.uri.queryParameters),
+            ),
+            GoRoute(
+              // parentNavigatorKey: _authScreensNav,
+              path: '/new-login',
+              builder: (context, state) =>
+                  NewLoginPage(params: state.uri.queryParameters),
             ),
           ]),
           StatefulShellBranch(

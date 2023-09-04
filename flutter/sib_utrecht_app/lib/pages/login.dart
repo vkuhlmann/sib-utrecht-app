@@ -19,7 +19,8 @@ class _LoginPageState extends State<LoginPage> {
     if (widget.params["immediate"] == "true") {
       loginManager.state.then((state) {
         if (state.profiles.isEmpty) {
-          loginManager.scheduleLogin();
+          // loginManager.scheduleLogin();
+          _router.go("/new-login");
         }
       });
     }
@@ -90,7 +91,8 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height:20),
                       ElevatedButton(
                           onPressed: () {
-                            loginManager.scheduleLogin();
+                            // loginManager.scheduleLogin();
+                            _router.go("/new-login");
                           },
                           child: const Text("New login"))
                     ]))));

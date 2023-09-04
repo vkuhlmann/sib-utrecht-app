@@ -40,6 +40,8 @@ class LoginManager {
   late Future<LoginState> state;// = Future.error(Exception("Not initialized"));
   late Future<void> initiatedLogin;
 
+  late bool canLoginByRedirect;
+
   // final LoginState loggedOutState = LoginState(
   //         connector: APIConnector(),
   //         profiles: {},
@@ -59,6 +61,9 @@ class LoginManager {
 
   LoginManager() {
     storage = const FlutterSecureStorage();
+
+    canLoginByRedirect = Uri.base.isScheme("https");
+
     // state = Future.value(loggedOutState);
     loadProfiles();
   }
@@ -223,14 +228,18 @@ class LoginManager {
     //     "&success_url=https%3A%2F%2Fvkuhlmann.com"
     // );
 
-    Uri authorizeUrl = Uri.http(
+    Map<String, dynamic> queryParams = {
+      "app_name": appName,
+    };
+
+    if (canLoginByRedirect) {
+      queryParams["success_url"] = Uri.base.replace(fragment: "/authorize").toString();
+    }
+
+    Uri authorizeUrl = Uri.https(
         Uri.parse(authorizeAppUrl).authority,
         Uri.parse(authorizeAppUrl).path,
-        {
-          "app_name": appName,
-          // "success_url": "https://vkuhlmann.com"
-          // "success_url": Uri.base.replace(fragment: "/authorize").toString()
-        }
+        queryParams
     );
     
     log.info("Authorize url: $authorizeUrl");
