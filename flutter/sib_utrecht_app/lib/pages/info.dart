@@ -71,7 +71,7 @@ class _InfoPageState extends State<InfoPage> {
                       // );},
                       showAboutDialog(context: context,
                         applicationName: "SIB Utrecht",
-                        applicationVersion: "0.1.1",
+                        applicationVersion: "0.1.2",
                         // applicationLegalese: "© 2023 SIB Utrecht",
                       );
                     },

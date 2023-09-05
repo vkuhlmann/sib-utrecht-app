@@ -1,11 +1,11 @@
 {
-    "name": "sib_utrecht_app",
-    "short_name": "sib_utrecht_app",
+    "name": "SIB-Utrecht",
+    "short_name": "SIB",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "SIB-Utrecht app for members",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
