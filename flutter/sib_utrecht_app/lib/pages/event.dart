@@ -236,8 +236,8 @@ class _EventPageState extends State<EventPage> {
                           //             child: Image.network(
                           //                 "$wordpressUrl/${event.data["thumbnail"]["url"]}"))));
                         },
-                        child: Image.network(
-                            "$wordpressUrl/${event.data["thumbnail"]["url"]}"));
+                        child: Container(constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),child: Image.network(
+                            "$wordpressUrl/${event.data["thumbnail"]["url"]}")));
 
                     // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
                   } catch (e) {

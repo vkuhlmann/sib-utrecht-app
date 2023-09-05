@@ -4,6 +4,9 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 // import 'package:flutter/scheduler.dart';
 // import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -18,19 +21,23 @@ import 'package:go_router/go_router.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:logging/logging.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+// import 'package:google_fonts/google_fonts.dart';
 
 // import 'package:flutter_html/flutter_html.dart';
 // import 'package:flutter_html/style.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
-part 'login_context.dart';
+part 'login_manager.dart';
 part 'api_connector.dart';
+part 'async_patch.dart';
 part 'pages/activities.dart';
 part 'pages/debug.dart';
 part 'pages/info.dart';
 part 'pages/authorize.dart';
 part 'pages/event.dart';
 part 'pages/login.dart';
+part 'pages/new-login.dart';
 
 part 'event.dart';
 part 'locale_date_format.dart';
@@ -46,11 +53,32 @@ final log = Logger("main.dart");
 late LoginManager loginManager;
 
 void main() {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    print('${record.level.name}: ${record.time}: ${record.message}');
+  });
+
   dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
       .then((_) => Future.wait([
             initializeDateFormatting("nl_NL"),
             initializeDateFormatting("en_GB")
           ]));
+
+  // GoogleFonts.config.allowRuntimeFetching = false;
+
+  // Seems like LicenseRegistry is not available in my current version of Flutter =/
+  //
+  LicenseRegistry.addLicense(() async* {
+    final license2 = await rootBundle.loadString('LICENSE');
+    yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license2);
+
+    final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+  });
+  // LicenseRegistry.addLicense(() async* {
+  //   final license = await rootBundle.loadString('LICENSE');
+  //   yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license);
+  // });
   // .then((_) => Future.value());
   // .then((_) => runApp(const MyApp()));
   loginManager = LoginManager();
@@ -68,13 +96,18 @@ final _eventSpecNavigatorKey = GlobalKey<NavigatorState>();
 
 class ScaffoldWithNavbar extends StatefulWidget {
   const ScaffoldWithNavbar(this.navigationShell,
-      {Key? key, required this.title, required this.currentPage})
+      {Key? key,
+      required this.title,
+      required this.currentPage,
+      required this.loginController})
       : super(key: key);
 
   /// The navigation shell and container for the branch Navigators.
   final StatefulNavigationShell navigationShell;
   final String title;
   final String currentPage;
+
+  final LoginManager loginController;
 
   // final BuildContext? rootContext = _rootNavigatorKey.currentContext;
 
@@ -103,11 +136,29 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   //   // const DebugPage(key: PageStorageKey('DebugPage')),
   // ].asMap();
 
+  late Future<LoginState> loginState;
+  late void Function() listenerFunc;
+
   @override
   void initState() {
     super.initState();
 
-    loginManager.loadProfiles();
+    loginState = widget.loginController._loadingState;
+
+    listenerFunc = () {
+      setState(() {
+        loginState = widget.loginController._loadingState;
+      });
+    };
+
+    widget.loginController.addListener(listenerFunc);
+    widget.loginController.loadProfiles();
+  }
+
+  @override
+  void dispose() {
+    widget.loginController.removeListener(listenerFunc);
+    super.dispose();
   }
 
   @override
@@ -125,17 +176,41 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
   Widget buildLoginMenu(
       BuildContext context, AsyncSnapshot<LoginState> snapshot) {
+    // return const Text("test");
+    // return const Column(children: [Text("test")]);
+
+    // return Row(children: [
+    //   Expanded(child: Text("test_leading")),
+    // ListView(
+    //   shrinkWrap: true,
+    //   children: [const Text("test1")])
+    // ]);
+
     return CustomScrollView(shrinkWrap: true, slivers: <Widget>[
       SliverList(
           delegate: SliverChildListDelegate(<Widget>[
         Row(
           children: [
             if (snapshot.data?.activeProfileName != null)
-              Text("Hoi ${snapshot.data!.activeProfile!['user']}!")
+              // TextOverflow(
+              //     // overflow: TextOverflow.ellipsis,
+              //     children: [Text(
+              //         "Hoi ${snapshot.data!.activeProfile!['user']}!")]);
+              // Expanded(child: Text("Hoi ${snapshot.data?.activeProfile?['user']}!",
+              //     overflow: TextOverflow.ellipsis))
+              Expanded(
+                  child: Row(children: [
+                Flexible(child: Text("Hoi ${snapshot.data?.activeProfile?['user']}",
+                    overflow: TextOverflow.ellipsis)),
+                const Text("!")
+              ]))
             else
-              const Text("Not logged in!"),
+              const Expanded(child: Text("Not logged in!")),
             // Text("Hoi $username!"),
-            const Spacer(),
+            // const Spacer(),
+            const SizedBox(
+              width: 16,
+            ),
             const CircleAvatar(backgroundColor: Colors.blue)
           ],
         ),
@@ -149,9 +224,9 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     Navigator.pop(context);
                     setState(() {
                       // loginManager.eraseProfiles();
-                      loginManager.logout();
-                      loginManager.state.then((value) {
-                        _router.go("/login?immediate=false");
+                      widget.loginController.logout();
+                      widget.loginController._loadingState.then((value) {
+                        router.go("/login?immediate=false");
                       });
                     });
                   },
@@ -168,7 +243,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     // setState(() {
                     //   loginManager.scheduleLogin();
                     // });
-                    _router.go("/login?immediate=true");
+                    router.go("/login?immediate=true");
                   },
                   child: const Text('Login'),
                 ),
@@ -183,7 +258,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
   Widget buildLoginIcon(BuildContext context) {
     return FutureBuilder(
-        future: loginManager.state,
+        future: loginState,
         builder: (context, snapshot) {
           Color backgroundColor = Colors.grey;
           if (snapshot.hasData) {
@@ -212,6 +287,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                               padding:
                                   const EdgeInsets.fromLTRB(16, 16, 16, 32),
                               width: 200,
+                              // constraints: const BoxConstraints(minWidth: 200),
                               // child: const Text("test")
                               // child: ListView(children: [const Text("test")],)
                               child: buildLoginMenu(context, snapshot)
@@ -318,10 +394,12 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
     return Preferences(
         locale: "nl_NL",
         child: APIAccess(
+            state: loginState,
             // profileName: loginManager.activeProfileName,
             // profile: loginManager.activeProfile,
             // connector: loginManager.connector,
-            state: loginManager.state,
+            // state: loginManager.state,
+            // controller: loginManager,
             // child: LoginContext(
             child: Scaffold(
                 bottomNavigationBar: NavigationBar(
@@ -391,7 +469,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                             // context.go("/");
                             // _router.go("/");
                             // _router.go("/feed");
-                            _router.go("/");
+                            router.go("/");
                             // _sectionNavigatorKey.currentContext!.go("/");
                             return;
                           }
@@ -461,11 +539,12 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
 final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _authScreensNav = GlobalKey<NavigatorState>();
-final GlobalKey<_ActivitiesPageState> _activitiesPageKey = GlobalKey<_ActivitiesPageState>();
+final GlobalKey<_ActivitiesPageState> _activitiesPageKey =
+    GlobalKey<_ActivitiesPageState>();
 final GlobalKey<NavigatorState> _infoNavigatorKey = GlobalKey<NavigatorState>();
 // final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
 
-final GoRouter _router = GoRouter(
+final GoRouter router = GoRouter(
   // navigatorKey: _rootNavigatorKey,
   initialLocation: "/",
   routes: <RouteBase>[
@@ -474,79 +553,93 @@ final GoRouter _router = GoRouter(
         builder: (context, state, navigationShell) => navigationShell,
         branches: [
           StatefulShellBranch(
-            // navigatorKey: _authScreensNav,
-            initialLocation: "/login", routes: <RouteBase>[
-            GoRoute(
-              path: '/authorize',
-              builder: (context, state) =>
-                  AuthorizePage(params: state.uri.queryParameters),
-            ),
-            GoRoute(
-              // parentNavigatorKey: _authScreensNav,
-              path: '/login',
-              builder: (context, state) =>
-                  LoginPage(params: state.uri.queryParameters),
-            ),
-          ]),
+              // navigatorKey: _authScreensNav,
+              initialLocation: "/login",
+              routes: <RouteBase>[
+                GoRoute(
+                  path: '/authorize',
+                  builder: (context, state) =>
+                      AuthorizePage(params: state.uri.queryParameters),
+                ),
+                GoRoute(
+                  // parentNavigatorKey: _authScreensNav,
+                  path: '/login',
+                  builder: (context, state) =>
+                      LoginPage(params: state.uri.queryParameters),
+                ),
+                GoRoute(
+                  // parentNavigatorKey: _authScreensNav,
+                  path: '/new-login',
+                  builder: (context, state) =>
+                      NewLoginPage(params: state.uri.queryParameters),
+                ),
+              ]),
           StatefulShellBranch(
-            // navigatorKey: _mainScreensNav,
-            routes: [
-            StatefulShellRoute.indexedStack(
-                builder: (context, state, navigationShell) {
-                  return ScaffoldWithNavbar(navigationShell,
-                      currentPage: state.matchedLocation, title: "SIB-Utrecht");
-                },
-                branches: [
-                  StatefulShellBranch(
-                      // navigatorKey: _sectionNavigatorKey,
-                      initialLocation: '/',
-                      routes: <RouteBase>[
+              // navigatorKey: _mainScreensNav,
+              routes: [
+                StatefulShellRoute.indexedStack(
+                    builder: (context, state, navigationShell) {
+                      return ScaffoldWithNavbar(
+                          loginController: loginManager,
+                          navigationShell,
+                          currentPage: state.matchedLocation,
+                          title: "SIB-Utrecht");
+                    },
+                    branches: [
+                      StatefulShellBranch(
+                          // navigatorKey: _sectionNavigatorKey,
+                          initialLocation: '/',
+                          routes: <RouteBase>[
+                            GoRoute(
+                              path: '/',
+                              builder: (context, state) =>
+                                  ActivitiesPage(key: _activitiesPageKey),
+                            ),
+                          ]),
+                      StatefulShellBranch(routes: <RouteBase>[
                         GoRoute(
-                          path: '/',
-                          builder: (context, state) => ActivitiesPage(key: _activitiesPageKey),
-                        ),
+                            path: '/feed',
+                            builder: (context, state) => const Placeholder()),
                       ]),
-                  StatefulShellBranch(routes: <RouteBase>[
-                    GoRoute(
-                        path: '/feed',
-                        builder: (context, state) => const Placeholder()),
-                  ]),
-                  StatefulShellBranch(
-                      // navigatorKey: _infoNavigatorKey,                      
-                    routes: <RouteBase>[
-                    GoRoute(
-                        path: '/info',
-                        // parentNavigatorKey: _infoNavigatorKey,
-                        builder: (context, state) => const InfoPage()),
-                  ]),
-                  StatefulShellBranch(
-                    // navigatorKey: _eventSpecNavigatorKey,
-                    initialLocation: "/event/0",
-                    routes: <RouteBase>[
-                    GoRoute(
-                        path: '/event/:event_id',
-                        builder: (context, state) {
-                          int? eventId;
-                          if (state.pathParameters.containsKey('event_id')) {
-                            eventId =
-                                int.tryParse(state.pathParameters['event_id']!);
-                          }
-                          return EventPage(eventId: eventId, key: ValueKey("event/$eventId"));
-                        })
-                  ])
-                  // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
-                  //   GoRoute(
-                  //       path: "/event/:event_id",
-                  //       builder: (context, state) {
-                  //         int? eventId;
-                  //         if (state.pathParameters.containsKey('event_id')) {
-                  //           eventId = int.tryParse(state.pathParameters['event_id']!);
-                  //         }
-                  //         return EventPage(eventId: eventId);
-                  //       })
-                  // ]),
-                ])
-          ])
+                      StatefulShellBranch(
+                          // navigatorKey: _infoNavigatorKey,
+                          routes: <RouteBase>[
+                            GoRoute(
+                                path: '/info',
+                                // parentNavigatorKey: _infoNavigatorKey,
+                                builder: (context, state) => const InfoPage()),
+                          ]),
+                      StatefulShellBranch(
+                          // navigatorKey: _eventSpecNavigatorKey,
+                          initialLocation: "/event/0",
+                          routes: <RouteBase>[
+                            GoRoute(
+                                path: '/event/:event_id',
+                                builder: (context, state) {
+                                  int? eventId;
+                                  if (state.pathParameters
+                                      .containsKey('event_id')) {
+                                    eventId = int.tryParse(
+                                        state.pathParameters['event_id']!);
+                                  }
+                                  return EventPage(
+                                      eventId: eventId,
+                                      key: ValueKey("event/$eventId"));
+                                })
+                          ])
+                      // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
+                      //   GoRoute(
+                      //       path: "/event/:event_id",
+                      //       builder: (context, state) {
+                      //         int? eventId;
+                      //         if (state.pathParameters.containsKey('event_id')) {
+                      //           eventId = int.tryParse(state.pathParameters['event_id']!);
+                      //         }
+                      //         return EventPage(eventId: eventId);
+                      //       })
+                      // ]),
+                    ])
+              ])
         ])
     // GoRoute(
     //     path: "feed",
@@ -568,7 +661,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-        routerConfig: _router,
+        routerConfig: router,
         title: 'Flutter Demo',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(

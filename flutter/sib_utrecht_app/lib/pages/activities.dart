@@ -68,14 +68,13 @@ class _ActivityViewState extends State<ActivityView> {
                     child: Text('${widget.event.start.day}')),
               ),
               SizedBox(
-                width: 60,
-                child: 
-              Container(
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.all(5),
-                  child: LocaleDateFormat(
-                      format: "MMM", date: widget.event.start))),
+                  width: 60,
+                  child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(5),
+                      child: LocaleDateFormat(
+                          format: "MMM", date: widget.event.start))),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,
@@ -152,6 +151,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   }
 
   Future<(List<Event>, Set<int>)?> _loadData() async {
+    // throw Exception("Test error");
     log.fine("Loading activity data");
     var conn = apiConnector;
     if (conn == null) {
@@ -324,81 +324,106 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     return FutureBuilder(
         future: _staging,
         builder: (contextStaging, snapshotStaging) {
-          return ListView(children: [
-            // FutureBuilder<(List<Map>, Set<int>)?>(
-            //     future: _cached,
-            // builder: (contextCached, snapshotCached) {
-            // if (snapshotCached.hasError) {
-            //   return Text("${snapshotCached.error}");
-            // }
-            (contextCached) {
-              var data = _cached;
-              if (data == null) {
-                return const SizedBox();
-              }
-
-              var (sequenceId, events, bookedEvents) = data;
-
-              return Padding(padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+          return Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
               child: Column(
-                  children: events
-                      .map<Widget>((e) => ActivityView(
-                          key: ValueKey(e.eventId),
-                          event: e,
-                          isParticipating: bookedEvents.contains(e.eventId),
-                          isDirty: _dirtyBookState.contains(e.eventId),
-                          setParticipating: (value) =>
-                              scheduleEventRegistration(e.eventId, value)))
-                      .toList()));
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                Flexible(
+                  child: 
+                ListView(shrinkWrap: true, children: [
+                  // FutureBuilder<(List<Map>, Set<int>)?>(
+                  //     future: _cached,
+                  // builder: (contextCached, snapshotCached) {
+                  // if (snapshotCached.hasError) {
+                  //   return Text("${snapshotCached.error}");
+                  // }
+                  ...(contextCached) {
+                    var data = _cached;
+                    if (data == null) {
+                      return [];
+                    }
 
-              // return _buildActivities(snapshot.data!);
-              // if (snapshotStaging.hasError) {
-              // return Text(jsonEncode(snapshotCached.data));
-              // }
+                    var (sequenceId, events, bookedEvents) = data;
 
-              // return const CircularProgressIndicator();
-            }(contextStaging),
+                    return events
+                        .map<Widget>((e) => ActivityView(
+                            key: ValueKey(e.eventId),
+                            event: e,
+                            isParticipating: bookedEvents.contains(e.eventId),
+                            isDirty: _dirtyBookState.contains(e.eventId),
+                            setParticipating: (value) =>
+                                scheduleEventRegistration(e.eventId, value)))
+                        .toList();
 
-            if (_refreshingSequence != null)
-              const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator())),
-            if (_refreshingSequence == null && snapshotStaging.hasError)
-              Expanded(
-                  child: Align(
-                      alignment: _cached == null
-                          ? Alignment.center
-                          : Alignment.topCenter,
-                      child: Builder(
-                        builder: (context) {
-                          if (snapshotStaging.error != null &&
-                              snapshotStaging.error.toString().contains(
-                                  "Sorry, you are not allowed to do that")) {
-                            return ElevatedButton(
-                                onPressed: () {
-                                  // Navigator.pushNamed(context, "/login");
-                                  // _rootNavigatorKey.currentContext!.push("/login");
-                                  // context.push("/login");
-                                  _router.go("/login?immediate=true");
-                                },
-                                child: const Text("Please log in"));
-                          }
-                          return Text("${snapshotStaging.error}");
-                        },
-                      )))
+                    // return _buildActivities(snapshot.data!);
+                    // if (snapshotStaging.hasError) {
+                    // return Text(jsonEncode(snapshotCached.data));
+                    // }
 
-            //  && snapshotStaging.error != null)
-            //     Text("${snapshotStaging.error}"),
-            // if (_refreshingSequence == null && snapshotStaging.hasError)
-            //     Text("${snapshotStaging.error}"),
-            // SizedBox(),
-            //  (if (snapshotStaging.hasError)
-            //         Text("${snapshotStaging.error}"),
-            //         else const SizedBox(),),
+                    // return const CircularProgressIndicator();
+                  }(contextStaging),
 
-            // Text("sequence id: $sequenceId"),
-            // Text("refreshing sequence: $_refreshingSequence"),
-          ]);
+                  if (_refreshingSequence != null)
+                    const Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Center(child: CircularProgressIndicator())),
+
+                  //  && snapshotStaging.error != null)
+                  //     Text("${snapshotStaging.error}"),
+                  // if (_refreshingSequence == null && snapshotStaging.hasError)
+                  //     Text("${snapshotStaging.error}"),
+                  // SizedBox(),
+                  //  (if (snapshotStaging.hasError)
+                  //         Text("${snapshotStaging.error}"),
+                  //         else const SizedBox(),),
+
+                  // Text("sequence id: $sequenceId"),
+                  // Text("refreshing sequence: $_refreshingSequence"),
+                ])),
+
+                // Expanded(flex: 1, child: Container()),
+
+                if (_refreshingSequence == null && snapshotStaging.hasError)
+                // Expanded(
+                //   // fit: FlexFit.tight,
+                //   child:
+                Padding(padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),child:
+                Card(child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child:
+                Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                  
+                    Container(
+                        alignment: _cached == null
+                            ? Alignment.center
+                            : Alignment.topCenter,
+                        child: Builder(
+                          builder: (context) {
+                            if (snapshotStaging.error != null &&
+                                snapshotStaging.error.toString().contains(
+                                    "Sorry, you are not allowed to do that")) {
+                              return FilledButton(
+                                  onPressed: () {
+                                    // Navigator.pushNamed(context, "/login");
+                                    // _rootNavigatorKey.currentContext!.push("/login");
+                                    // context.push("/login");
+                                    router.go("/login?immediate=true");
+                                  },
+                                  child: const Text("Please log in"));
+                            }
+                            return Text("${snapshotStaging.error}");
+                          },
+                        ))
+                ]))))
+                // )
+                ),
+
+                // Expanded(flex: 1, child: Container()),
+              ]));
         });
   }
 }
