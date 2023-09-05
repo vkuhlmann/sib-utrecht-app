@@ -5,7 +5,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/gestures.dart';
+// import 'package:flutter/gestures.dart';
 import 'package:flutter/foundation.dart';
 // import 'package:flutter/scheduler.dart';
 // import 'package:flutter/services.dart';
@@ -18,8 +18,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
+// import 'package:photo_view/photo_view.dart';
+// import 'package:photo_view/photo_view_gallery.dart';
 import 'package:logging/logging.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 // import 'package:google_fonts/google_fonts.dart';
@@ -41,6 +41,7 @@ part 'pages/new-login.dart';
 
 part 'event.dart';
 part 'locale_date_format.dart';
+part 'navigation_shell.dart';
 
 late Future<void> dateFormattingInitialization;
 // const String wordpressUrl = "http://192.168.50.200/wordpress";
@@ -72,7 +73,8 @@ void main() {
     final license2 = await rootBundle.loadString('LICENSE');
     yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license2);
 
-    final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
+    final license =
+        await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
   // LicenseRegistry.addLicense(() async* {
@@ -95,15 +97,20 @@ final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 final _eventSpecNavigatorKey = GlobalKey<NavigatorState>();
 
 class ScaffoldWithNavbar extends StatefulWidget {
-  const ScaffoldWithNavbar(this.navigationShell,
+  const ScaffoldWithNavbar(
+      //this.navigationShell,
       {Key? key,
       required this.title,
       required this.currentPage,
-      required this.loginController})
+      required this.loginController,
+      required this.child,
+      required this.selectedIndex})
       : super(key: key);
 
   /// The navigation shell and container for the branch Navigators.
-  final StatefulNavigationShell navigationShell;
+  // final StatefulNavigationShell navigationShell;
+  final Widget child;
+  final int selectedIndex;
   final String title;
   final String currentPage;
 
@@ -137,6 +144,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   // ].asMap();
 
   late Future<LoginState> loginState;
+  late void Function() listenerFunc;
 
   @override
   void initState() {
@@ -144,12 +152,20 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
     loginState = widget.loginController._loadingState;
 
-    widget.loginController.addListener(() {
+    listenerFunc = () {
       setState(() {
         loginState = widget.loginController._loadingState;
       });
-    });
+    };
+
+    widget.loginController.addListener(listenerFunc);
     widget.loginController.loadProfiles();
+  }
+
+  @override
+  void dispose() {
+    widget.loginController.removeListener(listenerFunc);
+    super.dispose();
   }
 
   @override
@@ -191,8 +207,9 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
               //     overflow: TextOverflow.ellipsis))
               Expanded(
                   child: Row(children: [
-                Flexible(child: Text("Hoi ${snapshot.data?.activeProfile?['user']}",
-                    overflow: TextOverflow.ellipsis)),
+                Flexible(
+                    child: Text("Hoi ${snapshot.data?.activeProfile?['user']}",
+                        overflow: TextOverflow.ellipsis)),
                 const Text("!")
               ]))
             else
@@ -399,14 +416,15 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     //   currentPageIndex = index;
                     // });
                     // context.go(pages[index]);
-                    _onTap(index);
+                    _onTap(index + 1);
                   },
-                  selectedIndex: (({
-                    0: 0,
-                    1: 1,
-                    2: 2,
-                    3: 0
-                  })[widget.navigationShell.currentIndex]!),
+                  // selectedIndex: (({
+                  //   1: 0,
+                  //   2: 1,
+                  //   3: 2,
+                  //   4: 0
+                  // })[widget.superNavigationShell.currentIndex]!),
+                  selectedIndex: widget.selectedIndex,
                   destinations: const <Widget>[
                     // NavigationDestination(
                     //   icon: Icon(Icons.home),
@@ -460,7 +478,8 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                             // context.go("/");
                             // _router.go("/");
                             // _router.go("/feed");
-                            router.go("/");
+                            // router.go("/");
+                            NavigationShell.of(context)!.shell.goBranch(1, initialLocation: true);
                             // _sectionNavigatorKey.currentContext!.go("/");
                             return;
                           }
@@ -498,7 +517,8 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                 //   // DebugPage()
                 // ][currentPageIndex],
                 // body: Stack(children: widget.pages.map<int, Widget>((key, value) => key == currentPageIndex ? MapEntry(key, value) : MapEntry(key, Offstage(child: value))).values.toList())// [currentPageIndex]
-                body: widget.navigationShell
+                // body: widget.navigationShell
+                body: widget.child
                 // body: Stack(
                 //     children: pages
                 //         .map<int, Widget>((key, value) => MapEntry(
@@ -517,13 +537,16 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   }
 
   void _onTap(index) {
-    widget.navigationShell.goBranch(
+    var shell = NavigationShell.of(context)!.shell;
+
+    shell.goBranch(
+    // widget.superNavigationShell.goBranch(
       index,
       // A common pattern when using bottom navigation bars is to support
       // navigating to the initial location when tapping the item that is
       // already active. This example demonstrates how to support this behavior,
       // using the initialLocation parameter of goBranch.
-      initialLocation: index == widget.navigationShell.currentIndex,
+      initialLocation: index == shell.currentIndex,
     );
   }
 }
@@ -541,7 +564,9 @@ final GoRouter router = GoRouter(
   routes: <RouteBase>[
     StatefulShellRoute.indexedStack(
         // builder: (context, state, navigationShell) => Padding(padding: const EdgeInsets.all(64), child: navigationShell),
-        builder: (context, state, navigationShell) => navigationShell,
+        builder: (context, state, navigationShell) =>
+        NavigationShell(shell: navigationShell, child: navigationShell),
+        //  navigationShell,
         branches: [
           StatefulShellBranch(
               // navigatorKey: _authScreensNav,
@@ -566,71 +591,134 @@ final GoRouter router = GoRouter(
                 ),
               ]),
           StatefulShellBranch(
-              // navigatorKey: _mainScreensNav,
-              routes: [
-                StatefulShellRoute.indexedStack(
-                    builder: (context, state, navigationShell) {
-                      return ScaffoldWithNavbar(
+              // navigatorKey: _sectionNavigatorKey,
+              initialLocation: '/',
+              routes: <RouteBase>[
+                GoRoute(
+                    path: '/',
+                    builder: (context, state) => ScaffoldWithNavbar(
+                          selectedIndex: 0,
                           loginController: loginManager,
-                          navigationShell,
                           currentPage: state.matchedLocation,
-                          title: "SIB-Utrecht");
-                    },
-                    branches: [
-                      StatefulShellBranch(
-                          // navigatorKey: _sectionNavigatorKey,
-                          initialLocation: '/',
-                          routes: <RouteBase>[
-                            GoRoute(
-                              path: '/',
-                              builder: (context, state) =>
-                                  ActivitiesPage(key: _activitiesPageKey),
-                            ),
-                          ]),
-                      StatefulShellBranch(routes: <RouteBase>[
-                        GoRoute(
-                            path: '/feed',
-                            builder: (context, state) => const Placeholder()),
-                      ]),
-                      StatefulShellBranch(
-                          // navigatorKey: _infoNavigatorKey,
-                          routes: <RouteBase>[
-                            GoRoute(
-                                path: '/info',
-                                // parentNavigatorKey: _infoNavigatorKey,
-                                builder: (context, state) => const InfoPage()),
-                          ]),
-                      StatefulShellBranch(
-                          // navigatorKey: _eventSpecNavigatorKey,
-                          initialLocation: "/event/0",
-                          routes: <RouteBase>[
-                            GoRoute(
-                                path: '/event/:event_id',
-                                builder: (context, state) {
-                                  int? eventId;
-                                  if (state.pathParameters
-                                      .containsKey('event_id')) {
-                                    eventId = int.tryParse(
-                                        state.pathParameters['event_id']!);
-                                  }
-                                  return EventPage(
-                                      eventId: eventId,
-                                      key: ValueKey("event/$eventId"));
-                                })
-                          ])
-                      // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
-                      //   GoRoute(
-                      //       path: "/event/:event_id",
-                      //       builder: (context, state) {
-                      //         int? eventId;
-                      //         if (state.pathParameters.containsKey('event_id')) {
-                      //           eventId = int.tryParse(state.pathParameters['event_id']!);
-                      //         }
-                      //         return EventPage(eventId: eventId);
-                      //       })
-                      // ]),
-                    ])
-              ])
+                          title: "SIB-Utrecht",
+                          child: ActivitiesPage(key: _activitiesPageKey),
+                        )),
+              ]),
+          StatefulShellBranch(routes: <RouteBase>[
+            GoRoute(
+                path: '/feed',
+                builder: (context, state) => ScaffoldWithNavbar(
+                      selectedIndex: 1,
+                      loginController: loginManager,
+                      currentPage: state.matchedLocation,
+                      title: "SIB-Utrecht",
+                      child: const Placeholder(),
+                    ))
+          ]),
+          StatefulShellBranch(
+              // navigatorKey: _infoNavigatorKey,
+              routes: <RouteBase>[
+                GoRoute(
+                    path: '/info',
+                    // parentNavigatorKey: _infoNavigatorKey,
+                    builder: (context, state) => ScaffoldWithNavbar(
+                          selectedIndex: 2,
+                          loginController: loginManager,
+                          currentPage: state.matchedLocation,
+                          title: "SIB-Utrecht",
+                          child: const InfoPage(),
+                        )),
+              ]),
+          StatefulShellBranch(
+              // navigatorKey: _eventSpecNavigatorKey,
+              initialLocation: "/event/0",
+              routes: <RouteBase>[
+                GoRoute(
+                    path: '/event/:event_id',
+                    builder: (context, state) {
+                      int? eventId;
+                      if (state.pathParameters.containsKey('event_id')) {
+                        eventId =
+                            int.tryParse(state.pathParameters['event_id']!);
+                      }
+
+                      return ScaffoldWithNavbar(
+                        selectedIndex: 0,
+                        loginController: loginManager,
+                        currentPage: state.matchedLocation,
+                        title: "SIB-Utrecht",
+                        child: EventPage(
+                            eventId: eventId, key: ValueKey("event/$eventId")),
+                      );
+                      // return ;
+                    })
+              ]),
+          // StatefulShellBranch(
+          //     // navigatorKey: _mainScreensNav,
+          //     routes: [
+          //       StatefulShellRoute.indexedStack(
+          //           builder: (context, state, navigationShell) {
+          //             return ScaffoldWithNavbar(
+          //                 loginController: loginManager,
+          //                 navigationShell,
+          //                 currentPage: state.matchedLocation,
+          //                 title: "SIB-Utrecht");
+          //           },
+          //           branches: [
+          //             StatefulShellBranch(
+          //                 // navigatorKey: _sectionNavigatorKey,
+          //                 initialLocation: '/',
+          //                 routes: <RouteBase>[
+          //                   GoRoute(
+          //                     path: '/',
+          //                     builder: (context, state) =>
+          //                         ActivitiesPage(key: _activitiesPageKey),
+          //                   ),
+          //                 ]),
+          //             StatefulShellBranch(routes: <RouteBase>[
+          //               GoRoute(
+          //                   path: '/feed',
+          //                   builder: (context, state) => const Placeholder()),
+          //             ]),
+          //             StatefulShellBranch(
+          //                 // navigatorKey: _infoNavigatorKey,
+          //                 routes: <RouteBase>[
+          //                   GoRoute(
+          //                       path: '/info',
+          //                       // parentNavigatorKey: _infoNavigatorKey,
+          //                       builder: (context, state) => const InfoPage()),
+          //                 ]),
+          //             StatefulShellBranch(
+          //                 // navigatorKey: _eventSpecNavigatorKey,
+          //                 initialLocation: "/event/0",
+          //                 routes: <RouteBase>[
+          //                   GoRoute(
+          //                       path: '/event/:event_id',
+          //                       builder: (context, state) {
+          //                         int? eventId;
+          //                         if (state.pathParameters
+          //                             .containsKey('event_id')) {
+          //                           eventId = int.tryParse(
+          //                               state.pathParameters['event_id']!);
+          //                         }
+          //                         return EventPage(
+          //                             eventId: eventId,
+          //                             key: ValueKey("event/$eventId"));
+          //                       })
+          //                 ])
+          //             // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
+          //             //   GoRoute(
+          //             //       path: "/event/:event_id",
+          //             //       builder: (context, state) {
+          //             //         int? eventId;
+          //             //         if (state.pathParameters.containsKey('event_id')) {
+          //             //           eventId = int.tryParse(state.pathParameters['event_id']!);
+          //             //         }
+          //             //         return EventPage(eventId: eventId);
+          //             //       })
+          //             // ]),
+          //           ])
+          //     ])
         ])
     // GoRoute(
     //     path: "feed",
