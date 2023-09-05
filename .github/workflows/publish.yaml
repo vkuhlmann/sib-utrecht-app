@@ -16,9 +16,9 @@ jobs:
         working-directory: flutter/sib_utrecht_app
 
         # Based on code from https://github.com/bluefireteam/flutter-gh-pages
-      #- uses: bluefireteam/flutter-gh-pages@v8
-      #  with:
-      #    workingDir: flutter/sib_utrecht_app
+        #- uses: bluefireteam/flutter-gh-pages@v8
+        #  with:
+        #    workingDir: flutter/sib_utrecht_app
 
       - run: flutter config --enable-web
         shell: bash
@@ -44,6 +44,6 @@ jobs:
       - run: git commit -m "Automatic deployment by github-actions"
         shell: bash
         working-directory: flutter/sib_utrecht_app
-      - run: git push origin HEAD:${{inputs.targetBranch}} --force
+      - run: git push origin HEAD:gh-pages --force
         shell: bash
         working-directory: flutter/sib_utrecht_app
