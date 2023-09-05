@@ -64,8 +64,12 @@ void main() {
   // Seems like LicenseRegistry is not available in my current version of Flutter =/
   //
   LicenseRegistry.addLicense(() async* {
-    final license = await rootBundle.loadString('google_fonts/Apache.txt');
+    final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+  });
+  LicenseRegistry.addLicense(() async* {
+    final license = await rootBundle.loadString('LICENSE');
+    yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license);
   });
   // .then((_) => Future.value());
   // .then((_) => runApp(const MyApp()));

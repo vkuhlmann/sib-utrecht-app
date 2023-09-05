@@ -50,7 +50,7 @@ class _InfoPageState extends State<InfoPage> {
                 // Card(child: ListTile(title: const Text("Over app"))),
               ])
             ),
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
               child: Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
               child:
@@ -58,9 +58,26 @@ class _InfoPageState extends State<InfoPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Divider(),
-                  Card(child: ListTile(title: Text("Vertrouwenspersonen"))),
-                  Card(child: ListTile(title: Text("Over SIB"))),
-                  Card(child: ListTile(title: Text("Over app"))),
+                  const Card(child: ListTile(title: Text("Vertrouwenspersonen"))),
+                  const Card(child: ListTile(title: Text("Over SIB"))),
+                  Card(child: InkWell(
+                    onTap: () {
+                      // showLicensePage(
+                      //   context: context,
+                      //   applicationName: "SIB Utrecht",
+                      //   applicationVersion: "1.0.0",
+                      //   applicationLegalese: "© 2023 SIB Utrecht",
+                      //   // applicationIcon: const FlutterLogo(),
+                      // );},
+                      showAboutDialog(context: context,
+                        applicationName: "SIB Utrecht",
+                        applicationVersion: "0.1.1",
+                        // applicationLegalese: "© 2023 SIB Utrecht",
+                      );
+                    },
+                    child: const ListTile(title: Text("Over app")))
+                  ),
+                  // Card(child: ListTile(title: Text("Licences"))),
                 ]
               ))
               
