@@ -17,10 +17,10 @@ class _LoginPageState extends State<LoginPage> {
     loginManager.loadProfiles();
 
     if (widget.params["immediate"] == "true") {
-      loginManager.state.then((state) {
+      loginManager._loadingState.then((state) {
         if (state.profiles.isEmpty) {
           // loginManager.scheduleLogin();
-          _router.go("/new-login");
+          router.go("/new-login");
         }
       });
     }
@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
               //   navContext.pop();
               // }
 
-              _router.go("/");
+              router.go("/");
 
               // if (_router.canPop()) {
               //   _router.pop();
@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
         ])),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            _router.go("/new-login");
+            router.go("/new-login");
           },
           child: const Icon(Icons.add),
         ),
@@ -63,13 +63,13 @@ class _LoginPageState extends State<LoginPage> {
             child: Container(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                 // constraints: const BoxConstraints.expand(),
-                child: CustomScrollView(slivers: [
-                  SliverFillRemaining(
-                    child: 
-                    Center(
-                        child: ListView(children:[
+                child: 
+                Center(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
                           FutureBuilder(
-                              future: loginManager.state,
+                              future: loginManager._loadingState,
                               builder: (context, snapshot) {
                                 if (snapshot.hasError) {
                                   return const Text(
@@ -94,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
                                                           loginManager
                                                               .setActiveProfile(
                                                                   pair.key);
-                                                          _router.go("/");
+                                                          router.go("/");
                                                         })))
                                                 .toList()));
                               }),
@@ -107,12 +107,12 @@ class _LoginPageState extends State<LoginPage> {
                           FilledButton(
                               onPressed: () {
                                 // loginManager.scheduleLogin();
-                                _router.go("/new-login");
+                                router.go("/new-login");
                               },
                               child: const Text("New login")))])
                         ])),
                   ),
                   // SliverAppBar()
-                ]))));
+                ));
   }
 }

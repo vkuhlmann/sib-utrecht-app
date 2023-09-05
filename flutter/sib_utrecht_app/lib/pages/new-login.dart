@@ -60,6 +60,8 @@ class _NewLoginPageState extends State<NewLoginPage> {
     String disp;
     Uri url;
 
+    useRedirect = loginManager.canLoginByRedirect;
+
     (disp, url) = loginManager.getAuthorizationUrl(withRedirect: useRedirect);
 
     authorizationUrlDisplay = disp;
@@ -100,10 +102,9 @@ class _NewLoginPageState extends State<NewLoginPage> {
               Container(
                   margin: const EdgeInsets.all(8),
                   child: Column(children: [
-                    // const Text("You can link ")
-                    // const Text("Go to the WordPress application authorization page on sib-utrecht.nl:"),
-                    // const Text("To log into your sib-utrecht.nl account, open the following link:"),
-                    const Text("Open the following link:"),
+                    if (!useRedirect)
+                      const Text("Open the following link on any device:"),
+                    if (useRedirect) const Text("Open the following link:"),
                     ElevatedButton(
                       onPressed: () {
                         _step1LaunchUrl = launchUrl(authorizationUrl);
@@ -120,11 +121,6 @@ class _NewLoginPageState extends State<NewLoginPage> {
                             Text(authorizationUrlDisplay.toString())
                           ]),
                     ),
-                    // RichText(
-                    //   text: TextSpan(text: "Authorize via a different device or browser.",
-                    //   style: TextStyle(color: Colors.blue),
-                    //   recognizer: _step1SwitchUrl),
-                    // ),
                     const SizedBox(height: 10),
                     FilledButton(
                         onPressed: step1Done
@@ -137,7 +133,6 @@ class _NewLoginPageState extends State<NewLoginPage> {
                                 });
                               },
                         child: const Text("Done")),
-
                     if (useRedirect) ...[
                       const SizedBox(height: 10),
                       TextButton(
@@ -337,67 +332,72 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
           _step3_substep1 = null;
           _step3_substep2 = null;
+          step3Result = null;
+        });
 
-          step3Result =
-              Future.delayed(const Duration(seconds: 0)).then((value) async {
-            // throw Exception("This is a test");
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          setState(() {
+            step3Result =
+                Future.delayed(const Duration(seconds: 0)).then((value) async {
+              // throw Exception("This is a test");
 
-            if (activeLoginAttempt != thisLoginAttempt) {
-              throw Exception("Login attempt has been cancelled");
-            }
-
-            Future<LoginState> st_fut = loginManager._completeLogin(
-                user: username, apiSecret: applicationPassword);
-            setState(() {
-              _step3_substep1 = st_fut;
-            });
-
-            LoginState st = await st_fut;
-
-            if (activeLoginAttempt != thisLoginAttempt) {
-              throw Exception("Login attempt has been cancelled");
-            }
-
-            Future<void> testConnection() async {
-              // throw Exception("Test aborting");
-              var result = await st.connector.get("events");
-              if (result["data"]?["events"] == null) {
-                throw Exception("Could not load events");
+              if (activeLoginAttempt != thisLoginAttempt) {
+                throw Exception("Login attempt has been cancelled");
               }
-            }
 
-            Future<void> substep2 = testConnection();
+              Future<LoginState> st_fut = loginManager._completeLogin(
+                  user: username, apiSecret: applicationPassword);
+              setState(() {
+                _step3_substep1 = st_fut;
+              });
 
-            setState(() {
-              _step3_substep2 = substep2;
+              LoginState st = await st_fut;
+
+              if (activeLoginAttempt != thisLoginAttempt) {
+                throw Exception("Login attempt has been cancelled");
+              }
+
+              Future<void> testConnection() async {
+                // throw Exception("Test aborting");
+                var result = await st.connector.get("events");
+                if (result["data"]?["events"] == null) {
+                  throw Exception("Could not load events");
+                }
+              }
+
+              Future<void> substep2 = testConnection();
+
+              setState(() {
+                _step3_substep2 = substep2;
+              });
+
+              await substep2;
+
+              if (activeLoginAttempt != thisLoginAttempt) {
+                throw Exception("Login attempt has been cancelled");
+              }
+
+              setState(() {
+                completed = true;
+              });
+            }).whenComplete(() {
+              if (activeLoginAttempt == thisLoginAttempt) {
+                activeLoginAttempt = null;
+              }
+            }).catchError((e) {
+              if (e.toString().contains("Unkown username")) {
+                _step2Expansion.expand();
+              }
+
+              throw e;
             });
-
-            await substep2;
-
-            if (activeLoginAttempt != thisLoginAttempt) {
-              throw Exception("Login attempt has been cancelled");
-            }
-
-            setState(() {
-              completed = true;
-            });
-          }).whenComplete(() {
-            if (activeLoginAttempt == thisLoginAttempt) {
-              activeLoginAttempt = null;
-            }
-          }).catchError((e) {
-            if (e.toString().contains("Unkown username")) {
-              _step2Expansion.expand();
-            }
-
-            throw e;
+            // .catchError((e) {
+            //   if (activeLoginAttempt == thisLoginAttempt) {
+            //     activeLoginAttempt = null;
+            //   }
+            //   throw e;
+            // });
           });
-          // .catchError((e) {
-          //   if (activeLoginAttempt == thisLoginAttempt) {
-          //     activeLoginAttempt = null;
-          //   }
-          //   throw e;
-          // });
         });
       });
     });
@@ -412,30 +412,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
       step3Result = null;
       _step3_substep1 = null;
       _step3_substep2 = null;
-      // var pending = step3Result;
-
-      // if (pending != null) {
-      //   pending.whenComplete(() {
-      //     setState(() {
-      //       step3Result = null;
-      //       _step3_substep1 = null;
-      //       _step3_substep2 = null;
-      //     });
-      //   });
-      // }
     });
-
-    // setState(() {
-    //   step3Result = Future.value();
-    //   _step3_substep1 = Future.value();
-    //   _step3_substep2 = Future.value();
-    // });
-
-    // setState(() {
-    //   step3Result = null;
-    //   _step3_substep1 = null;
-    //   _step3_substep2 = null;
-    // });
   }
 
   @override
@@ -470,10 +447,10 @@ class _NewLoginPageState extends State<NewLoginPage> {
                     controller: _usernameController,
                     decoration: InputDecoration(
                         border: const OutlineInputBorder(),
-                        labelText: 'Username',
+                        labelText: 'E-mail',
                         errorText: (_step2IsPasswordComplete &&
                                 !_step2IsUsernameNonEmpty)
-                            ? "Username is required"
+                            ? "Your username (e-mail) is required"
                             : null),
                     onChanged: (value) {
                       if (value.isNotEmpty != _step2IsUsernameNonEmpty) {
@@ -632,7 +609,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
                                         child: CircularProgressIndicator()));
                               }
 
-                              if (snapshot.connectionState ==
+                              if (!snapshot.hasError && snapshot.connectionState ==
                                   ConnectionState.done) {
                                 ic = const Icon(Icons.done);
                               }
@@ -733,20 +710,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
             title: Row(children: [
           BackButton(
             onPressed: () {
-              // var navContext = _rootNavigatorKey.currentContext;
-
-              // if (navContext != null && navContext.canPop()) {
-              //   navContext.pop();
-              // }
-
-              _router.go("/login?immediate=false");
-
-              // if (_router.canPop()) {
-              //   _router.pop();
-              // }
-              // if (Navigator.canPop(context)) {
-              //   Navigator.pop(context);
-              // }
+              router.go("/login?immediate=false");
             },
           ),
           const Text('New login')
@@ -754,45 +718,29 @@ class _NewLoginPageState extends State<NewLoginPage> {
         // bottomNavigationBar: const SizedBox(height:56),
         body: SafeArea(
             child: Container(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 90),
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                 constraints: const BoxConstraints.expand(),
-                child: CustomScrollView(
-                  slivers: [
-                    SliverFillRemaining(
-                        child: Center(
-                            child: Container(
-                                constraints:
-                                    const BoxConstraints(maxWidth: 600),
-                                child: CustomScrollView(slivers: [SliverList(
-                                    delegate: SliverChildListDelegate([
-                                  // mainAxisAlignment: MainAxisAlignment.center,
-                                  // children: [
-                                  buildSteps(context),
-                                  if (completed)
-                                    Padding(padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-                                    child: 
-                                    Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          ConstrainedBox(
-                                              constraints: const BoxConstraints(
-                                                  maxWidth: 300),
-                                              child: FilledButton(
-                                                  onPressed: () {
-                                                    _router.go("/");
-                                                  },
-                                                  child: const Text(
-                                                      "Go to home screen")))
-                                        ]))
-                                ]))]))))
-                  ],
-
-                  // mainAxisAlignment: MainAxisAlignment.center,
-                  // crossAxisAlignment: CrossAxisAlignment.center,
-                  // children: [
-                  //   Text("Hoi!")
-                  // ]
-                ))));
+                child: Center(
+                    child: Container(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: ListView(shrinkWrap: true, children: [
+                          buildSteps(context),
+                          if (completed)
+                            Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                              maxWidth: 300),
+                                          child: FilledButton(
+                                              onPressed: () {
+                                                router.go("/");
+                                              },
+                                              child: const Text(
+                                                  "Go to home screen")))
+                                    ]))
+                        ]))))));
   }
 }

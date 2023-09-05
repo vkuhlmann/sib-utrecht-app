@@ -27,7 +27,7 @@ class LoginState {
       required this.activeProfile});
 }
 
-class LoginManager {
+class LoginManager extends ChangeNotifier {
   // late Future<APIConnector> connector;
   // late Future<Map<String, Map<String, dynamic>>> _profiles;
 
@@ -37,8 +37,10 @@ class LoginManager {
   // late Future<Map<String, dynamic>?> activeProfile;
 
   late FlutterSecureStorage storage;
-  late Future<LoginState> state;// = Future.error(Exception("Not initialized"));
+  late Future<LoginState> _loadingState;// = Future.error(Exception("Not initialized"));
   late Future<void> initiatedLogin;
+
+  // LoginState currentState;
 
   late bool canLoginByRedirect;
 
@@ -63,6 +65,12 @@ class LoginManager {
     storage = const FlutterSecureStorage();
 
     canLoginByRedirect = Uri.base.isScheme("https");
+
+    // currentState = LoginState(
+    //     connector: APIConnector(),
+    //     profiles: null,
+    //     activeProfileName: null,
+    //     activeProfile: null);
 
     // state = Future.value(loggedOutState);
     loadProfiles();
@@ -103,9 +111,13 @@ class LoginManager {
   }
 
   void setActiveProfile(String? name) {
-    state = state.then((value) async {
+    _loadingState = _loadingState.then((value) async {
       await storage.write(key: 'activeProfileName', value: name);
       return _loadState();
+    });
+    _loadingState.then((res) {
+      // currentState = res;
+      notifyListeners();
     });
   }
 
@@ -114,10 +126,18 @@ class LoginManager {
     //   print("Old error loading profile: $e");
     // });
     // setState(() {
-    state = _loadState();
-    state.catchError((e) {
+    _loadingState = _loadState();
+    _loadingState.catchError((e) {
       log.severe("Error loading profile: $e");
+      throw e;
     });
+    _loadingState.then((res) {
+      // currentState = res;
+      notifyListeners();
+    });
+    // state.whenComplete(() {
+    //   notifyListeners();
+    // });
     // });
     // setState(() {
     // _profiles = storage.read(key: 'profiles').then((value) {
@@ -183,7 +203,7 @@ class LoginManager {
 
   Future<LoginState> _completeLogin({required String user, required String apiSecret}) async {
       String profileName = "profile1";
-    var prof = (await state).profiles;
+    var prof = (await _loadingState).profiles;
 
     // _rootNavigatorKey.currentContext?.showSnackBar(SnackBar(
     //   content: Text("Logged in as $user"),
@@ -215,12 +235,19 @@ class LoginManager {
     // ScaffoldMessenger.of(_rootNavigatorKey.currentContext!).showSnackBar(
     //   const SnackBar( content: Text("Logged in") ) );
 
-    // loadProfiles();
-    return await _loadState();
+    loadProfiles();
+    // state = _loadState();
+    // var res = await state;
+    // notifyListeners();
+    return await _loadingState;
   }
 
 
   (String, Uri) getAuthorizationUrl({required bool withRedirect}) {
+    if (!withRedirect) {
+      return ("https://sib-utrecht.nl/app", Uri.parse("https://sib-utrecht.nl/app"));
+    }
+
     var uuid = const Uuid();
     final String appName = "sib-utrecht-app_${uuid.v4().substring(0, 6)}";
 
@@ -328,16 +355,24 @@ class LoginManager {
 }
 
 class APIAccess extends InheritedWidget {
-  const APIAccess({super.key, required super.child, required this.state
+  const APIAccess({super.key, required super.child, required this.state,
+      // required this.controller
       // required this.profileName,
       // required this.profile,
       // required this.connector
       });
 
+  // final LoginManager controller;
   final Future<LoginState> state;
   // final Future<String?> profileName;
   // final Future<Map<String, dynamic>?> profile;
   // final Future<APIConnector> connector;
+
+  // @override
+  // void initState() {
+
+  //   super.initState();
+  // }
 
   static APIAccess? maybeOf(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<APIAccess>();

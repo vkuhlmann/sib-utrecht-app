@@ -28,7 +28,7 @@ class _AuthorizePageState extends State<AuthorizePage> {
             user: widget.params["user_login"],
             apiSecret: widget.params["password"],
           ).then((state) {
-            _router.go("/");
+            router.go("/");
             return state;
           });
         });
