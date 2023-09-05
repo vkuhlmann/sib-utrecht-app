@@ -12,8 +12,14 @@ class APIConnector {
   // final String apiSecret = "PuNZ ZO31 bZCP har0 VYwo cNKP";
   late final String? basicAuth;
   late Map<String, String> headers;
+  late Future<Box<dynamic>> boxFuture;
 
   APIConnector({this.user, String? apiSecret}) {
+    // Hive.init(Directory.current.path);
+    Hive.init(null);
+    boxFuture = Hive.openBox("api_cache");
+    // box = Hive.box("api_cache");
+
     headers = {};
     if (user != null) {
       basicAuth = 'Basic ${base64.encode(utf8.encode('$user:$apiSecret'))}';
@@ -54,6 +60,11 @@ class APIConnector {
     return obj;
   }
 
+  Future<Map?> getCached(url) async {
+    var box = await boxFuture;
+    return box.get(url)?["response"];
+  }
+
   Future<Map> get(url) async {
     log.info("Doing GET on $url");
     // await Future.delayed(Duration(seconds: 3));
@@ -68,7 +79,13 @@ class APIConnector {
       }
       throw Exception("Cannot connect to server: ${e.message}");
     }
-    return _handleResponse(response);
+    var ans = _handleResponse(response);
+    var box = await boxFuture;
+    box.put(url, {
+      "response": ans,
+      "time": DateTime.now().millisecondsSinceEpoch,
+    });
+    return ans;
   }
 
   Future<Map> post(url) async {

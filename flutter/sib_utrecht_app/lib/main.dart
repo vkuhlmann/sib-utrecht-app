@@ -28,6 +28,7 @@ import 'package:logging/logging.dart';
 // import 'package:flutter_html/style.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 
 part 'login_manager.dart';
 part 'api_connector.dart';

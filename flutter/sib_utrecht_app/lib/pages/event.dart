@@ -60,12 +60,13 @@ class _EventPageState extends State<EventPage> {
       scheduleRefresh();
 
       setState(() {
-        participants = apiConnector.then((conn) =>
-            conn.get("events/${widget.eventId}/participants").then((response) {
+        participants = apiConnector.then((conn) {
+            return conn.get("events/${widget.eventId}/participants").then((response) {
               return (response["data"]["participants"] as List<dynamic>)
                   .map((e) => e["name"] as String)
                   .toList();
-            }));
+            });
+        });
       });
     }
 

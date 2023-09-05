@@ -150,6 +150,20 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     }
   }
 
+  (List<Event>, Set<int>) decodeResponse(eventsRes, bookingsRes) {
+    var events = (eventsRes["data"]["events"] as Iterable<dynamic>)
+        .map((e) => (e as Map<dynamic, dynamic>)
+            .map((key, value) => MapEntry(key as String, value)))
+        .map((e) => Event.fromJson(e))
+        .toList();
+    var bookings = (bookingsRes["data"]["bookings"] as Iterable<dynamic>)
+        .where((v) => v["booking"]["status"] == "approved")
+        .map<int>((e) => e["event"]["event_id"])
+        .toSet();
+
+    return (events, bookings);
+  }
+
   Future<(List<Event>, Set<int>)?> _loadData() async {
     // throw Exception("Test error");
     log.fine("Loading activity data");
@@ -158,21 +172,29 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       return null;
     }
 
+    var api = await conn;
+
+    if (_cached == null) {
+      var cachedEventRes = await api.getCached("events");
+      var cachedBookingsRes = await api.getCached("users/me/bookings");
+
+      if (cachedEventRes != null && cachedBookingsRes != null) {
+        var cachedRes = decodeResponse(cachedEventRes, cachedBookingsRes);
+
+        setState(() {
+          _cached = (-1, cachedRes.$1, cachedRes.$2);
+        });
+      }
+    }
+
     var [eventsRes, bookingsRes] = await Future.wait([
-      conn.then((api) => api.get("events")),
-      conn.then((api) => api.get("users/me/bookings"))
+      // conn.then((api) => api.get("events")),
+      // conn.then((api) => api.get("users/me/bookings"))
+      api.get("events"),
+      api.get("users/me/bookings")
     ]);
 
-    var events = (eventsRes["data"]["events"] as List<dynamic>)
-        .map((e) => e as Map<String, dynamic>)
-        .map((e) => Event.fromJson(e))
-        .toList();
-    var bookings = (bookingsRes["data"]["bookings"] as List<dynamic>)
-        .where((v) => v["booking"]["status"] == "approved")
-        .map<int>((e) => e["event"]["event_id"])
-        .toSet();
-
-    return (events, bookings);
+    return decodeResponse(eventsRes, bookingsRes);
   }
 
   void scheduleRefresh() {
@@ -327,103 +349,111 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
           return Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                Flexible(
-                  child: 
-                ListView(shrinkWrap: true, children: [
-                  // FutureBuilder<(List<Map>, Set<int>)?>(
-                  //     future: _cached,
-                  // builder: (contextCached, snapshotCached) {
-                  // if (snapshotCached.hasError) {
-                  //   return Text("${snapshotCached.error}");
-                  // }
-                  ...(contextCached) {
-                    var data = _cached;
-                    if (data == null) {
-                      return [];
-                    }
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                        child: ListView(shrinkWrap: true, children: [
+                      // FutureBuilder<(List<Map>, Set<int>)?>(
+                      //     future: _cached,
+                      // builder: (contextCached, snapshotCached) {
+                      // if (snapshotCached.hasError) {
+                      //   return Text("${snapshotCached.error}");
+                      // }
+                      ...(contextCached) {
+                        var data = _cached;
+                        if (data == null) {
+                          return [];
+                        }
 
-                    var (sequenceId, events, bookedEvents) = data;
+                        var (sequenceId, events, bookedEvents) = data;
 
-                    return events
-                        .map<Widget>((e) => ActivityView(
-                            key: ValueKey(e.eventId),
-                            event: e,
-                            isParticipating: bookedEvents.contains(e.eventId),
-                            isDirty: _dirtyBookState.contains(e.eventId),
-                            setParticipating: (value) =>
-                                scheduleEventRegistration(e.eventId, value)))
-                        .toList();
+                        return events
+                            .map<Widget>((e) => ActivityView(
+                                key: ValueKey(e.eventId),
+                                event: e,
+                                isParticipating:
+                                    bookedEvents.contains(e.eventId),
+                                isDirty: _dirtyBookState.contains(e.eventId),
+                                setParticipating: (value) =>
+                                    scheduleEventRegistration(
+                                        e.eventId, value)))
+                            .toList();
 
-                    // return _buildActivities(snapshot.data!);
-                    // if (snapshotStaging.hasError) {
-                    // return Text(jsonEncode(snapshotCached.data));
-                    // }
+                        // return _buildActivities(snapshot.data!);
+                        // if (snapshotStaging.hasError) {
+                        // return Text(jsonEncode(snapshotCached.data));
+                        // }
 
-                    // return const CircularProgressIndicator();
-                  }(contextStaging),
+                        // return const CircularProgressIndicator();
+                      }(contextStaging),
 
-                  if (_refreshingSequence != null)
-                    const Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator())),
+                      if (_refreshingSequence != null)
+                        const Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Center(child: CircularProgressIndicator())),
 
-                  //  && snapshotStaging.error != null)
-                  //     Text("${snapshotStaging.error}"),
-                  // if (_refreshingSequence == null && snapshotStaging.hasError)
-                  //     Text("${snapshotStaging.error}"),
-                  // SizedBox(),
-                  //  (if (snapshotStaging.hasError)
-                  //         Text("${snapshotStaging.error}"),
-                  //         else const SizedBox(),),
+                      //  && snapshotStaging.error != null)
+                      //     Text("${snapshotStaging.error}"),
+                      // if (_refreshingSequence == null && snapshotStaging.hasError)
+                      //     Text("${snapshotStaging.error}"),
+                      // SizedBox(),
+                      //  (if (snapshotStaging.hasError)
+                      //         Text("${snapshotStaging.error}"),
+                      //         else const SizedBox(),),
 
-                  // Text("sequence id: $sequenceId"),
-                  // Text("refreshing sequence: $_refreshingSequence"),
-                ])),
+                      // Text("sequence id: $sequenceId"),
+                      // Text("refreshing sequence: $_refreshingSequence"),
+                    ])),
 
-                // Expanded(flex: 1, child: Container()),
+                    // Expanded(flex: 1, child: Container()),
 
-                if (_refreshingSequence == null && snapshotStaging.hasError)
-                // Expanded(
-                //   // fit: FlexFit.tight,
-                //   child:
-                Padding(padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),child:
-                Card(child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child:
-                Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                  
-                    Container(
-                        alignment: _cached == null
-                            ? Alignment.center
-                            : Alignment.topCenter,
-                        child: Builder(
-                          builder: (context) {
-                            if (snapshotStaging.error != null &&
-                                snapshotStaging.error.toString().contains(
-                                    "Sorry, you are not allowed to do that")) {
-                              return FilledButton(
-                                  onPressed: () {
-                                    // Navigator.pushNamed(context, "/login");
-                                    // _rootNavigatorKey.currentContext!.push("/login");
-                                    // context.push("/login");
-                                    router.go("/login?immediate=true");
-                                  },
-                                  child: const Text("Please log in"));
-                            }
-                            return formatError(snapshotStaging.error);
-                          },
-                        ))
-                ]))))
-                // )
-                ),
+                    if (_refreshingSequence == null && snapshotStaging.hasError)
+                      // Expanded(
+                      //   // fit: FlexFit.tight,
+                      //   child:
+                      Padding(
+                          padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
+                          child: Card(
+                              child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Center(
+                                      child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                        Container(
+                                            alignment: _cached == null
+                                                ? Alignment.center
+                                                : Alignment.topCenter,
+                                            child: Builder(
+                                              builder: (context) {
+                                                if (snapshotStaging.error !=
+                                                        null &&
+                                                    snapshotStaging.error
+                                                        .toString()
+                                                        .contains(
+                                                            "Sorry, you are not allowed to do that")) {
+                                                  return FilledButton(
+                                                      onPressed: () {
+                                                        // Navigator.pushNamed(context, "/login");
+                                                        // _rootNavigatorKey.currentContext!.push("/login");
+                                                        // context.push("/login");
+                                                        router.go(
+                                                            "/login?immediate=true");
+                                                      },
+                                                      child: const Text(
+                                                          "Please log in"));
+                                                }
+                                                return formatError(
+                                                    snapshotStaging.error);
+                                              },
+                                            ))
+                                      ]))))
+                          // )
+                          ),
 
-                // Expanded(flex: 1, child: Container()),
-              ]));
+                    // Expanded(flex: 1, child: Container()),
+                  ]));
         });
   }
 }
