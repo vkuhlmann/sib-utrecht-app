@@ -53,6 +53,11 @@ final log = Logger("main.dart");
 late LoginManager loginManager;
 
 void main() {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    print('${record.level.name}: ${record.time}: ${record.message}');
+  });
+
   dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
       .then((_) => Future.wait([
             initializeDateFormatting("nl_NL"),
@@ -64,13 +69,16 @@ void main() {
   // Seems like LicenseRegistry is not available in my current version of Flutter =/
   //
   LicenseRegistry.addLicense(() async* {
+    final license2 = await rootBundle.loadString('LICENSE');
+    yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license2);
+
     final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
-  LicenseRegistry.addLicense(() async* {
-    final license = await rootBundle.loadString('LICENSE');
-    yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license);
-  });
+  // LicenseRegistry.addLicense(() async* {
+  //   final license = await rootBundle.loadString('LICENSE');
+  //   yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license);
+  // });
   // .then((_) => Future.value());
   // .then((_) => runApp(const MyApp()));
   loginManager = LoginManager();

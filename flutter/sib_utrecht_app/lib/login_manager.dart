@@ -65,6 +65,7 @@ class LoginManager extends ChangeNotifier {
     storage = const FlutterSecureStorage();
 
     canLoginByRedirect = Uri.base.isScheme("https");
+    // canLoginByRedirect = true; // https://vkuhlmann.com
 
     // currentState = LoginState(
     //     connector: APIConnector(),
@@ -244,7 +245,7 @@ class LoginManager extends ChangeNotifier {
 
 
   (String, Uri) getAuthorizationUrl({required bool withRedirect}) {
-    if (!withRedirect) {
+    if (!withRedirect || !canLoginByRedirect) {
       return ("https://sib-utrecht.nl/app", Uri.parse("https://sib-utrecht.nl/app"));
     }
 
@@ -261,7 +262,9 @@ class LoginManager extends ChangeNotifier {
     };
 
     if (canLoginByRedirect && withRedirect) {
-      queryParams["success_url"] = Uri.base.replace(fragment: "/authorize").toString();
+      queryParams["success_url"] = Uri.base.replace(fragment: "/new-login").toString();
+
+      // queryParams["success_url"] = Uri.https("vkuhlmann.com", "/").toString();
     }
 
     Uri authorizeUrl = Uri.https(

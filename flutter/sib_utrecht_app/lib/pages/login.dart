@@ -16,11 +16,13 @@ class _LoginPageState extends State<LoginPage> {
 
     loginManager.loadProfiles();
 
-    if (widget.params["immediate"] == "true") {
+    if (widget.params["immediate"] != "false") {
       loginManager._loadingState.then((state) {
         if (state.profiles.isEmpty) {
           // loginManager.scheduleLogin();
-          router.go("/new-login");
+          WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+            router.go("/new-login");
+          });
         }
       });
     }

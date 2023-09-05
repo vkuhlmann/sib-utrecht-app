@@ -66,6 +66,45 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
     authorizationUrlDisplay = disp;
     authorizationUrl = url;
+
+    log.info("params are ${jsonEncode(widget.params)}");
+    // log.info("condition 1: ${widget.params["success"] != "false"}");
+    // log.info("condition 2: ${widget.params["user_login"] != null}");
+
+    bool isSuccess = widget.params["success"] != "false" && widget.params["user_login"] != null;
+    log.info("isSuccess: $isSuccess");
+
+    if (isSuccess) {
+       
+      WidgetsBinding.instance.addPostFrameCallback((_){
+        setState(() {
+        step1Done = true;
+        });
+
+        _step1Expansion.collapse();
+        _step2Expansion.expand();
+
+        _usernameController.text = widget.params["user_login"];
+        _applicationPasswordController.text = widget.params["password"];
+
+        trySubmit();
+      });
+
+      // WidgetsBinding.instance.addPostFrameCallback((_){
+      //   log.info("Completing login");
+      //   setState(() {
+      //     initiatedLogin = loginManager._completeLogin(
+      //       user: widget.params["user_login"],
+      //       apiSecret: widget.params["password"],
+      //     ).then((state) {
+      //       router.go("/");
+      //       return state;
+      //     });
+      //   });
+      //   log.info("Completed login");
+      //   // context.go("/");
+      // });
+    }
   }
 
   @override
