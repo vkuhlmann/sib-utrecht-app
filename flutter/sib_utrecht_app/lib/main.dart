@@ -137,6 +137,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   // ].asMap();
 
   late Future<LoginState> loginState;
+  late void Function() listenerFunc;
 
   @override
   void initState() {
@@ -144,12 +145,20 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
     loginState = widget.loginController._loadingState;
 
-    widget.loginController.addListener(() {
+    listenerFunc = () {
       setState(() {
         loginState = widget.loginController._loadingState;
       });
-    });
+    };
+
+    widget.loginController.addListener(listenerFunc);
     widget.loginController.loadProfiles();
+  }
+
+  @override
+  void dispose() {
+    widget.loginController.removeListener(listenerFunc);
+    super.dispose();
   }
 
   @override
