@@ -236,8 +236,11 @@ class _EventPageState extends State<EventPage> {
                           //             child: Image.network(
                           //                 "$wordpressUrl/${event.data["thumbnail"]["url"]}"))));
                         },
-                        child: Container(constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),child: Image.network(
-                            "$wordpressUrl/${event.data["thumbnail"]["url"]}")));
+                        child: Container(
+                            constraints: const BoxConstraints(
+                                maxWidth: 400, maxHeight: 500),
+                            child: Image.network(
+                                "$wordpressUrl/${event.data["thumbnail"]["url"]}")));
 
                     // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
                   } catch (e) {
@@ -259,24 +262,27 @@ class _EventPageState extends State<EventPage> {
             // ConstrainedBox(
             // constraints: const BoxConstraints.expand(),
             // child:
-            Container(
-                alignment: Alignment.topCenter,
-                padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
-                // child: ListView(
-                //   shrinkWrap: true,
-                //   children: const [
-                //   Card(child: ListTile(title: const Text("Bestuur"))),
-                //   Card(child: ListTile(title: const Text("Commissies"))),
-                //   Card(child: ListTile(title: const Text("Sociëteiten"))),
-                //   // Expanded(child: Container()),
-                //   Spacer(),
-                //   Divider(),
-                //   Card(child: ListTile(title: const Text("Vertrouwenspersonen"))),
-                //   Card(child: ListTile(title: const Text("Over SIB"))),
-                //   Card(child: ListTile(title: const Text("Over app"))),
-                // ])
-                child: CustomScrollView(slivers: [
-                  SliverList(
+            // Container(
+            //     alignment: Alignment.topCenter,
+            //     padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
+            // child: ListView(
+            //   shrinkWrap: true,
+            //   children: const [
+            //   Card(child: ListTile(title: const Text("Bestuur"))),
+            //   Card(child: ListTile(title: const Text("Commissies"))),
+            //   Card(child: ListTile(title: const Text("Sociëteiten"))),
+            //   // Expanded(child: Container()),
+            //   Spacer(),
+            //   Divider(),
+            //   Card(child: ListTile(title: const Text("Vertrouwenspersonen"))),
+            //   Card(child: ListTile(title: const Text("Over SIB"))),
+            //   Card(child: ListTile(title: const Text("Over app"))),
+            // ])
+            // child:
+            CustomScrollView(slivers: [
+              SliverPadding(
+                  padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  sliver: SliverList(
                       delegate: SliverChildListDelegate([
                     // const Card(child: ListTile(title: Text("Bestuur"))),
                     // const Card(child: ListTile(title: Text("Commissies"))),
@@ -412,66 +418,67 @@ class _EventPageState extends State<EventPage> {
 
                     const SizedBox(height: 32),
                     const Card(child: ListTile(title: Text("Participants:"))),
-                  ])),
-                  // const SliverFillRemaining(
-                  //   hasScrollBody: false,
-                  //   child: Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                  //   child:
-                  //   Column(
-                  //     mainAxisAlignment: MainAxisAlignment.end,
-                  //     children: [
-                  //       Divider(),
-                  //       Card(child: ListTile(title: const Text("Vertrouwenspersonen"))),
-                  //       Card(child: ListTile(title: const Text("Over SIB"))),
-                  //       Card(child: ListTile(title: const Text("Over app"))),
-                  //     ]
-                  //   )
-                  //   )
-                  // )
-                  FutureBuilder(
-                      future: participants,
-                      builder: (context, snapshot) =>
-                          // return
-                          SliverList(
-                              delegate: SliverChildListDelegate(
-                                  //   [const Text("AAA"), const Text("BBB")]
-                                  // ),);
-                                  // const Text(
-                                  //   "Hoi"
-                                  // )
-                                  [
-                                if (snapshot.hasError)
-                                  Text(
-                                      "Error loading participants: ${snapshot.error}"),
-                                if (!snapshot.hasError && !snapshot.hasData)
-                                  const Center(
-                                      child: CircularProgressIndicator()),
-                                if (snapshot.hasData)
-                                  ...snapshot.data!.map<Widget>((e) => Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          32, 0, 0, 0),
-                                      child: Card(
-                                          child: ListTile(
-                                        title: Text(e),
-                                      )))),
+                  ]))),
+              // const SliverFillRemaining(
+              //   hasScrollBody: false,
+              //   child: Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
+              //   child:
+              //   Column(
+              //     mainAxisAlignment: MainAxisAlignment.end,
+              //     children: [
+              //       Divider(),
+              //       Card(child: ListTile(title: const Text("Vertrouwenspersonen"))),
+              //       Card(child: ListTile(title: const Text("Over SIB"))),
+              //       Card(child: ListTile(title: const Text("Over app"))),
+              //     ]
+              //   )
+              //   )
+              // )
+              FutureBuilder(
+                  future: participants,
+                  builder: (context, snapshot) =>
+                      // return
+                      SliverPadding(padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      sliver:
+                      SliverList(
+                          delegate: SliverChildListDelegate(
+                              //   [const Text("AAA"), const Text("BBB")]
+                              // ),);
+                              // const Text(
+                              //   "Hoi"
+                              // )
+                              [
+                            if (snapshot.hasError)
+                              Text(
+                                  "Error loading participants: ${snapshot.error}"),
+                            if (!snapshot.hasError && !snapshot.hasData)
+                              const Center(child: CircularProgressIndicator()),
+                            if (snapshot.hasData)
+                              ...snapshot.data!.map<Widget>((e) => Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(32, 0, 0, 0),
+                                  child: Card(
+                                      child: ListTile(
+                                    title: Text(e),
+                                  )))),
+                            const SizedBox(height: 32),
+                          ]
 
-                                const SizedBox(height: 32),
-                              ]
+                              // if (!snapshot.hasData || true) {
+                              //   return const CircularProgressIndicator();
+                              // }
 
-                                  // if (!snapshot.hasData || true) {
-                                  //   return const CircularProgressIndicator();
-                                  // }
-
-                                  // return SliverList(
-                                  //     delegate: SliverChildListDelegate(
-                                  //       snapshot.data!.map<Widget>((e) => Card(
-                                  //                 child: ListTile(
-                                  //               title: Text(e),
-                                  //             )))
-                                  //         .toList()));
-                                  )))
-                ])
-                // )
-                ));
+                              // return SliverList(
+                              //     delegate: SliverChildListDelegate(
+                              //       snapshot.data!.map<Widget>((e) => Card(
+                              //                 child: ListTile(
+                              //               title: Text(e),
+                              //             )))
+                              //         .toList()));
+                              ))))
+            ])
+        // )
+        //)
+        );
   }
 }

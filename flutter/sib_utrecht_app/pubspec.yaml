@@ -41,7 +41,7 @@ dependencies:
   # photo_view: ^0.14.0
   logging: ^1.2.0
   # intl_phone_number_input: ^0.7.3+1
-  # google_fonts: ^5.1.0
+  google_fonts: ^5.1.0
 
   # flutter_html: ^2.2.1
   flutter_widget_from_html: ^0.10.4
@@ -78,6 +78,12 @@ flutter:
         - asset: assets/fonts/RobotoMono/static/RobotoMono-Regular.ttf
         - asset: assets/fonts/RobotoMono/static/RobotoMono-Bold.ttf
           weight: 700
+
+    # - family: Roboto
+    #   fonts:
+    #     - asset: assets/fonts/Roboto/static/Roboto-Regular.ttf
+    #     - asset: assets/fonts/Roboto/static/Roboto-Bold.ttf
+    #       weight: 700
 
   assets:
     - assets/fonts/RobotoMono/LICENSE.txt

@@ -415,7 +415,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                                   },
                                   child: const Text("Please log in"));
                             }
-                            return Text("${snapshotStaging.error}");
+                            return formatError(snapshotStaging.error);
                           },
                         ))
                 ]))))

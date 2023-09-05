@@ -22,9 +22,9 @@ class _NewLoginPageState extends State<NewLoginPage> {
   final ExpansionTileController _step2Expansion = ExpansionTileController();
   final ExpansionTileController _step3Expansion = ExpansionTileController();
 
-  final SelectorConfig phoneSelectorConfig = const SelectorConfig(
-    showFlags: true,
-  );
+  // final SelectorConfig phoneSelectorConfig = const SelectorConfig(
+  //   showFlags: true,
+  // );
 
   final RegExp applicationPasswordFormat =
       RegExp("^([a-zA-Z0-9]{4} ){5}[a-zA-Z0-9]{4}\$");
@@ -598,16 +598,16 @@ class _NewLoginPageState extends State<NewLoginPage> {
       child: FutureBuilderPatched(
           future: step3Result,
           builder: (context, snapshot) {
-            String? errorMessage;
-            if (snapshot.hasError) {
-              errorMessage = snapshot.error.toString();
+            // String? errorMessage;
+            // if (snapshot.hasError) {
+            //   errorMessage = snapshot.error.toString();
 
-              var m = RegExp(
-                      r"^(Exception: )?(<strong>Error:</strong> )?(?<message>.*)$")
-                  .firstMatch(errorMessage);
+            //   var m = RegExp(
+            //           r"^(Exception: )?(<strong>Error:</strong> )?(?<message>.*)$")
+            //       .firstMatch(errorMessage);
 
-              errorMessage = m?.namedGroup("message") ?? errorMessage;
-            }
+            //   errorMessage = m?.namedGroup("message") ?? errorMessage;
+            // }
 
             return ExpansionTile(
               title: const Text("Step 3: Connection test"),
@@ -692,8 +692,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
                                 child: ListTile(
                                     leading: const Icon(Icons.error,
                                         color: Colors.redAccent),
-                                    title: Text(errorMessage ??
-                                        "No error description")))
+                                    title: formatError(snapshot.error)))
                             : const SizedBox(),
                         const SizedBox(height: 10),
                         OutlinedButton(
