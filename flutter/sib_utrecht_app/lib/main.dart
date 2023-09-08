@@ -5,7 +5,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter/gestures.dart';
 import 'package:flutter/foundation.dart';
 // import 'package:flutter/scheduler.dart';
 // import 'package:flutter/services.dart';
@@ -18,11 +17,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
-// import 'package:photo_view/photo_view.dart';
-// import 'package:photo_view/photo_view_gallery.dart';
 import 'package:logging/logging.dart';
-// import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-// import 'package:google_fonts/google_fonts.dart';
 
 // import 'package:flutter_html/flutter_html.dart';
 // import 'package:flutter_html/style.dart';

@@ -17,7 +17,7 @@ final GlobalKey<NavigatorState> _infoNavigatorKey = GlobalKey<NavigatorState>();
 // final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
-  // navigatorKey: _rootNavigatorKey,
+  navigatorKey: _rootNavigatorKey,
   initialLocation: "/",
   routes: <RouteBase>[
     StatefulShellRoute.indexedStack(
