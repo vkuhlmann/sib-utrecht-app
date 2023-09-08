@@ -104,7 +104,7 @@ class _ActivityViewState extends State<ActivityView> {
                         // Text(end_time.format(context))
                         // Text('${widget.start.hour:2d}:${widget.start.minute}'),
                         // Text('${widget.end.hour}:${widget.end.minute}'),
-                      ])),
+                      ]))
             ])));
   }
 }

@@ -29,7 +29,6 @@ part 'login_manager.dart';
 part 'api_connector.dart';
 part 'async_patch.dart';
 part 'pages/activities.dart';
-part 'pages/debug.dart';
 part 'pages/info.dart';
 part 'pages/authorize.dart';
 part 'pages/event.dart';
@@ -38,6 +37,7 @@ part 'pages/new-login.dart';
 part 'utils.dart';
 part 'shell.dart';
 part 'router.dart';
+part 'cached_provider.dart';
 
 part 'event.dart';
 part 'locale_date_format.dart';

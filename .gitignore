@@ -2,3 +2,5 @@
 #flutter_nix_*
 oldflakes/
 my_app/
+flutter/test_app*
+

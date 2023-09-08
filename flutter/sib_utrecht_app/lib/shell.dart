@@ -4,7 +4,6 @@ part of 'main.dart';
 // Navigation bar code based on https://api.flutter.dev/flutter/material/NavigationBar-class.html
 
 
-
 class ScaffoldWithNavbar extends StatefulWidget {
   const ScaffoldWithNavbar(this.navigationShell,
       {Key? key,
@@ -54,16 +53,16 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   void initState() {
     super.initState();
 
-    loginState = widget.loginController._loadingState;
+    loginState = widget.loginController.assureLoginState();
 
     listenerFunc = () {
       setState(() {
-        loginState = widget.loginController._loadingState;
+        loginState = widget.loginController.assureLoginState();
       });
     };
 
     widget.loginController.addListener(listenerFunc);
-    widget.loginController.loadProfiles();
+    // widget.loginController.scheduleLoadProfiles();
   }
 
   @override
@@ -135,8 +134,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     Navigator.pop(context);
                     setState(() {
                       // loginManager.eraseProfiles();
-                      widget.loginController.logout();
-                      widget.loginController._loadingState.then((value) {
+                      widget.loginController.logout().then((value) {
                         router.go("/login?immediate=false");
                       });
                     });

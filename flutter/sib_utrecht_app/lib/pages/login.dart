@@ -14,10 +14,10 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    loginManager.loadProfiles();
+    // loginManager.scheduleLoadProfiles();
 
     if (widget.params["immediate"] != "false") {
-      loginManager._loadingState.then((state) {
+      loginManager.assureLoginState().then((state) {
         if (state.profiles.isEmpty) {
           // loginManager.scheduleLogin();
           WidgetsBinding.instance.addPostFrameCallback((timeStamp) {

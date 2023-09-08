@@ -37,7 +37,8 @@ class LoginManager extends ChangeNotifier {
   // late Future<Map<String, dynamic>?> activeProfile;
 
   late FlutterSecureStorage storage;
-  late Future<LoginState> _loadingState;// = Future.error(Exception("Not initialized"));
+  Future<LoginState>?
+      _loadingState; // = Future.error(Exception("Not initialized"));
   late Future<void> initiatedLogin;
 
   // LoginState currentState;
@@ -74,7 +75,7 @@ class LoginManager extends ChangeNotifier {
     //     activeProfile: null);
 
     // state = Future.value(loggedOutState);
-    loadProfiles();
+    // scheduleLoadProfiles();
   }
 
   Future<LoginState> _loadState() async {
@@ -91,16 +92,20 @@ class LoginManager extends ChangeNotifier {
     }
 
     if (profiles.isEmpty || activeProfileName == null) {
+      log.info("Returning LoginState not logged in");
+
       return LoginState(
-        connector: APIConnector(),
-        profiles: profiles
-            .map((key, value) => MapEntry(key, value as Map<String, dynamic>)),
-        activeProfileName: null,
-        activeProfile: null);
+          connector: APIConnector(),
+          profiles: profiles.map(
+              (key, value) => MapEntry(key, value as Map<String, dynamic>)),
+          activeProfileName: null,
+          activeProfile: null);
     }
 
     // var activeProfileName = activeProfileName;
     var activeProfile = profiles[activeProfileName]!;
+
+    log.info("Returning LoginState logged in with $activeProfileName");
 
     return LoginState(
         connector: APIConnector(
@@ -111,82 +116,120 @@ class LoginManager extends ChangeNotifier {
         activeProfile: activeProfile);
   }
 
-  void setActiveProfile(String? name) {
-    _loadingState = _loadingState.then((value) async {
-      await storage.write(key: 'activeProfileName', value: name);
-      return _loadState();
-    });
-    _loadingState.then((res) {
-      // currentState = res;
-      notifyListeners();
-    });
+  Future<LoginState> setActiveProfile(String? name) async {
+    var a = _loadingState;
+    if (a != null) {
+      var _ = await a;
+    }
+
+    await storage.write(key: 'activeProfileName', value: name);
+    return refreshLoginState();
+
+    // (_loadingState ?? Future.value()).then(() {});
+
+    // _loadingState = _loadingState ?? .then((value) async {
+    //   await storage.write(key: 'activeProfileName', value: name);
+    //   return _loadState();
+    // });
+    // _loadingState.then((res) {
+    //   // currentState = res;
+    //   notifyListeners();
+    // });
   }
 
-  void loadProfiles() {
-    // state.catchError((e) {
-    //   print("Old error loading profile: $e");
-    // });
-    // setState(() {
-    _loadingState = _loadState();
-    _loadingState.catchError((e) {
+  Future<LoginState> assureLoginState() {
+    var a = _loadingState;
+    if (a != null) {
+      return a;
+    }
+
+    return refreshLoginState();
+  }
+
+  Future<LoginState> refreshLoginState() {
+    Future<LoginState> b = _loadState();
+    _loadingState = b;
+    b.catchError((e) {
       log.severe("Error loading profile: $e");
       throw e;
     });
-    _loadingState.then((res) {
+    b.then((res) {
       // currentState = res;
       notifyListeners();
     });
-    // state.whenComplete(() {
-    //   notifyListeners();
-    // });
-    // });
-    // setState(() {
-    // _profiles = storage.read(key: 'profiles').then((value) {
-    //   if (value == null) {
-    //     return {};
-    //   }
-
-    //   // activeProfile = profiles.keys.first;
-    //   return jsonDecode(value);
-    // });
-
-    // activeProfileName = _profiles.then((value) {
-    //   if (value.isEmpty) {
-    //     return 'Not logged in';
-    //   }
-    //   return value.keys.first;
-    // });
-
-    // _activeProfileFull = Future.wait([_profiles, activeProfileName]).then((a) {
-    //   var (prof, activeProfName) = (a[0], a[1]) as (Map<String, Map>, String);
-
-    //   if (prof.isEmpty) {
-    //     return null;
-    //   }
-
-    //   return prof[activeProfName]?.update("name", (value) => activeProfName);
-    // });
-
-    // connector = _activeProfileFull.then((activeProf) {
-    //   if (activeProf == null) {
-    //     return APIConnector();
-    //   }
-
-    //   return APIConnector(user: activeProf["user"], apiSecret: activeProf["apiSecret"]);
-    // });
-
-    // activeProfile = _activeProfileFull.then((a) {
-    //   if (a == null) {
-    //     return null;
-    //   }
-
-    //   var copy = Map<String, dynamic>.from(a);
-    //   copy.remove("apiSecret");
-
-    //   return copy;
-    // });
-    // });
+    return b;
   }
+
+  // void scheduleLoadProfiles() {
+  //   if (_loadingState != null)
+  //     return;
+
+  //   log.info("Scheduling profile load");
+  //   // state.catchError((e) {
+  //   //   print("Old error loading profile: $e");
+  //   // });
+  //   // setState(() {
+
+  //   _loadingState = _loadState();
+  //   _loadingState.catchError((e) {
+  //     log.severe("Error loading profile: $e");
+  //     throw e;
+  //   });
+  //   _loadingState.then((res) {
+  //     // currentState = res;
+  //     notifyListeners();
+  //   });
+  //   // state.whenComplete(() {
+  //   //   notifyListeners();
+  //   // });
+  //   // });
+  //   // setState(() {
+  //   // _profiles = storage.read(key: 'profiles').then((value) {
+  //   //   if (value == null) {
+  //   //     return {};
+  //   //   }
+
+  //   //   // activeProfile = profiles.keys.first;
+  //   //   return jsonDecode(value);
+  //   // });
+
+  //   // activeProfileName = _profiles.then((value) {
+  //   //   if (value.isEmpty) {
+  //   //     return 'Not logged in';
+  //   //   }
+  //   //   return value.keys.first;
+  //   // });
+
+  //   // _activeProfileFull = Future.wait([_profiles, activeProfileName]).then((a) {
+  //   //   var (prof, activeProfName) = (a[0], a[1]) as (Map<String, Map>, String);
+
+  //   //   if (prof.isEmpty) {
+  //   //     return null;
+  //   //   }
+
+  //   //   return prof[activeProfName]?.update("name", (value) => activeProfName);
+  //   // });
+
+  //   // connector = _activeProfileFull.then((activeProf) {
+  //   //   if (activeProf == null) {
+  //   //     return APIConnector();
+  //   //   }
+
+  //   //   return APIConnector(user: activeProf["user"], apiSecret: activeProf["apiSecret"]);
+  //   // });
+
+  //   // activeProfile = _activeProfileFull.then((a) {
+  //   //   if (a == null) {
+  //   //     return null;
+  //   //   }
+
+  //   //   var copy = Map<String, dynamic>.from(a);
+  //   //   copy.remove("apiSecret");
+
+  //   //   return copy;
+  //   // });
+  //   // });
+  // }
 
   // void logout() {
   // }
@@ -202,9 +245,11 @@ class LoginManager extends ChangeNotifier {
     });
   }
 
-  Future<LoginState> _completeLogin({required String user, required String apiSecret}) async {
-      String profileName = "profile1";
-    var prof = (await _loadingState).profiles;
+  Future<LoginState> _completeLogin(
+      {required String user, required String apiSecret}) async {
+    String profileName = "profile1";
+    // var prof = (await _loadingState).profiles;
+    var prof = (await assureLoginState()).profiles;
 
     // _rootNavigatorKey.currentContext?.showSnackBar(SnackBar(
     //   content: Text("Logged in as $user"),
@@ -236,17 +281,21 @@ class LoginManager extends ChangeNotifier {
     // ScaffoldMessenger.of(_rootNavigatorKey.currentContext!).showSnackBar(
     //   const SnackBar( content: Text("Logged in") ) );
 
-    loadProfiles();
+    return refreshLoginState();
+
+    // scheduleLoadProfiles();
     // state = _loadState();
     // var res = await state;
     // notifyListeners();
-    return await _loadingState;
+    // return await _loadingState;
   }
-
 
   (String, Uri) getAuthorizationUrl({required bool withRedirect}) {
     if (!withRedirect || !canLoginByRedirect) {
-      return ("https://sib-utrecht.nl/app", Uri.parse("https://sib-utrecht.nl/app"));
+      return (
+        "https://sib-utrecht.nl/app",
+        Uri.parse("https://sib-utrecht.nl/app")
+      );
     }
 
     var uuid = const Uuid();
@@ -262,20 +311,20 @@ class LoginManager extends ChangeNotifier {
     };
 
     if (canLoginByRedirect && withRedirect) {
-      queryParams["success_url"] = Uri.base.replace(fragment: "/new-login").toString();
+      queryParams["success_url"] =
+          Uri.base.replace(fragment: "/new-login").toString();
 
       // queryParams["success_url"] = Uri.https("vkuhlmann.com", "/").toString();
     }
 
-    Uri authorizeUrl = Uri.https(
-        Uri.parse(authorizeAppUrl).authority,
-        Uri.parse(authorizeAppUrl).path,
-        queryParams
+    Uri authorizeUrl = Uri.https(Uri.parse(authorizeAppUrl).authority,
+        Uri.parse(authorizeAppUrl).path, queryParams);
+    return (
+      Uri.https(Uri.parse(authorizeAppUrl).authority,
+              Uri.parse(authorizeAppUrl).path)
+          .toString(),
+      authorizeUrl
     );
-    return (Uri.https(
-      Uri.parse(authorizeAppUrl).authority, Uri.parse(authorizeAppUrl).path).toString(),
-      authorizeUrl)
-    ;
   }
 
   Future<void> _initiateLogin() async {
@@ -292,17 +341,15 @@ class LoginManager extends ChangeNotifier {
     };
 
     if (canLoginByRedirect) {
-      queryParams["success_url"] = Uri.base.replace(fragment: "/authorize").toString();
+      queryParams["success_url"] =
+          Uri.base.replace(fragment: "/authorize").toString();
     }
 
-    Uri authorizeUrl = Uri.https(
-        Uri.parse(authorizeAppUrl).authority,
-        Uri.parse(authorizeAppUrl).path,
-        queryParams
-    );
-    
+    Uri authorizeUrl = Uri.https(Uri.parse(authorizeAppUrl).authority,
+        Uri.parse(authorizeAppUrl).path, queryParams);
+
     log.info("Authorize url: $authorizeUrl");
-    
+
     if (!await launchUrl(authorizeUrl)) {
       throw Exception("Could not launch url");
     }
@@ -333,9 +380,9 @@ class LoginManager extends ChangeNotifier {
     // return await _loadState();
   }
 
-  void logout() {
-    setActiveProfile(null);
-    loadProfiles();
+  Future<LoginState> logout() {
+    return setActiveProfile(null);
+    // scheduleLoadProfiles();
   }
 
   // void eraseProfiles() {
@@ -358,12 +405,15 @@ class LoginManager extends ChangeNotifier {
 }
 
 class APIAccess extends InheritedWidget {
-  const APIAccess({super.key, required super.child, required this.state,
-      // required this.controller
-      // required this.profileName,
-      // required this.profile,
-      // required this.connector
-      });
+  const APIAccess({
+    super.key,
+    required super.child,
+    required this.state,
+    // required this.controller
+    // required this.profileName,
+    // required this.profile,
+    // required this.connector
+  });
 
   // final LoginManager controller;
   final Future<LoginState> state;
