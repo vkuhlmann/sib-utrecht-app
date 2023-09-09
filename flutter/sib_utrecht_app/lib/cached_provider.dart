@@ -6,14 +6,12 @@ class CachedProvider<T, U> extends ChangeNotifier {
   final Future<U> Function(APIConnector) getFresh;
   final Future<U?> Function(Future<APIConnector?>) getCached;
 
-  // final T Function(Map<String, dynamic>) func;
   final T Function(U) postProcess;
 
   int _firstValidId = 0;
   int _loadTargetId = 0;
   (int, T)? _cached;
   late Future<T> _loading;
-  // Future<T> _loading
 
   T? get cached => _cached?.$2;
   int get cachedId => _cached?.$1 ?? -2;

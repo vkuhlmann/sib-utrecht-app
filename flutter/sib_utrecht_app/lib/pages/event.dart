@@ -4,7 +4,6 @@ class EventPage extends StatefulWidget {
   const EventPage({Key? key, required this.eventId}) : super(key: key);
 
   final int? eventId;
-  // final Map<String, dynamic> details;
 
   @override
   State<EventPage> createState() => _EventPageState();
@@ -13,20 +12,10 @@ class EventPage extends StatefulWidget {
 class _EventPageState extends State<EventPage> {
   Future<APIConnector>? apiConnector;
 
-  // (int, Event)? _cached;
-  // Future<(int, Event)?> _staging = Future.value(null);
-  // late Future<http.Response> _image;
-
   late CachedProvider<Event, Map> _eventProvider;
   late CachedProvider<List<String>, Map> _participantsProvider;
 
   late void Function() listener;
-
-  // late Future<List<String>> participants;
-
-  // int sequenceId = 0;
-  // int? _refreshingSequence = null;
-
   @override
   void initState() {
     super.initState();
@@ -90,24 +79,6 @@ class _EventPageState extends State<EventPage> {
 
   @override
   void didChangeDependencies() {
-    // final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
-    // if (this.apiConnector != apiConnector) {
-    //   log.fine(
-    //       "[EventPage] API connector changed from ${this.apiConnector} to ${apiConnector}");
-    //   this.apiConnector = apiConnector;
-    //   scheduleRefresh();
-
-    //   setState(() {
-    //     participants = apiConnector.then((conn) {
-    //         return conn.get("events/${widget.eventId}/participants").then((response) {
-    //           return (response["data"]["participants"] as List<dynamic>)
-    //               .map((e) => e["name"] as String)
-    //               .toList();
-    //         });
-    //     });
-    //   });
-    // }
-
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
       log.fine(
@@ -119,65 +90,6 @@ class _EventPageState extends State<EventPage> {
 
     super.didChangeDependencies();
   }
-
-  // Future<Event?> _loadData() async {
-  //   // return null;
-  //   log.fine("Loading single event data");
-  //   var conn = apiConnector;
-  //   if (conn == null) {
-  //     return null;
-  //   }
-
-  //   return Event.fromJson((await (await conn)
-  //           .get("events/${widget.eventId}?include_image=true"))["data"]
-  //       ["event"] as Map<String, dynamic>);
-  // }
-
-  // void scheduleRefresh() {
-  //   setState(() {
-  //     log.fine("Refreshing");
-  //     int thisSequence = sequenceId++;
-  //     _refreshingSequence = thisSequence;
-
-  //     var fut = _loadData().then((value) {
-  //       if (value == null) {
-  //         return null;
-  //       }
-
-  //       var v = (thisSequence, value);
-  //       setState(() {
-  //         if (thisSequence != _refreshingSequence) {
-  //           log.info(
-  //               "Discarding activity data result: sequence id was $thisSequence, now $_refreshingSequence");
-  //           return;
-  //         }
-
-  //         _cached = v;
-  //       });
-
-  //       return v;
-  //     });
-  //     // .onError((e) {
-  //     //   print("Error while loading data: $e");
-  //     //   // popupDialog("Error while loading data: $e");
-  //     // });
-
-  //     var fut2 = fut.whenComplete(() {
-  //       setState(() {
-  //         if (thisSequence != _refreshingSequence) {
-  //           return;
-  //         }
-
-  //         _refreshingSequence = null;
-  //         // if (thisSequence > _dirtyStateSequence) {
-  //         //   _dirtyBookState = {};
-  //         // }
-  //       });
-  //     });
-
-  //     _staging = fut;
-  //   });
-  // }
 
   Widget buildThumbnailCard(BuildContext context, Event event) {
     return Card(
@@ -214,23 +126,23 @@ class _EventPageState extends State<EventPage> {
                                     //     16, 70, 16, 16),
                                     insetPadding: const EdgeInsets.all(0),
                                     child:
-//                                     Stack(alignment: AlignmentDirectional.center,
-//                                     children: [
-// Container(
-//                                       constraints: const BoxConstraints.expand(),
-//                                       child: GestureDetector(
-//                                       // padding: const EdgeInsets.fromLTRB(
-//                                       //     16, 16, 16, 32),
-//                                       // width: 200,
-//                                       onTap: () => Navigator.pop(context)
-//                                       )),
-//                                     Center(child: InteractiveViewer(
-//                                         clipBehavior: Clip.none,
-//                                           child: GestureDetector(
-//                                             child: Image.network(
-//                                               "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
-//                                       ))
-//                                     ])
+                                  //   Stack(alignment: AlignmentDirectional.center,
+                                  //   children: [
+                                  //  Container(
+                                  //     constraints: const BoxConstraints.expand(),
+                                  //     child: GestureDetector(
+                                  //     // padding: const EdgeInsets.fromLTRB(
+                                  //     //     16, 16, 16, 32),
+                                  //     // width: 200,
+                                  //     onTap: () => Navigator.pop(context)
+                                  //     )),
+                                  //   Center(child: InteractiveViewer(
+                                  //       clipBehavior: Clip.none,
+                                  //         child: GestureDetector(
+                                  //           child: Image.network(
+                                  //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
+                                  //     ))
+                                  //   ])
                                         Center(
                                             child: Builder(
                                                 builder: (context) =>
@@ -304,42 +216,12 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     log.fine("Building event page for event id ${widget.eventId}");
-    return
-        // FutureBuilder(
-        //     future: _staging,
-        //     builder: (contextStaging, snapshotStaging) =>
-        // ConstrainedBox(
-        // constraints: const BoxConstraints.expand(),
-        // child:
-        // Container(
-        //     alignment: Alignment.topCenter,
-        //     padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
-        // child: ListView(
-        //   shrinkWrap: true,
-        //   children: const [
-        //   Card(child: ListTile(title: const Text("Bestuur"))),
-        //   Card(child: ListTile(title: const Text("Commissies"))),
-        //   Card(child: ListTile(title: const Text("Sociëteiten"))),
-        //   // Expanded(child: Container()),
-        //   Spacer(),
-        //   Divider(),
-        //   Card(child: ListTile(title: const Text("Vertrouwenspersonen"))),
-        //   Card(child: ListTile(title: const Text("Over SIB"))),
-        //   Card(child: ListTile(title: const Text("Over app"))),
-        // ])
-        // child:
-        SelectionArea(
-            child: CustomScrollView(slivers: [
+    return SelectionArea(
+        child: CustomScrollView(slivers: [
       SliverPadding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
           sliver: SliverList(
               delegate: SliverChildListDelegate([
-            // const Card(child: ListTile(title: Text("Bestuur"))),
-            // const Card(child: ListTile(title: Text("Commissies"))),
-            // const Card(child: ListTile(title: Text("Disputen"))),
-            // Card(
-            //     child: ListTile(
-            //         title: Text("Event id: ${widget.eventId}"))),
             FutureBuilderPatched(
                 future: _eventProvider.loading,
                 builder: (eventContext, eventSnapshot) {
@@ -356,7 +238,6 @@ class _EventPageState extends State<EventPage> {
 
                   return const SizedBox();
                 }),
-
             ...(() {
               Event? event = _eventProvider.cached;
               if (event == null) {
@@ -431,116 +312,34 @@ class _EventPageState extends State<EventPage> {
                 // })),
                 // ListTile(title: const Text("aa")),)
               ];
-
-              // FutureBuilder(
-              //   future: dateFormattingInitialization,
-              //   builder: (context, snapshot) {
-              //     if (snapshot.hasData) {
-              //       return Text(
-              //     DateFormat("yMMMMEEEEd", Preferences.of(context).locale)
-              //             .format(event.start));
-              //     } else {
-              //       return Text(event.start.toString());
-              //     }
-              //   }
-              // )
-
-              // return Column(
-              //     children: events
-              //         .map<Widget>((e) => ActivityView(
-              //             key: ValueKey(e["event_id"]),
-              //             activity: e,
-              //             isParticipating: bookedEvents.contains(e["event_id"]),
-              //             isDirty: _dirtyBookState.contains(e["event_id"]),
-              //             setParticipating: (value) =>
-              //                 scheduleEventRegistration(e["event_id"], value)))
-              //         .toList());
-
-              // return _buildActivities(snapshot.data!);
-              // if (snapshotStaging.hasError) {
-              // return Text(jsonEncode(snapshotCached.data));
-              // }
-
-              // return const CircularProgressIndicator();
             }()),
-
-            // if (snapshot.hasData) {
-            //   return Text(jsonEncode(snapshot.data));
-            // } else
             const SizedBox(height: 32),
-            Card(child: ListTile(title: Text("Participants (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
+            Card(
+                child: ListTile(
+                    title: Text(
+                        "Participants (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
           ]))),
-      // const SliverFillRemaining(
-      //   hasScrollBody: false,
-      //   child: Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      //   child:
-      //   Column(
-      //     mainAxisAlignment: MainAxisAlignment.end,
-      //     children: [
-      //       Divider(),
-      //       Card(child: ListTile(title: const Text("Vertrouwenspersonen"))),
-      //       Card(child: ListTile(title: const Text("Over SIB"))),
-      //       Card(child: ListTile(title: const Text("Over app"))),
-      //     ]
-      //   )
-      //   )
-      // )
-      // FutureBuilder(
-      //     future: participants,
-      //     builder: (context, snapshot) =>
-      // return
-      // SelectionArea(child:
       SliverPadding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
           sliver: SliverList(
-              delegate: SliverChildListDelegate(
-                  //   [const Text("AAA"), const Text("BBB")]
-                  // ),);
-                  // const Text(
-                  //   "Hoi"
-                  // )
-                  [
-                FutureBuilderPatched(
-                    future: _participantsProvider.loading,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        // return Text("Error loading participants: ${snapshot.error}");
-                        return formatError(snapshot.error);
-                      }
+              delegate: SliverChildListDelegate([
+            FutureBuilderPatched(
+                future: _participantsProvider.loading,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return formatError(snapshot.error);
+                  }
 
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      return const SizedBox();
-                    }),
-                // if (snapshot.hasError)
-                //   Text("Error loading participants: ${snapshot.error}"),
-                // if (!snapshot.hasError && !snapshot.hasData)
-                // const Center(child: CircularProgressIndicator()),
-                ...(_participantsProvider.cached ?? []).map<Widget>((e) => Padding(
-                    padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
-                    child: Card(
-                        child: ListTile(title: Text(e)
-                            // Row(children: [Text(e),
-                            // const Visibility(child: Text(",]]]]]]\n"), visible: false)
-                            // ]),
-                            // title: Text(e),
-                            )))),
-                const SizedBox(height: 32),
-              ]
-
-                  // if (!snapshot.hasData || true) {
-                  //   return const CircularProgressIndicator();
-                  // }
-
-                  // return SliverList(
-                  //     delegate: SliverChildListDelegate(
-                  //       snapshot.data!.map<Widget>((e) => Card(
-                  //                 child: ListTile(
-                  //               title: Text(e),
-                  //             )))
-                  //         .toList()));
-                  )))
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return const SizedBox();
+                }),
+            ...(_participantsProvider.cached ?? []).map<Widget>((e) => Padding(
+                padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
+                child: Card(child: ListTile(title: Text(e))))),
+            const SizedBox(height: 32),
+          ])))
     ]));
   }
 }

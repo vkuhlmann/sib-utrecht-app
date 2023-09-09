@@ -125,7 +125,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   Set<int> _dirtyBookState = {};
   int _dirtyStateSequence = 0;
 
-  List<Future> _pendingMutations = [];
+  final List<Future> _pendingMutations = [];
 
   @override
   void initState() {

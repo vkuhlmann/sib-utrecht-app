@@ -29,7 +29,7 @@ part 'api_connector.dart';
 part 'async_patch.dart';
 part 'pages/activities.dart';
 part 'pages/info.dart';
-part 'pages/authorize.dart';
+// part 'pages/authorize.dart';
 part 'pages/event.dart';
 part 'pages/login.dart';
 part 'pages/new_login.dart';
@@ -65,8 +65,6 @@ void main() {
 
   GoogleFonts.config.allowRuntimeFetching = true;
 
-  // Seems like LicenseRegistry is not available in my current version of Flutter =/
-  //
   LicenseRegistry.addLicense(() async* {
     final license2 = await rootBundle.loadString('LICENSE');
     yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license2);
@@ -74,17 +72,10 @@ void main() {
     final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
-  // LicenseRegistry.addLicense(() async* {
-  //   final license = await rootBundle.loadString('LICENSE');
-  //   yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license);
-  // });
-  // .then((_) => Future.value());
-  // .then((_) => runApp(const MyApp()));
+
   loginManager = LoginManager();
   runApp(const MyApp());
 }
-
-
 
 class Preferences extends InheritedWidget {
   const Preferences({super.key, required super.child, required this.locale});
