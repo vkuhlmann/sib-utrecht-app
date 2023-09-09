@@ -67,7 +67,10 @@ class APIConnector {
 
   Future<Map> get(url) async {
     log.info("Doing GET on $url");
+
     // await Future.delayed(Duration(seconds: 3));
+
+    final Stopwatch stopwatch = Stopwatch()..start();
 
     http.Response response;
     try {
@@ -79,6 +82,9 @@ class APIConnector {
       }
       throw Exception("Cannot connect to server: ${e.message}");
     }
+    var elapsedTime = stopwatch.elapsedMilliseconds;
+    log.fine("Doing GET on $url took $elapsedTime ms");
+
     var ans = _handleResponse(response);
     var box = await boxFuture;
     box.put(url, {

@@ -105,9 +105,14 @@ class CachedProvider<T, U> extends ChangeNotifier {
     connector = conn;
 
     if (_cached == null) {
-      var attemptCache = await _fetchCachedResult();
-      if (attemptCache != null) {
-        setCache(-1, attemptCache);
+      try{
+        var attemptCache = await _fetchCachedResult();
+          if (attemptCache != null) {
+            setCache(-1, attemptCache);
+        }
+      }catch(e){
+        log.warning("Failed to load cached result: $e");
+        _loading = Future.error(e);
       }
     }
 

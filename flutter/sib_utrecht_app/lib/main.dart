@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-// import 'dart:ffi';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -33,7 +32,7 @@ part 'pages/info.dart';
 part 'pages/authorize.dart';
 part 'pages/event.dart';
 part 'pages/login.dart';
-part 'pages/new-login.dart';
+part 'pages/new_login.dart';
 part 'utils.dart';
 part 'shell.dart';
 part 'router.dart';
@@ -103,5 +102,5 @@ class Preferences extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(Preferences old) => locale != old.locale;
+  bool updateShouldNotify(Preferences oldWidget) => locale != oldWidget.locale;
 }

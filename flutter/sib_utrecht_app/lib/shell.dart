@@ -369,27 +369,28 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                         // if (navContext != null && false && navContext.canPop()) {
                         //                             return SizedBox();
                         //   return (
-                        BackButton(onPressed: () {
-                          // Navigator.maybePop(context);
-                          // context.pop();
-                          if (GoRouterState.of(context)
-                              .matchedLocation
-                              .startsWith("/event/")) {
-                            // context.go("/");
-                            // _router.go("/");
-                            // _router.go("/feed");
-                            router.go("/");
-                            // _sectionNavigatorKey.currentContext!.go("/");
-                            return;
-                          }
+                        //   Builder(builder: (context) =>
+                        // BackButton(onPressed: () {
+                        //   // Navigator.maybePop(context);
+                        //   // context.pop();
+                        //   if (GoRouterState.of(context)
+                        //       .matchedLocation
+                        //       .startsWith("/event/")) {
+                        //     // context.go("/");
+                        //     // _router.go("/");
+                        //     // _router.go("/feed");
+                        //     GoRouter.of(context).go("/");
+                        //     // _sectionNavigatorKey.currentContext!.go("/");
+                        //     return;
+                        //   }
 
-                          // if (_rootNavigatorKey.currentContext!.canPop()) {
-                          //   _rootNavigatorKey.currentContext!.pop();
-                          // }
-                          // if(_router.canPop()) {
-                          //   _router.pop();
-                          // }
-                        }),
+                        //   // if (_rootNavigatorKey.currentContext!.canPop()) {
+                        //   //   _rootNavigatorKey.currentContext!.pop();
+                        //   // }
+                        //   // if(_router.canPop()) {
+                        //   //   _router.pop();
+                        //   // }
+                        // })),
                         // );
                         //   // widget.
                         // }
