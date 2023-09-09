@@ -2,109 +2,6 @@ part of '../main.dart';
 
 // Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
 
-class ActivityView extends StatefulWidget {
-  final Event event;
-
-  final bool isParticipating;
-  final ValueSetter<bool> setParticipating;
-  final bool isDirty;
-
-  const ActivityView(
-      {Key? key,
-      required this.event,
-      required this.isParticipating,
-      required this.setParticipating,
-      required this.isDirty})
-      : super(key: key);
-
-  @override
-  State<ActivityView> createState() => _ActivityViewState();
-}
-
-class _ActivityViewState extends State<ActivityView> {
-  final _timeFormat = DateFormat("HH:mm");
-
-  // final Map<String, List<String>> WeekDays = {
-  //   "en_GB": ["mo", "tu", "we", "th", "fr", "sa", "su"],
-  //   "nl_NL": ["ma", "di", "wo", "do", "vr", "za", "zo"],
-  // };
-
-  final List<Color> WeekDayColors = [
-      Colors.pink, // Monday
-      Colors.blueAccent, // Tuesday
-      Colors.pink, // Wednesday
-      Colors.green, // Thursday
-      Colors.pink, // Friday
-      Colors.pink, // Saturday
-      Colors.pink  // Sunday
-    ];
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-        onTap: () {
-          GoRouter.of(context).go("/event/${widget.event.eventId}");
-        },
-        child: Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
-            child: Row(children: [
-              SizedBox(
-                width: 50,
-                height: 50,
-                child: Container(
-                    color: WeekDayColors[widget.event.start.weekday - 1],
-                    alignment: Alignment.center,
-                    // padding: const EdgeInsets.all(10),
-                    margin: const EdgeInsets.all(5),
-                    // color: Colors.blueAccent,
-                    // child: Text('${widget.event.start.day}')),
-                    child: LocaleDateFormat(
-                        format: "E", date: widget.event.start)),
-                    // child: Text(WeekDays[Preferences.of(context).locale.toString()]![widget.event.start.weekday - 1])
-              ),
-              SizedBox(
-                  width: 80,
-                  child: Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(10),
-                      margin: const EdgeInsets.all(5),
-                      child: LocaleDateFormat(
-                          format: "d MMM", date: widget.event.start))),
-              Expanded(
-                  child: Container(
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.all(10),
-                      margin: const EdgeInsets.all(5),
-                      child: Text(widget.event.eventName))),
-              Container(
-                  alignment: Alignment.center,
-                  child: widget.isDirty
-                      ? const CircularProgressIndicator()
-                      : Checkbox(
-                          value: widget.isParticipating,
-                          onChanged: (value) {
-                            widget.setParticipating(value!);
-                          },
-                        )),
-              Container(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.all(5),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_timeFormat.format(widget.event.start)),
-                        // Text(_timeFormat.format(widget.end)),
-                        // Text(start_time.format(context)),
-                        // Text(end_time.format(context))
-                        // Text('${widget.start.hour:2d}:${widget.start.minute}'),
-                        // Text('${widget.end.hour}:${widget.end.minute}'),
-                      ]))
-            ])));
-  }
-}
-
 class ActivitiesPage extends StatefulWidget {
   const ActivitiesPage({Key? key}) : super(key: key);
 
@@ -315,6 +212,48 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     return null;
   }
 
+  EventsItem buildEventsItem(Event e) =>
+    EventsItem(
+      key: ValueKey(e.eventId),
+      event: e,
+      isParticipating:
+          bookingsProvider.cached?.contains(e.eventId) == true,
+      isDirty: bookingsProvider.cached == null ||
+          _dirtyBookState.contains(e.eventId),
+      setParticipating: (value) =>
+          scheduleEventRegistration(e.eventId, value));
+
+  List<Widget> buildEvents({group = true}) {
+    var events = eventsProvider.cached;
+    if (events == null) {
+      return [];
+    }
+
+    if (!group) {
+      return events.map(buildEventsItem).toList();
+    }
+
+    return groupBy(events, (Event e) => formatWeekNumber(e.start)).entries
+        // .map((e) => Column(
+        //       children: [
+        //         Padding(
+        //           padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+        //           child: Text(
+        //             e.key,
+        //             style: const TextStyle(fontSize: 20),
+        //           ),
+        //         ),
+        //         ...e.value.map(buildEventsItem).toList()
+        //       ],
+        //     ))
+        .map((e) => EventsGroup(
+              key: ValueKey(e.key),
+              title: e.key,
+              children: e.value.map<EventsItem>(buildEventsItem).toList(),
+            ))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     log.fine("Doing activity page build");
@@ -356,19 +295,10 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                 );
               },
             ),
-            ...(eventsProvider.cached ?? [])
-                .map<Widget>((e) => ActivityView(
-                    key: ValueKey(e.eventId),
-                    event: e,
-                    isParticipating:
-                        bookingsProvider.cached?.contains(e.eventId) == true,
-                    isDirty: bookingsProvider.cached == null ||
-                        _dirtyBookState.contains(e.eventId),
-                    setParticipating: (value) =>
-                        scheduleEventRegistration(e.eventId, value)))
-                .toList().reversed,
-
-            
+            // ...(eventsProvider.cached ?? [])
+            //     .map<Widget>(buildEventsItem)
+            //     .toList().reversed,
+            ...buildEvents().reversed,            
           ])),
 
           FutureBuilderPatched(

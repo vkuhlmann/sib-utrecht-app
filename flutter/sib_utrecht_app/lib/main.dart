@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+// import 'dart:collection';
 
+import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -41,6 +43,9 @@ part 'cached_provider.dart';
 part 'event.dart';
 part 'locale_date_format.dart';
 
+part 'components/events_item.dart';
+part 'components/events_group.dart';
+
 late Future<void> dateFormattingInitialization;
 // const String wordpressUrl = "http://192.168.50.200/wordpress";
 const String wordpressUrl = "https://sib-utrecht.nl";
@@ -56,6 +61,15 @@ void main() {
   Logger.root.onRecord.listen((record) {
     print('${record.level.name}: ${record.time}: ${record.message}');
   });
+
+// 2023-01-01 is in 2022-W52, hence returns (2022, 52)
+//   - 2024-12-25 is in 2024-W52, hence returns (2024, 52)
+//   - 2024-12-30 is in 2025-W01, hence returns (2025, 1)
+
+  // log.info(formatWeekNumber(DateTime(2023, 1, 1)));
+  // log.info(formatWeekNumber(DateTime(2024, 12, 25)));
+  // log.info(formatWeekNumber(DateTime(2024, 12, 30)));
+  // log.info(formatWeekNumber(DateTime(2023, 9, 9)));
 
   dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
       .then((_) => Future.wait([

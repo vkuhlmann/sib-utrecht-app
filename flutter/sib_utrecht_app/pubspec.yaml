@@ -40,7 +40,7 @@ dependencies:
   go_router: ^10.1.2
   # photo_view: ^0.14.0
   logging: ^1.2.0
-  # intl_phone_number_input: ^0.7.3+1
+  collection: '>=1.17.2'
   google_fonts: ^5.1.0
 
   # flutter_html: ^2.2.1
