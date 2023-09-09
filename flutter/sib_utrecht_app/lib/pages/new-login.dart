@@ -719,7 +719,12 @@ class _NewLoginPageState extends State<NewLoginPage> {
     }
 
     // print("Attempting fill password from clipboard");
-    ClipboardData? data = await Clipboard.getData("text/plain");
+    ClipboardData? data;
+    try {
+     data = await Clipboard.getData("text/plain");
+    } catch (e) {
+      return false;
+    }
 
     String? text = data?.text;
     if (text == null) {

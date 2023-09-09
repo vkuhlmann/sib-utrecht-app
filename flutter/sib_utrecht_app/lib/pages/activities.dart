@@ -119,11 +119,39 @@ class ActivitiesPage extends StatefulWidget {
 class _ActivitiesPageState extends State<ActivitiesPage> {
   late Future<APIConnector>? apiConnector;
 
-  int sequenceId = 0;
+  // int sequenceId = 0;
 
-  (int, List<Event>, Set<int>)? _cached;
-  Future<(int, List<Event>, Set<int>)?> _staging = Future.value(null);
-  int? _refreshingSequence = null;
+  // (int, List<Event>, Set<int>)? _cached;
+  // Future<(int, List<Event>, Set<int>)?> _staging = Future.value(null);
+  // int? _refreshingSequence = null;
+
+  // final String EVENTS_URL = "events";
+
+  final CachedProvider<List<Event>, Map> eventsProvider =
+      CachedProvider<List<Event>, Map>(
+          getCached: (c) => c.then((conn) => conn?.getCached("events")),
+          getFresh: (c) => c.get("events"),
+          // getFresh: (c) => Future.delayed(const Duration(seconds: 20)).then((value) => c.get("events")),
+          postProcess: (eventsRes) =>
+              (eventsRes["data"]["events"] as Iterable<dynamic>)
+                  .map((e) => (e as Map<dynamic, dynamic>)
+                      .map((key, value) => MapEntry(key as String, value)))
+                  .map((e) => Event.fromJson(e))
+                  .toList());
+
+  final CachedProvider<Set<int>, Map> bookingsProvider =
+      CachedProvider<Set<int>, Map>(
+          getCached: (c) =>
+              c.then((conn) => conn?.getCached("users/me/bookings")),
+          // getFresh: (c) => c.get("users/me/bookings"),
+          getFresh: (c) => Future.delayed(const Duration(seconds: 20)).then((value) => c.get("users/me/bookings")),
+          postProcess: (bookingsRes) =>
+              (bookingsRes["data"]["bookings"] as Iterable<dynamic>)
+                  .where((v) => v["booking"]["status"] == "approved")
+                  .map<int>((e) => e["event"]["event_id"])
+                  .toSet());
+
+  late void Function() listener;
 
   Set<int> _dirtyBookState = {};
   int _dirtyStateSequence = 0;
@@ -135,109 +163,134 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     super.initState();
 
     apiConnector = null;
+
+    listener = () {
+      if (bookingsProvider.cachedId > _dirtyStateSequence) {
+        _dirtyStateSequence = bookingsProvider.cachedId;
+        _dirtyBookState = {};
+      }
+
+      log.fine("Doing setState from listener");
+      setState(() {});
+    };
+
+    eventsProvider.addListener(listener);
+    bookingsProvider.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    eventsProvider.removeListener(listener);
+    bookingsProvider.removeListener(listener);
+
+    super.dispose();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    // final loginState = APIAccess.of(context);
+
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
       log.fine(
-          "API connector changed from ${this.apiConnector} to ${apiConnector}");
+          "API connector changed from ${this.apiConnector} to $apiConnector");
       this.apiConnector = apiConnector;
-      scheduleRefresh();
+      // scheduleRefresh();
+      eventsProvider.setConnector(apiConnector);
+      bookingsProvider.setConnector(apiConnector);
     }
   }
 
-  (List<Event>, Set<int>) decodeResponse(eventsRes, bookingsRes) {
-    var events = (eventsRes["data"]["events"] as Iterable<dynamic>)
-        .map((e) => (e as Map<dynamic, dynamic>)
-            .map((key, value) => MapEntry(key as String, value)))
-        .map((e) => Event.fromJson(e))
-        .toList();
-    var bookings = (bookingsRes["data"]["bookings"] as Iterable<dynamic>)
-        .where((v) => v["booking"]["status"] == "approved")
-        .map<int>((e) => e["event"]["event_id"])
-        .toSet();
+  // (List<Event>, Set<int>) decodeResponse(eventsRes, bookingsRes) {
+  //   // var events = (eventsRes["data"]["events"] as Iterable<dynamic>)
+  //   //     .map((e) => (e as Map<dynamic, dynamic>)
+  //   //         .map((key, value) => MapEntry(key as String, value)))
+  //   //     .map((e) => Event.fromJson(e))
+  //   //     .toList();
+  //   // var bookings = (bookingsRes["data"]["bookings"] as Iterable<dynamic>)
+  //   //     .where((v) => v["booking"]["status"] == "approved")
+  //   //     .map<int>((e) => e["event"]["event_id"])
+  //   //     .toSet();
 
-    return (events, bookings);
-  }
+  //   return (events, bookings);
+  // }
 
-  Future<(List<Event>, Set<int>)?> _loadData() async {
-    // throw Exception("Test error");
-    log.fine("Loading activity data");
-    var conn = apiConnector;
-    if (conn == null) {
-      return null;
-    }
+  // Future<(List<Event>, Set<int>)?> _loadData() async {
+  //   // throw Exception("Test error");
+  //   log.fine("Loading activity data");
+  //   var conn = apiConnector;
+  //   if (conn == null) {
+  //     return null;
+  //   }
 
-    var api = await conn;
+  //   var api = await conn;
 
-    if (_cached == null) {
-      var cachedEventRes = await api.getCached("events");
-      var cachedBookingsRes = await api.getCached("users/me/bookings");
+  //   if (_cached == null) {
+  //     var cachedEventRes = await api.getCached("events");
+  //     var cachedBookingsRes = await api.getCached("users/me/bookings");
 
-      if (cachedEventRes != null && cachedBookingsRes != null) {
-        var cachedRes = decodeResponse(cachedEventRes, cachedBookingsRes);
+  //     if (cachedEventRes != null && cachedBookingsRes != null) {
+  //       var cachedRes = decodeResponse(cachedEventRes, cachedBookingsRes);
 
-        setState(() {
-          _cached = (-1, cachedRes.$1, cachedRes.$2);
-        });
-      }
-    }
+  //       setState(() {
+  //         _cached = (-1, cachedRes.$1, cachedRes.$2);
+  //       });
+  //     }
+  //   }
 
-    var [eventsRes, bookingsRes] = await Future.wait([
-      // conn.then((api) => api.get("events")),
-      // conn.then((api) => api.get("users/me/bookings"))
-      api.get("events"),
-      api.get("users/me/bookings")
-    ]);
+  //   var [eventsRes, bookingsRes] = await Future.wait([
+  //     // conn.then((api) => api.get("events")),
+  //     // conn.then((api) => api.get("users/me/bookings"))
+  //     api.get("events"),
+  //     api.get("users/me/bookings")
+  //   ]);
 
-    return decodeResponse(eventsRes, bookingsRes);
-  }
+  //   return decodeResponse(eventsRes, bookingsRes);
+  // }
 
-  void scheduleRefresh() {
-    setState(() {
-      log.fine("Refreshing");
-      int thisSequence = sequenceId++;
-      _refreshingSequence = thisSequence;
+  // void scheduleRefresh() {
+  //   setState(() {
+  //     log.fine("Refreshing");
+  //     int thisSequence = sequenceId++;
+  //     _refreshingSequence = thisSequence;
 
-      var fut = _loadData().then((value) {
-        if (value == null) {
-          return null;
-        }
+  //     var fut = _loadData().then((value) {
+  //       if (value == null) {
+  //         return null;
+  //       }
 
-        var v = (thisSequence, value.$1, value.$2);
-        setState(() {
-          if (thisSequence != _refreshingSequence) {
-            log.fine(
-                "Discarding activity data result: sequence id was $thisSequence, now $_refreshingSequence");
-            return;
-          }
+  //       var v = (thisSequence, value.$1, value.$2);
+  //       setState(() {
+  //         if (thisSequence != _refreshingSequence) {
+  //           log.fine(
+  //               "Discarding activity data result: sequence id was $thisSequence, now $_refreshingSequence");
+  //           return;
+  //         }
 
-          _cached = v;
-        });
+  //         _cached = v;
+  //       });
 
-        return v;
-      });
+  //       return v;
+  //     });
 
-      var fut2 = fut.whenComplete(() {
-        setState(() {
-          if (thisSequence != _refreshingSequence) {
-            return;
-          }
+  //     var fut2 = fut.whenComplete(() {
+  //       setState(() {
+  //         if (thisSequence != _refreshingSequence) {
+  //           return;
+  //         }
 
-          _refreshingSequence = null;
-          if (thisSequence > _dirtyStateSequence) {
-            _dirtyBookState = {};
-          }
-        });
-      });
+  //         _refreshingSequence = null;
+  //         if (thisSequence > _dirtyStateSequence) {
+  //           _dirtyBookState = {};
+  //         }
+  //       });
+  //     });
 
-      _staging = fut;
-    });
-  }
+  //     _staging = fut;
+  //   });
+  // }
 
   void popupDialog(String text) {
     showDialog<String>(
@@ -281,14 +334,14 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
   void scheduleEventRegistration(int eventId, bool value) {
     setState(() {
-      _dirtyStateSequence = sequenceId++;
+      _dirtyStateSequence = bookingsProvider.firstValidId;
       _dirtyBookState.add(eventId);
     });
 
     var fut = _setEventRegistration(eventId, value).then((value) {
-      setState(() {
-        _dirtyBookState.remove(eventId);
-      });
+      // setState(() {
+      //   _dirtyBookState.remove(eventId);
+      // });
       return value;
     });
 
@@ -296,10 +349,10 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     fut.whenComplete(() {
       setState(() {
         _pendingMutations.remove(fut);
-        _dirtyStateSequence = sequenceId++;
-        _dirtyBookState.add(eventId);
+        _dirtyStateSequence = bookingsProvider.firstValidId;
 
-        scheduleRefresh();
+        // scheduleRefresh();
+        bookingsProvider.invalidate();
       });
     });
   }
@@ -341,119 +394,239 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     }
   }
 
+  Widget? buildError(Object? eventsError, Object? bookingsError) {
+    String? errorMsg = eventsError?.toString() ?? bookingsError?.toString();
+
+    if (errorMsg?.contains("Sorry, you are not allowed to do that") == true) {
+      return FilledButton(
+          onPressed: () {
+            // Navigator.pushNamed(context, "/login");
+            // _rootNavigatorKey.currentContext!.push("/login");
+            // context.push("/login");
+            router.go("/login?immediate=true");
+          },
+          child: const Text("Please log in"));
+    }
+
+    if (eventsError != null) {
+      return formatError(eventsError);
+    }
+
+    if (bookingsError != null) {
+      return formatError(bookingsError);
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _staging,
-        builder: (contextStaging, snapshotStaging) {
-          return Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                        child: ListView(shrinkWrap: true, children: [
-                      // FutureBuilder<(List<Map>, Set<int>)?>(
-                      //     future: _cached,
-                      // builder: (contextCached, snapshotCached) {
-                      // if (snapshotCached.hasError) {
-                      //   return Text("${snapshotCached.error}");
-                      // }
-                      ...(contextCached) {
-                        var data = _cached;
-                        if (data == null) {
-                          return [];
-                        }
+    log.fine("Doing activity page build");
+    // return FutureBuilder(
+    //     future: _staging,
+    //     builder: (contextStaging, snapshotStaging) {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Flexible(
+              child: ListView(shrinkWrap: true, children: [
+            // FutureBuilder<(List<Map>, Set<int>)?>(
+            //     future: _cached,
+            // builder: (contextCached, snapshotCached) {
+            // if (snapshotCached.hasError) {
+            //   return Text("${snapshotCached.error}");
+            // }
+            // ...(contextCached) {
+            //   var data = _cached;
+            //   if (data == null) {
+            //     return [];
+            //   }
 
-                        var (sequenceId, events, bookedEvents) = data;
+            //   var (sequenceId, events, bookedEvents) = data;
 
-                        return events
-                            .map<Widget>((e) => ActivityView(
-                                key: ValueKey(e.eventId),
-                                event: e,
-                                isParticipating:
-                                    bookedEvents.contains(e.eventId),
-                                isDirty: _dirtyBookState.contains(e.eventId),
-                                setParticipating: (value) =>
-                                    scheduleEventRegistration(
-                                        e.eventId, value)))
-                            .toList();
+            //   var bookings = bookingsProvider.cached;
 
-                        // return _buildActivities(snapshot.data!);
-                        // if (snapshotStaging.hasError) {
-                        // return Text(jsonEncode(snapshotCached.data));
-                        // }
+            //   return
+            ...(eventsProvider.cached ?? [])
+                .map<Widget>((e) => ActivityView(
+                    key: ValueKey(e.eventId),
+                    event: e,
+                    isParticipating:
+                        bookingsProvider.cached?.contains(e.eventId) == true,
+                    isDirty: bookingsProvider.cached == null ||
+                        _dirtyBookState.contains(e.eventId),
+                    setParticipating: (value) =>
+                        scheduleEventRegistration(e.eventId, value)))
+                .toList(),
 
-                        // return const CircularProgressIndicator();
-                      }(contextStaging),
+            // return _buildActivities(snapshot.data!);
+            // if (snapshotStaging.hasError) {
+            // return Text(jsonEncode(snapshotCached.data));
+            // }
 
-                      if (_refreshingSequence != null)
-                        const Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(child: CircularProgressIndicator())),
+            // return const CircularProgressIndicator();
+            // }(contextStaging),
 
-                      //  && snapshotStaging.error != null)
-                      //     Text("${snapshotStaging.error}"),
-                      // if (_refreshingSequence == null && snapshotStaging.hasError)
-                      //     Text("${snapshotStaging.error}"),
-                      // SizedBox(),
-                      //  (if (snapshotStaging.hasError)
-                      //         Text("${snapshotStaging.error}"),
-                      //         else const SizedBox(),),
+            // if (_refreshingSequence != null)
+            FutureBuilderPatched(
+              future: eventsProvider.loading,
+              builder: (eventsContext, eventsSnapshot) {
+                if (eventsSnapshot.hasError) {
+                  return const SizedBox();
+                }
+                if (eventsSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(child: CircularProgressIndicator()));
+                }
 
-                      // Text("sequence id: $sequenceId"),
-                      // Text("refreshing sequence: $_refreshingSequence"),
-                    ])),
+                return FutureBuilderPatched(
+                  future: bookingsProvider.loading,
+                  builder: (bookingsContext, bookingsSnapshot) {
+                    if (bookingsSnapshot.hasError) {
+                      return const SizedBox();
+                    }
+                    if (bookingsSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(
+                              child: CircularProgressIndicator(
+                                  color: Colors.green)));
+                    }
 
-                    // Expanded(flex: 1, child: Container()),
+                    return const SizedBox();
+                  },
+                );
+              },
+            )
 
-                    if (_refreshingSequence == null && snapshotStaging.hasError)
-                      // Expanded(
-                      //   // fit: FlexFit.tight,
-                      //   child:
-                      Padding(
-                          padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
-                          child: Card(
-                              child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Center(
-                                      child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                        Container(
-                                            alignment: _cached == null
-                                                ? Alignment.center
-                                                : Alignment.topCenter,
-                                            child: Builder(
-                                              builder: (context) {
-                                                if (snapshotStaging.error !=
-                                                        null &&
-                                                    snapshotStaging.error
-                                                        .toString()
-                                                        .contains(
-                                                            "Sorry, you are not allowed to do that")) {
-                                                  return FilledButton(
-                                                      onPressed: () {
-                                                        // Navigator.pushNamed(context, "/login");
-                                                        // _rootNavigatorKey.currentContext!.push("/login");
-                                                        // context.push("/login");
-                                                        router.go(
-                                                            "/login?immediate=true");
-                                                      },
-                                                      child: const Text(
-                                                          "Please log in"));
-                                                }
-                                                return formatError(
-                                                    snapshotStaging.error);
-                                              },
-                                            ))
-                                      ]))))
-                          // )
-                          ),
+            // if (
+            //   (
+            //     eventsProvider.loadTargetId > eventsProvider.cachedId
+            //     && !eventsProvider
+            //   )
+            // || bookingsProvider.loadTargetId > bookingsProvider.cachedId)
+            //   const Padding(
+            //       padding: EdgeInsets.all(32),
+            //       child: Center(child: CircularProgressIndicator())),
 
-                    // Expanded(flex: 1, child: Container()),
-                  ]));
-        });
+            //  && snapshotStaging.error != null)
+            //     Text("${snapshotStaging.error}"),
+            // if (_refreshingSequence == null && snapshotStaging.hasError)
+            //     Text("${snapshotStaging.error}"),
+            // SizedBox(),
+            //  (if (snapshotStaging.hasError)
+            //         Text("${snapshotStaging.error}"),
+            //         else const SizedBox(),),
+
+            // Text("sequence id: $sequenceId"),
+            // Text("refreshing sequence: $_refreshingSequence"),
+          ])),
+
+          // Expanded(flex: 1, child: Container()),
+
+          FutureBuilderPatched(
+              future: eventsProvider.loading,
+              builder: (eventsContext, eventsSnapshot) => FutureBuilderPatched(
+                  future: bookingsProvider.loading,
+                  builder: (bookingsContext, bookingsSnapshot) {
+                    Widget? errorObj = buildError(
+                        eventsSnapshot.error,
+                        bookingsSnapshot.error
+                      );
+                    if (errorObj == null) {
+                      return const SizedBox();
+                    }
+
+                    // String? errorMsg = eventsSnapshot.error?.toString() ??
+                    //     bookingsSnapshot.error?.toString();
+
+                    // if (errorMsg.contains("Sorry, you are not allowed to do that")) {
+
+                    // }
+
+                    return Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
+                        child: Card(
+                            child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Center(
+                                    child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                      Container(
+                                          alignment:
+                                              eventsProvider.cached == null
+                                                  ? Alignment.center
+                                                  : Alignment.topCenter,
+                                          child:
+                                              // Builder(
+                                              //   builder: (context) {
+                                              //     if (snapshotStaging.error != null &&
+                                              //         snapshotStaging.error.toString().contains(
+                                              //             "Sorry, you are not allowed to do that")) {
+                                              //       return FilledButton(
+                                              //           onPressed: () {
+                                              //             // Navigator.pushNamed(context, "/login");
+                                              //             // _rootNavigatorKey.currentContext!.push("/login");
+                                              //             // context.push("/login");
+                                              //             router
+                                              //                 .go("/login?immediate=true");
+                                              //           },
+                                              //           child: const Text("Please log in"));
+                                              //     }
+                                              //     return formatError(snapshotStaging.error);
+                                              //   },
+                                              // )
+                                              errorObj)
+                                    ]))))
+                        // )
+                        );
+                  }))
+
+          // if (_refreshingSequence == null && snapshotStaging.hasError)
+          //   // Expanded(
+          //   //   // fit: FlexFit.tight,
+          //   //   child:
+          //   Padding(
+          //       padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
+          //       child: Card(
+          //           child: Padding(
+          //               padding: const EdgeInsets.all(16),
+          //               child: Center(
+          //                   child: Column(
+          //                       mainAxisAlignment: MainAxisAlignment.center,
+          //                       children: [
+          //                     Container(
+          //                         alignment: _cached == null
+          //                             ? Alignment.center
+          //                             : Alignment.topCenter,
+          //                         child: Builder(
+          //                           builder: (context) {
+          //                             if (snapshotStaging.error != null &&
+          //                                 snapshotStaging.error.toString().contains(
+          //                                     "Sorry, you are not allowed to do that")) {
+          //                               return FilledButton(
+          //                                   onPressed: () {
+          //                                     // Navigator.pushNamed(context, "/login");
+          //                                     // _rootNavigatorKey.currentContext!.push("/login");
+          //                                     // context.push("/login");
+          //                                     router
+          //                                         .go("/login?immediate=true");
+          //                                   },
+          //                                   child: const Text("Please log in"));
+          //                             }
+          //                             return formatError(snapshotStaging.error);
+          //                           },
+          //                         ))
+          //                   ]))))
+          //       // )
+          //       ),
+
+          // Expanded(flex: 1, child: Container()),
+        ]));
+    // });
   }
 }

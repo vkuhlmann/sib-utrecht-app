@@ -171,6 +171,10 @@ class _FutureBuilderPatchedState<T> extends State<FutureBuilderPatched<T>> {
         _unsubscribe();
         _snapshot = _snapshot.inState(ConnectionState.none);
       }
+
+      _snapshot = widget.initialData == null
+        ? AsyncSnapshot<T>.nothing()
+        : AsyncSnapshot<T>.withData(ConnectionState.none, widget.initialData as T);
       _subscribe();
     }
   }
@@ -219,9 +223,10 @@ class _FutureBuilderPatchedState<T> extends State<FutureBuilderPatched<T>> {
 
     if (widget.future == null) {
       setState(() {
-        _snapshot = widget.initialData == null
-        ? AsyncSnapshot<T>.nothing()
-        : AsyncSnapshot<T>.withData(ConnectionState.none, widget.initialData as T);
+        _snapshot = _snapshot.inState(ConnectionState.none);
+        // _snapshot = widget.initialData == null
+        // ? AsyncSnapshot<T>.nothing()
+        // : AsyncSnapshot<T>.withData(ConnectionState.none, widget.initialData as T);
       });
     }
   }

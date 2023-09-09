@@ -1,58 +1,77 @@
 part of 'main.dart';
 
 class CachedProvider<T, U> extends ChangeNotifier {
-  final FutureOr<LoginState> state;
+  Future<APIConnector>? connector;
 
-  final Future<U> Function(LoginState) getFresh;
-  final Future<U> Function(Future<LoginState>) getCached;
+  final Future<U> Function(APIConnector) getFresh;
+  final Future<U?> Function(Future<APIConnector?>) getCached;
 
   // final T Function(Map<String, dynamic>) func;
   final T Function(U) postProcess;
 
-  int _validId = 0;
+  int _firstValidId = 0;
+  int _loadTargetId = 0;
   (int, T)? _cached;
   late Future<T> _loading;
   // Future<T> _loading
 
   T? get cached => _cached?.$2;
-  int get lastValidId => _validId;
-  bool get isValid => _cached?.$1 == _validId;
+  int get cachedId => _cached?.$1 ?? -2;
+
+  int get firstValidId => _firstValidId;
+  int get loadTargetId => _loadTargetId;
+
+  bool get isValid => _cached?.$1 == _firstValidId;
   Future<T> get loading => _loading;
 
 
   CachedProvider({
-    required this.state, required this.getFresh, required this.getCached,
+    // required this.connector, 
+    required this.getFresh, required this.getCached,
     required this.postProcess
   }) {
-    reset();
+    _silentReset();
+  }
+
+  void _silentReset() {
+    _cached = null;
+    _firstValidId++;
+    _loading = Future.error(Exception("No load initiated"));
   }
 
   void reset() {
-    _cached = null;
-    _validId++;
-    _loading = Future.value();
-
+    _silentReset();
     notifyListeners();
   }
 
-  Future<T> _fetchCachedResult() {
-    return getCached(Future.value(state)).then(
-      (value) => postProcess(value)
+  Future<T?> _fetchCachedResult() {
+    return getCached(Future.value(connector)).then(
+      (value) {
+        if (value == null) {
+          return Future.value(null);
+        }
+        return postProcess(value);
+      }
     );
   }
 
   Future<T> _fetchFreshResult() {
-    return Future.value(state).then((st) => getFresh(st)).then(
+    return connector!.then((st) => getFresh(st)).then(
       (value) => postProcess(value)
     );
   }
 
   Future<T> loadFresh() async {
+    if (connector == null) {
+      throw Exception("Cannot load fresh data: no API connector");
+    }
+
     // int thisLoad = ++_lastValidId;
-    int thisLoad = lastValidId;
+    int thisLoad = firstValidId;
 
     var fut = _fetchFreshResult();
     _loading = fut;//.then((value) => (thisLoad, value),);
+    _loadTargetId = max(_loadTargetId, thisLoad);
     notifyListeners();
 
     var res = await fut;
@@ -81,8 +100,16 @@ class CachedProvider<T, U> extends ChangeNotifier {
     }    
   }
 
-  Future<void> _init() async {
-    setCache(-1, await _fetchCachedResult());
+  void setConnector(Future<APIConnector> conn) async {
+    log.info("Setting connector on CachedProvider");
+    connector = conn;
+
+    if (_cached == null) {
+      var attemptCache = await _fetchCachedResult();
+      if (attemptCache != null) {
+        setCache(-1, attemptCache);
+      }
+    }
 
     var _ = loadFresh();
   }
@@ -97,7 +124,7 @@ class CachedProvider<T, U> extends ChangeNotifier {
   }
 
   void invalidate({doRefresh = true}) {
-    _validId++;
+    _firstValidId++;
 
     if (doRefresh) {
       var _ = loadFresh();
