@@ -105,7 +105,7 @@ class LoginManager extends ChangeNotifier {
   // }
 
   Future<LoginState> _completeLogin(
-      {required String user, required String apiSecret}) async {
+      {required String user, required String apiSecret, String apiAddress=apiUrl}) async {
     var prof = (await assureLoginState()).profiles;
 
     String profileName = user;
@@ -121,7 +121,11 @@ class LoginManager extends ChangeNotifier {
       "app_name": null,
       "user": user,
       "apiSecret": apiSecret,
-      "name": profileName
+      "name": profileName,
+      "api": {
+        "channel": "latest",
+        "url": apiAddress,
+      }
     };
 
     prof[profileName] = profile;

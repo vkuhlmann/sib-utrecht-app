@@ -212,17 +212,58 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     return null;
   }
 
-  EventsItem buildEventsItem(Event e) =>
-    EventsItem(
-      date: e.end,
-      key: ValueKey(e.eventId),
-      event: e,
-      isParticipating:
-          bookingsProvider.cached?.contains(e.eventId) == true,
-      isDirty: bookingsProvider.cached == null ||
-          _dirtyBookState.contains(e.eventId),
-      setParticipating: (value) =>
-          scheduleEventRegistration(e.eventId, value));
+  Iterable<AnnotatedEvent> buildEventsItem(Event e) sync* {
+    if (e.end.difference(e.start).inDays > 10) {
+      yield EventOngoing(
+      key: ValueKey(("eventsItem", e.eventId)),
+        event: e,
+        isParticipating:
+            bookingsProvider.cached?.contains(e.eventId) == true,
+        isDirty: bookingsProvider.cached == null ||
+            _dirtyBookState.contains(e.eventId),
+        setParticipating: (value) =>
+            scheduleEventRegistration(e.eventId, value));
+      return;
+    }
+
+    // var startDay = e.start.subtract(const Duration(hours: 3));
+    // startDay = DateTime(startDay.year, startDay.month, startDay.day, 3, 0, 0);
+
+    var startDay = e.start;
+    startDay = DateTime(startDay.year, startDay.month, startDay.day, 3, 0, 0);
+    var endDay = e.end;
+    if (!startDay.isBefore(endDay)) {
+      endDay = startDay.add(const Duration(hours: 1));
+    }
+
+    for (
+      var i = startDay;
+      i.isBefore(endDay);
+      i = i.add(const Duration(days: 1))
+    ) {
+      yield EventTile(date: i,
+        key: ValueKey(("eventsItem", e.eventId, i)),
+        event: e,
+        isParticipating:
+            bookingsProvider.cached?.contains(e.eventId) == true,
+        isDirty: bookingsProvider.cached == null ||
+            _dirtyBookState.contains(e.eventId),
+        isConinuation: i != startDay,
+        setParticipating: (value) =>
+            scheduleEventRegistration(e.eventId, value));
+    }
+
+    // EventsItem(
+    //   date: e.end,
+    //   key: ValueKey(e.eventId),
+    //   event: e,
+    //   isParticipating:
+    //       bookingsProvider.cached?.contains(e.eventId) == true,
+    //   isDirty: bookingsProvider.cached == null ||
+    //       _dirtyBookState.contains(e.eventId),
+    //   setParticipating: (value) =>
+    //       scheduleEventRegistration(e.eventId, value));
+  }
 
   List<Widget> buildEvents({group = true}) {
     var events = eventsProvider.cached;
@@ -230,14 +271,25 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       return [];
     }
 
+    // events.add(Event(data: ))
+
+    var eventsItems = events.map(buildEventsItem).flattened.sortedBy(
+        (AnnotatedEvent e) => e.date ?? e.event.end
+      ).toList();
+
     if (!group) {
-      return events.map(buildEventsItem).toList();
+      return eventsItems;
     }
 
-    return groupBy(events,
+
+    return groupBy(eventsItems,
       // (Event e) => formatWeekNumber(e.start).substring(0, 7)
-      (Event e) => e.start.toIso8601String().substring(0, 7)
+      (AnnotatedEvent e) => 
+        // formatWeekNumber(e.date ?? DateTime.now().add(const Duration(days: 7)))
+      (e.date ?? DateTime.now().add(const Duration(days: 30)))
+      .toIso8601String().substring(0, 7)
     ).entries
+    .sortedBy((element) => element.key)
         // .map((e) => Column(
         //       children: [
         //         Padding(
@@ -251,9 +303,10 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         //       ],
         //     ))
         .map((e) => EventsGroup(
-              key: ValueKey(e.key),
+              key: ValueKey(("activityGroup", e.key)),
               title: e.key,
-              children: e.value.map<EventsItem>(buildEventsItem).toList(),
+              // children: e.value.map<EventsItem>(buildEventsItem).toList(),
+              children: e.value
             ))
         .toList();
   }

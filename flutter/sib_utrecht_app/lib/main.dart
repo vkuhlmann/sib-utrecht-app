@@ -42,9 +42,11 @@ part 'cached_provider.dart';
 
 part 'event.dart';
 part 'locale_date_format.dart';
+part 'annotated_event.dart';
 
-part 'components/events_item.dart';
-part 'components/events_group.dart';
+part 'components/event_tile.dart';
+part 'components/event_group.dart';
+part 'components/event_ongoing.dart';
 
 late Future<void> dateFormattingInitialization;
 // const String wordpressUrl = "http://192.168.50.200/wordpress";
@@ -92,9 +94,10 @@ void main() {
 }
 
 class Preferences extends InheritedWidget {
-  const Preferences({super.key, required super.child, required this.locale});
+  const Preferences({super.key, required super.child, required this.locale, required this.debugMode});
 
   final String locale;
+  final bool debugMode;
 
   static Preferences? maybeOf(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<Preferences>();

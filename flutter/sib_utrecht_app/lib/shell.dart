@@ -182,6 +182,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   Widget build(BuildContext context) {
     return Preferences(
         locale: "nl_NL",
+        debugMode: true,
         child: APIAccess(
             state: loginState,
             child: Scaffold(

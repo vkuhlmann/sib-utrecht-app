@@ -1,14 +1,21 @@
 part of '../main.dart';
 
-class EventsItem extends StatefulWidget {
+class EventTile extends StatefulWidget implements AnnotatedEvent {
+  @override
   final Event event;
 
+  @override
   final bool isParticipating;
+  @override
   final ValueSetter<bool> setParticipating;
+  @override
   final bool isDirty;
+  @override
   final DateTime date;
 
-  static const List<Color> weekDayColors = [
+  final bool isConinuation;
+
+  static final List<Color> weekDayColors = [
     Colors.pink, // Monday
     Colors.blueAccent, // Tuesday
     Colors.pink, // Wednesday
@@ -16,23 +23,24 @@ class EventsItem extends StatefulWidget {
     Colors.pink, // Friday
     Colors.pink, // Saturday
     Colors.pink  // Sunday
-  ];
+  ];//.map((e) => HSLColor.fromColor(e).withLightness(0.4).toColor()).toList();
 
-  const EventsItem(
+  const EventTile(
       {Key? key,
       required this.event,
       required this.isParticipating,
       required this.setParticipating,
       required this.isDirty,
-      required this.date
+      required this.date,
+      this.isConinuation = false
       })
       : super(key: key);
 
   @override
-  State<EventsItem> createState() => _EventsItemState();
+  State<EventTile> createState() => _EventTileState();
 }
 
-class _EventsItemState extends State<EventsItem> {
+class _EventTileState extends State<EventTile> {
   final _timeFormat = DateFormat("HH:mm");
 
   // final Map<String, List<String>> WeekDays = {
@@ -43,7 +51,13 @@ class _EventsItemState extends State<EventsItem> {
   @override
   Widget build(BuildContext context) {
     bool isActive = widget.event.data["tickets"] != null && widget.event.data["tickets"].length > 0;
-    Color color = EventsItem.weekDayColors[widget.event.start.weekday - 1];
+    Color color = EventTile.weekDayColors[widget.event.start.weekday - 1];
+    Color activeColor = HSLColor.fromColor(color).withLightness(0.7).toColor();
+
+    if (Theme.of(context).brightness == Brightness.light) {
+      color = HSLColor.fromColor(color).withLightness(0.8).toColor();
+      activeColor = HSLColor.fromColor(activeColor).withLightness(0.6).toColor();
+    }
 
     return InkWell(
         onTap: () {
@@ -60,7 +74,7 @@ class _EventsItemState extends State<EventsItem> {
                     decoration: BoxDecoration(border: 
                     isActive ? Border.all(
                       // color: Colors isActive ? Colors.purple : Colors.grey,
-                      color: HSLColor.fromColor(color).withLightness(0.7).toColor(),
+                      color: activeColor,
                       width: 3
                     ) : null,
                     // color: Colors.grey
@@ -72,7 +86,7 @@ class _EventsItemState extends State<EventsItem> {
                     // color: Colors.blueAccent,
                     // child: Text('${widget.event.start.day}')),
                     child: LocaleDateFormat(
-                        format: "E", date: widget.event.start)),
+                        format: "E", date: widget.date)),
                     // child: Text(WeekDays[Preferences.of(context).locale.toString()]![widget.event.start.weekday - 1])
               ),
               SizedBox(
@@ -82,7 +96,7 @@ class _EventsItemState extends State<EventsItem> {
                       padding: const EdgeInsets.all(10),
                       margin: const EdgeInsets.all(5),
                       child: LocaleDateFormat(
-                          format: "d MMM", date: widget.event.start))),
+                          format: "d MMM", date: widget.date))),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,
@@ -106,6 +120,8 @@ class _EventsItemState extends State<EventsItem> {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (widget.event.start.toIso8601String().substring(0, 10) ==
+                            widget.date?.toIso8601String().substring(0, 10))
                         Text(_timeFormat.format(widget.event.start)),
                         // Text(_timeFormat.format(widget.end)),
                         // Text(start_time.format(context)),

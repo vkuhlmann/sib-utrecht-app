@@ -6,7 +6,7 @@ class EventsGroup extends StatelessWidget {
   })
       : super(key: key);
 
-  final List<EventsItem> children;
+  final List<AnnotatedEvent> children;
   final String title;
   // final DateTime? start;
   // final DateTime? end;
@@ -22,7 +22,7 @@ class EventsGroup extends StatelessWidget {
       for (var v in entry.value.sortedBy((element) => element.event.start)) {
         yield v;
       }
-      yield const Divider();
+      yield Divider(key: ValueKey(("divider", entry.key)));
     }
   }
 
@@ -33,12 +33,25 @@ class EventsGroup extends StatelessWidget {
     //   // a = children.where((element) => element.event.start.isAfter(start!) && element.event.start.isBefore(end!)).toList();
     // }
 
+    // return Column(children: [ListTile(
+    //     // onTap: _handleTap,
+    //     // contentPadding: widget.tilePadding ?? expansionTileTheme.tilePadding,
+    //     // leading: widget.leading ?? _buildLeadingIcon(context),
+    //     title: Text(title),
+    //     // subtitle: widget.subtitle,
+    //     // trailing: widget.trailing ?? _buildTrailingIcon(context),
+    //   ),
+    //   ...getChildrenWeekDivided().toList()
+    //   ]);
+
     return ExpansionTile(
+      key: ValueKey((key, title)),
       initiallyExpanded: true,
       title: Text(title),
       // children: children
       children: getChildrenWeekDivided().toList()
     );
+
     // return ExpansionTile(
     //     initiallyExpanded: true,
     //   title: Text(title), children:
