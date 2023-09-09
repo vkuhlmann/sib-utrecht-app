@@ -180,10 +180,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
   @override
   Widget build(BuildContext context) {
-    return Preferences(
-        locale: "nl_NL",
-        debugMode: true,
-        child: APIAccess(
+    return APIAccess(
             state: loginState,
             child: Scaffold(
                 bottomNavigationBar: NavigationBar(
@@ -240,7 +237,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                         buildLoginIcon(context)
                       ],
                     )),
-                body: widget.navigationShell)));
+                body: widget.navigationShell));
   }
 
   void _onTap(index) {

@@ -271,7 +271,35 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       return [];
     }
 
-    // events.add(Event(data: ))
+    events = [...events, Event(data: {
+      "event_name": "Septemberkamp",
+      "event_start": "2023-09-21 22:00:00",
+      "event_end": "2023-09-24 21:59:59",
+      "event_all_day": "1",
+      "event_id": 5001,
+      "signup": {
+        "url": "https://forms.gle/bnzubocmcC91yY4R6"
+      }
+    }),
+    Event(data: {
+      "event_name": "Meet the Sibbers drink",
+      "event_start": "2023-09-12 18:00:00",
+      "event_end": "2023-09-12 21:59:59",
+      "event_id": 5002,
+      "signup": {
+        "type": "none"
+      }
+    }),
+    Event(data: {
+      "event_name": "Talk on Cold War Espionage",
+      "event_start": "2023-09-19 18:00:00",
+      "event_end": "2023-09-19 21:59:59",
+      "event_id": 5003,
+      "signup": {
+        "type": "none"
+      }
+    }),   
+    ];
 
     var eventsItems = events.map(buildEventsItem).flattened.sortedBy(
         (AnnotatedEvent e) => e.date ?? e.event.end

@@ -33,6 +33,32 @@ class _APIDebugPageState extends State<APIDebugPage> {
     super.didChangeDependencies();
   }
 
+  void submit() {
+    var conn = connector;
+    if (conn == null) {
+      return;
+    }
+
+    setState(() {
+                  response = connector!.then((c) {
+                    switch(method) {
+                      case "GET":
+                        return c.get(_urlController.text);
+                      case "POST":
+                        return c.post(_urlController.text);
+                      case "PUT":
+                        return c.put(_urlController.text);
+                      case "DELETE":
+                        return c.delete(_urlController.text);
+                    }
+                    throw Exception("Unknown method $method");
+                  })
+                  .then((value) {
+                    return const JsonEncoder.withIndent("  ").convert(value);
+                  });
+                });
+  }
+
   @override
   Widget build(BuildContext context) {
     // return Text("test");
@@ -74,29 +100,13 @@ class _APIDebugPageState extends State<APIDebugPage> {
                         controller: _urlController,
                         decoration: const InputDecoration(
                             border: OutlineInputBorder(), labelText: 'URL'),
-                            minLines: 1, maxLines: 5))
+                            // minLines: 1, maxLines: 1,
+                            onSubmitted: (value) {
+                              submit();
+                            },))
               ]),
               const SizedBox(height: 8),
-              FilledButton(onPressed: connector != null ? () {
-                setState(() {
-                  response = connector!.then((c) {
-                    switch(method) {
-                      case "GET":
-                        return c.get(_urlController.text);
-                      case "POST":
-                        return c.post(_urlController.text);
-                      case "PUT":
-                        return c.put(_urlController.text);
-                      case "DELETE":
-                        return c.delete(_urlController.text);
-                    }
-                    throw Exception("Unknown method $method");
-                  })
-                  .then((value) {
-                    return const JsonEncoder.withIndent("  ").convert(value);
-                  });
-                });
-              } : null, child: const Text("Send")),
+              FilledButton(onPressed: connector != null ? submit : null, child: const Text("Send")),
               const SizedBox(height: 16),
               FutureBuilder(future: response,
               builder: (context, snapshot) {
