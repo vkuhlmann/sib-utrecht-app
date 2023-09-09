@@ -259,7 +259,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Preferences(
         locale: "nl_NL",
-        debugMode: true,
+        debugMode: false,
         child: MaterialApp.router(
             routerConfig: router,
             title: 'SIB-Utrecht',
