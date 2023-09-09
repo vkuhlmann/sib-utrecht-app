@@ -214,6 +214,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
   EventsItem buildEventsItem(Event e) =>
     EventsItem(
+      date: e.end,
       key: ValueKey(e.eventId),
       event: e,
       isParticipating:
@@ -233,7 +234,10 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       return events.map(buildEventsItem).toList();
     }
 
-    return groupBy(events, (Event e) => formatWeekNumber(e.start)).entries
+    return groupBy(events,
+      // (Event e) => formatWeekNumber(e.start).substring(0, 7)
+      (Event e) => e.start.toIso8601String().substring(0, 7)
+    ).entries
         // .map((e) => Column(
         //       children: [
         //         Padding(

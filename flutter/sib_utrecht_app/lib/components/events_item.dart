@@ -6,6 +6,7 @@ class EventsItem extends StatefulWidget {
   final bool isParticipating;
   final ValueSetter<bool> setParticipating;
   final bool isDirty;
+  final DateTime date;
 
   static const List<Color> weekDayColors = [
     Colors.pink, // Monday
@@ -22,7 +23,9 @@ class EventsItem extends StatefulWidget {
       required this.event,
       required this.isParticipating,
       required this.setParticipating,
-      required this.isDirty})
+      required this.isDirty,
+      required this.date
+      })
       : super(key: key);
 
   @override
@@ -39,6 +42,9 @@ class _EventsItemState extends State<EventsItem> {
 
   @override
   Widget build(BuildContext context) {
+    bool isActive = widget.event.data["tickets"] != null && widget.event.data["tickets"].length > 0;
+    Color color = EventsItem.weekDayColors[widget.event.start.weekday - 1];
+
     return InkWell(
         onTap: () {
           GoRouter.of(context).go("/event/${widget.event.eventId}");
@@ -51,7 +57,15 @@ class _EventsItemState extends State<EventsItem> {
                 width: 50,
                 height: 50,
                 child: Container(
-                    color: EventsItem.weekDayColors[widget.event.start.weekday - 1],
+                    decoration: BoxDecoration(border: 
+                    isActive ? Border.all(
+                      // color: Colors isActive ? Colors.purple : Colors.grey,
+                      color: HSLColor.fromColor(color).withLightness(0.7).toColor(),
+                      width: 3
+                    ) : null,
+                    // color: Colors.grey
+                    color: color
+                    ),
                     alignment: Alignment.center,
                     // padding: const EdgeInsets.all(10),
                     margin: const EdgeInsets.all(5),
