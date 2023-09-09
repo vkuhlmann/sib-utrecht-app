@@ -51,7 +51,11 @@ class _EventTileState extends State<EventTile> {
   @override
   Widget build(BuildContext context) {
     bool isActive = widget.event.data["tickets"] != null && widget.event.data["tickets"].length > 0;
-    Color color = EventTile.weekDayColors[widget.event.start.weekday - 1];
+    Color color = EventTile.weekDayColors[widget.date.weekday - 1];
+    if (widget.isConinuation) {
+      color = HSLColor.fromColor(Colors.orangeAccent).withLightness(0.4).toColor();
+    }
+    
     Color activeColor = HSLColor.fromColor(color).withLightness(0.7).toColor();
 
     if (Theme.of(context).brightness == Brightness.light) {
@@ -109,7 +113,7 @@ class _EventTileState extends State<EventTile> {
                       ? const CircularProgressIndicator()
                       : Checkbox(
                           value: widget.isParticipating,
-                          onChanged: (value) {
+                          onChanged: widget.isConinuation ? null : (value) {
                             widget.setParticipating(value!);
                           },
                         )),
@@ -121,7 +125,7 @@ class _EventTileState extends State<EventTile> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (widget.event.start.toIso8601String().substring(0, 10) ==
-                            widget.date?.toIso8601String().substring(0, 10))
+                            widget.date.toIso8601String().substring(0, 10))
                         Text(_timeFormat.format(widget.event.start)),
                         // Text(_timeFormat.format(widget.end)),
                         // Text(start_time.format(context)),

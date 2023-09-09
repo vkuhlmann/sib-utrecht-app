@@ -68,12 +68,19 @@ final GoRouter router = GoRouter(
                             builder: (context, state) => const Placeholder()),
                       ]),
                       StatefulShellBranch(
+                        initialLocation: "/info",
                           // navigatorKey: _infoNavigatorKey,
                           routes: <RouteBase>[
                             GoRoute(
                                 path: '/info',
                                 // parentNavigatorKey: _infoNavigatorKey,
                                 builder: (context, state) => const InfoPage()),
+
+                            GoRoute(
+                              path: '/api-debug',
+                              builder: (context, state) =>
+                                  const APIDebugPage(),
+                            ),
                           ]),
                       StatefulShellBranch(
                           // navigatorKey: _eventSpecNavigatorKey,

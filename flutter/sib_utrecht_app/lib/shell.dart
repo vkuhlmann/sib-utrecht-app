@@ -194,7 +194,8 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     0: 0,
                     1: 1,
                     2: 2,
-                    3: 0
+                    3: 0,
+                    4: 2
                   })[widget.navigationShell.currentIndex]!),
                   destinations: const <Widget>[
                     NavigationDestination(
@@ -259,22 +260,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-        routerConfig: router,
-        title: 'SIB-Utrecht',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.deepPurple, brightness: Brightness.light),
-          useMaterial3: true,
-          brightness: Brightness.light,
-        ),
-        darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.deepPurple, brightness: Brightness.dark),
-          useMaterial3: true,
-          brightness: Brightness.dark,
-        ),
-        themeMode: ThemeMode.system,
-        debugShowCheckedModeBanner: true);
+    return Preferences(
+        locale: "nl_NL",
+        debugMode: true,
+        child: MaterialApp.router(
+            routerConfig: router,
+            title: 'SIB-Utrecht',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.deepPurple, brightness: Brightness.light),
+              useMaterial3: true,
+              brightness: Brightness.light,
+            ),
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.deepPurple, brightness: Brightness.dark),
+              useMaterial3: true,
+              brightness: Brightness.dark,
+            ),
+            themeMode: ThemeMode.system,
+            debugShowCheckedModeBanner: true));
   }
 }

@@ -44,7 +44,7 @@ class LoginManager extends ChangeNotifier {
       log.info("Returning LoginState not logged in");
 
       return LoginState(
-          connector: APIConnector(),
+          connector: APIConnector(apiAddress: defaultApiUrl),
           profiles: profiles.map(
               (key, value) => MapEntry(key, value as Map<String, dynamic>)),
           activeProfileName: null,
@@ -57,6 +57,7 @@ class LoginManager extends ChangeNotifier {
 
     return LoginState(
         connector: APIConnector(
+            apiAddress: activeProfile["api"]?["url"] ?? defaultApiUrl,
             user: activeProfile["user"], apiSecret: activeProfile["apiSecret"]),
         profiles: profiles
             .map((key, value) => MapEntry(key, value as Map<String, dynamic>)),
@@ -105,7 +106,7 @@ class LoginManager extends ChangeNotifier {
   // }
 
   Future<LoginState> _completeLogin(
-      {required String user, required String apiSecret, String apiAddress=apiUrl}) async {
+      {required String user, required String apiSecret, required String apiAddress}) async {
     var prof = (await assureLoginState()).profiles;
 
     String profileName = user;

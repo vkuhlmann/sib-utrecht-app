@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                     shrinkWrap: true,
                     children: [
                           FutureBuilder(
-                              future: loginManager._loadingState,
+                              future: loginManager.assureLoginState(),
                               builder: (context, snapshot) {
                                 if (snapshot.hasError) {
                                   return const Text(
@@ -63,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                                 }
 
                                 if (!snapshot.hasData) {
-                                  return const CircularProgressIndicator();
+                                  return const Center(child: CircularProgressIndicator());
                                 }
 
                                 return Padding(

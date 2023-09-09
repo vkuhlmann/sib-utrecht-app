@@ -13,13 +13,13 @@ class EventsGroup extends StatelessWidget {
   // final bool demark
 
   Iterable<Widget> getChildrenWeekDivided() sync* {
-    var division = groupBy(children, (p0) => formatWeekNumber(p0.event.start))
+    var division = groupBy(children, (p0) => formatWeekNumber(p0.date ?? p0.event.start))
     .entries.sorted((a, b) => a.key.compareTo(b.key));
     
     // division.entries.sorted((a, b) => a.key.compareTo(b.key)).map((e) => )
 
     for (var entry in division) {
-      for (var v in entry.value.sortedBy((element) => element.event.start)) {
+      for (var v in entry.value.sortedBy((element) => element.date ?? element.event.start)) {
         yield v;
       }
       yield Divider(key: ValueKey(("divider", entry.key)));

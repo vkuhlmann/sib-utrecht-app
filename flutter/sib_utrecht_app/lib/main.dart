@@ -35,6 +35,8 @@ part 'pages/info.dart';
 part 'pages/event.dart';
 part 'pages/login.dart';
 part 'pages/new_login.dart';
+part 'pages/api_debug.dart';
+
 part 'utils.dart';
 part 'shell.dart';
 part 'router.dart';
@@ -51,7 +53,7 @@ part 'components/event_ongoing.dart';
 late Future<void> dateFormattingInitialization;
 // const String wordpressUrl = "http://192.168.50.200/wordpress";
 const String wordpressUrl = "https://sib-utrecht.nl";
-const String apiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
+const String defaultApiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
 const String authorizeAppUrl =
     "$wordpressUrl/wp-admin/authorize-application.php";
 

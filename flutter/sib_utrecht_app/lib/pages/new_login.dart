@@ -25,6 +25,10 @@ class _NewLoginPageState extends State<NewLoginPage> {
   final RegExp applicationPasswordFormat =
       RegExp("^([a-zA-Z0-9]{4} ){5}[a-zA-Z0-9]{4}\$");
 
+  final TextEditingController _apiUrlController = TextEditingController();
+  final TextEditingController _authorizationUrlController =
+      TextEditingController();
+
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _applicationPasswordController =
       TextEditingController();
@@ -65,6 +69,8 @@ class _NewLoginPageState extends State<NewLoginPage> {
         widget.params["user_login"] != null;
     log.info("isSuccess: $isSuccess");
 
+    _apiUrlController.text = widget.params["api_url"] ?? defaultApiUrl;
+
     if (isSuccess) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
@@ -101,6 +107,32 @@ class _NewLoginPageState extends State<NewLoginPage> {
               Container(
                   margin: const EdgeInsets.all(8),
                   child: Column(children: [
+                    if (Preferences.of(context).debugMode) ...[
+                      TextField(
+                          controller: _apiUrlController,
+                          decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'API url')),
+                      // const SizedBox(height: 16),
+                      // TextField(
+                      //   controller: _authorizationUrlController,
+                      //   decoration: const InputDecoration(
+                      //     border: OutlineInputBorder(),
+                      //     labelText: 'Authorization URL'),
+                      //   onChanged: (value) {
+                      //     setState(() {
+                      //       try {
+                      //         authorizationUrl = Uri.parse(value);
+                      //         authorizationUrlDisplay = value;
+                      //         useRedirect = false;
+                      //       } catch(e){
+                      //         log.warning("Invalid URL");
+                      //       }
+                      //     });
+                      //   },
+                      // ),
+                      const SizedBox(height: 16),
+                    ],
                     if (!useRedirect)
                       const Text("Open the following link on any device:"),
                     if (useRedirect) const Text("Open the following link:"),
@@ -234,6 +266,8 @@ class _NewLoginPageState extends State<NewLoginPage> {
     final String username = _usernameController.value.text;
     final String applicationPassword =
         _applicationPasswordController.value.text;
+    final String apiUrl = _apiUrlController.value.text;
+
     if (!applicationPasswordFormat.hasMatch(applicationPassword)) {
       return false;
     }
@@ -280,7 +314,9 @@ class _NewLoginPageState extends State<NewLoginPage> {
               }
 
               Future<LoginState> stFut = loginManager._completeLogin(
-                  user: username, apiSecret: applicationPassword);
+                  user: username,
+                  apiSecret: applicationPassword,
+                  apiAddress: apiUrl);
               setState(() {
                 _step3Substep1 = stFut;
               });
