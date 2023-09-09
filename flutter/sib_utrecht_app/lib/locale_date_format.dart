@@ -12,15 +12,15 @@ class LocaleDateFormat extends StatelessWidget {
     return FutureBuilder(future: dateFormattingInitialization,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return SelectableText(
+            return Text(
                   DateFormat(format, Preferences.of(context).locale)
                           .format(date));
           } else {
             try{
-              return SelectableText(DateFormat(format).format(date));
+              return Text(DateFormat(format).format(date));
             } catch (e) {
               // return const Text("...");
-              return SelectableText(date.toString());
+              return Text(date.toString());
             }
             // return Text("Loading...");
           }

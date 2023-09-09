@@ -24,6 +24,21 @@ class ActivityView extends StatefulWidget {
 class _ActivityViewState extends State<ActivityView> {
   final _timeFormat = DateFormat("HH:mm");
 
+  // final Map<String, List<String>> WeekDays = {
+  //   "en_GB": ["mo", "tu", "we", "th", "fr", "sa", "su"],
+  //   "nl_NL": ["ma", "di", "wo", "do", "vr", "za", "zo"],
+  // };
+
+  final List<Color> WeekDayColors = [
+      Colors.pink, // Monday
+      Colors.blueAccent, // Tuesday
+      Colors.pink, // Wednesday
+      Colors.green, // Thursday
+      Colors.pink, // Friday
+      Colors.pink, // Saturday
+      Colors.pink  // Sunday
+    ];
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -38,20 +53,24 @@ class _ActivityViewState extends State<ActivityView> {
                 width: 50,
                 height: 50,
                 child: Container(
+                    color: WeekDayColors[widget.event.start.weekday - 1],
                     alignment: Alignment.center,
-                    padding: const EdgeInsets.all(10),
+                    // padding: const EdgeInsets.all(10),
                     margin: const EdgeInsets.all(5),
-                    color: Colors.blueAccent,
-                    child: Text('${widget.event.start.day}')),
+                    // color: Colors.blueAccent,
+                    // child: Text('${widget.event.start.day}')),
+                    child: LocaleDateFormat(
+                        format: "E", date: widget.event.start)),
+                    // child: Text(WeekDays[Preferences.of(context).locale.toString()]![widget.event.start.weekday - 1])
               ),
               SizedBox(
-                  width: 60,
+                  width: 80,
                   child: Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(10),
                       margin: const EdgeInsets.all(5),
                       child: LocaleDateFormat(
-                          format: "MMM", date: widget.event.start))),
+                          format: "d MMM", date: widget.event.start))),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,
@@ -303,20 +322,9 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Flexible(
-              child: ListView(shrinkWrap: true, children: [
-            ...(eventsProvider.cached ?? [])
-                .map<Widget>((e) => ActivityView(
-                    key: ValueKey(e.eventId),
-                    event: e,
-                    isParticipating:
-                        bookingsProvider.cached?.contains(e.eventId) == true,
-                    isDirty: bookingsProvider.cached == null ||
-                        _dirtyBookState.contains(e.eventId),
-                    setParticipating: (value) =>
-                        scheduleEventRegistration(e.eventId, value)))
-                .toList(),
-
-            FutureBuilderPatched(
+              child: ListView(reverse: true,
+              shrinkWrap: true, children: [
+                FutureBuilderPatched(
               future: eventsProvider.loading,
               builder: (eventsContext, eventsSnapshot) {
                 if (eventsSnapshot.hasError) {
@@ -347,7 +355,20 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                   },
                 );
               },
-            )
+            ),
+            ...(eventsProvider.cached ?? [])
+                .map<Widget>((e) => ActivityView(
+                    key: ValueKey(e.eventId),
+                    event: e,
+                    isParticipating:
+                        bookingsProvider.cached?.contains(e.eventId) == true,
+                    isDirty: bookingsProvider.cached == null ||
+                        _dirtyBookState.contains(e.eventId),
+                    setParticipating: (value) =>
+                        scheduleEventRegistration(e.eventId, value)))
+                .toList().reversed,
+
+            
           ])),
 
           FutureBuilderPatched(
