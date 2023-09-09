@@ -14,12 +14,9 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    loginManager.loadProfiles();
-
     if (widget.params["immediate"] != "false") {
-      loginManager._loadingState.then((state) {
+      loginManager.assureLoginState().then((state) {
         if (state.profiles.isEmpty) {
-          // loginManager.scheduleLogin();
           WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
             router.go("/new-login");
           });
@@ -36,20 +33,7 @@ class _LoginPageState extends State<LoginPage> {
             title: Row(children: [
           BackButton(
             onPressed: () {
-              // var navContext = _rootNavigatorKey.currentContext;
-
-              // if (navContext != null && navContext.canPop()) {
-              //   navContext.pop();
-              // }
-
               router.go("/");
-
-              // if (_router.canPop()) {
-              //   _router.pop();
-              // }
-              // if (Navigator.canPop(context)) {
-              //   Navigator.pop(context);
-              // }
             },
           ),
           const Text('Login')
@@ -71,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                     shrinkWrap: true,
                     children: [
                           FutureBuilder(
-                              future: loginManager._loadingState,
+                              future: loginManager.assureLoginState(),
                               builder: (context, snapshot) {
                                 if (snapshot.hasError) {
                                   return const Text(
@@ -79,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                                 }
 
                                 if (!snapshot.hasData) {
-                                  return const CircularProgressIndicator();
+                                  return const Center(child: CircularProgressIndicator());
                                 }
 
                                 return Padding(

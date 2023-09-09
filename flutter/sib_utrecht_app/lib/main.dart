@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-// import 'dart:ffi';
 import 'dart:math';
+// import 'dart:collection';
 
+import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter/gestures.dart';
 import 'package:flutter/foundation.dart';
 // import 'package:flutter/scheduler.dart';
 // import 'package:flutter/services.dart';
@@ -18,11 +18,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
-// import 'package:photo_view/photo_view.dart';
-// import 'package:photo_view/photo_view_gallery.dart';
 import 'package:logging/logging.dart';
-// import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-// import 'package:google_fonts/google_fonts.dart';
 
 // import 'package:flutter_html/flutter_html.dart';
 // import 'package:flutter_html/style.dart';
@@ -34,23 +30,30 @@ part 'login_manager.dart';
 part 'api_connector.dart';
 part 'async_patch.dart';
 part 'pages/activities.dart';
-part 'pages/debug.dart';
 part 'pages/info.dart';
-part 'pages/authorize.dart';
+// part 'pages/authorize.dart';
 part 'pages/event.dart';
 part 'pages/login.dart';
-part 'pages/new-login.dart';
+part 'pages/new_login.dart';
+part 'pages/api_debug.dart';
+
 part 'utils.dart';
 part 'shell.dart';
 part 'router.dart';
+part 'cached_provider.dart';
 
 part 'event.dart';
 part 'locale_date_format.dart';
+part 'annotated_event.dart';
+
+part 'components/event_tile.dart';
+part 'components/event_group.dart';
+part 'components/event_ongoing.dart';
 
 late Future<void> dateFormattingInitialization;
 // const String wordpressUrl = "http://192.168.50.200/wordpress";
 const String wordpressUrl = "https://sib-utrecht.nl";
-const String apiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
+const String defaultApiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
 const String authorizeAppUrl =
     "$wordpressUrl/wp-admin/authorize-application.php";
 
@@ -63,6 +66,15 @@ void main() {
     print('${record.level.name}: ${record.time}: ${record.message}');
   });
 
+// 2023-01-01 is in 2022-W52, hence returns (2022, 52)
+//   - 2024-12-25 is in 2024-W52, hence returns (2024, 52)
+//   - 2024-12-30 is in 2025-W01, hence returns (2025, 1)
+
+  // log.info(formatWeekNumber(DateTime(2023, 1, 1)));
+  // log.info(formatWeekNumber(DateTime(2024, 12, 25)));
+  // log.info(formatWeekNumber(DateTime(2024, 12, 30)));
+  // log.info(formatWeekNumber(DateTime(2023, 9, 9)));
+
   dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
       .then((_) => Future.wait([
             initializeDateFormatting("nl_NL"),
@@ -71,8 +83,6 @@ void main() {
 
   GoogleFonts.config.allowRuntimeFetching = true;
 
-  // Seems like LicenseRegistry is not available in my current version of Flutter =/
-  //
   LicenseRegistry.addLicense(() async* {
     final license2 = await rootBundle.loadString('LICENSE');
     yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license2);
@@ -80,22 +90,16 @@ void main() {
     final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
-  // LicenseRegistry.addLicense(() async* {
-  //   final license = await rootBundle.loadString('LICENSE');
-  //   yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license);
-  // });
-  // .then((_) => Future.value());
-  // .then((_) => runApp(const MyApp()));
+
   loginManager = LoginManager();
   runApp(const MyApp());
 }
 
-
-
 class Preferences extends InheritedWidget {
-  const Preferences({super.key, required super.child, required this.locale});
+  const Preferences({super.key, required super.child, required this.locale, required this.debugMode});
 
   final String locale;
+  final bool debugMode;
 
   static Preferences? maybeOf(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<Preferences>();
@@ -108,5 +112,5 @@ class Preferences extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(Preferences old) => locale != old.locale;
+  bool updateShouldNotify(Preferences oldWidget) => locale != oldWidget.locale;
 }
