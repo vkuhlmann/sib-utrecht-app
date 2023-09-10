@@ -506,7 +506,7 @@ packages:
     version: "2.3.1"
   path_provider_linux:
     dependency: transitive
-    description:09.00
+    description:
       name: path_provider_linux
       sha256: f7a1fe3a634fe7734c8d3f2766ad746ae2a2884abe22e241a8b301bf5cac3279
       url: "https://pub.dev"
