@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
+            VALUE "CompanyName", "com.vkuhlmann" "\0"
             VALUE "FileDescription", "sib_utrecht_app" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "sib_utrecht_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2023 Vincent Kuhlmann. All rights reserved." "\0"
             VALUE "OriginalFilename", "sib_utrecht_app.exe" "\0"
             VALUE "ProductName", "sib_utrecht_app" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

@@ -72,7 +72,7 @@ class _EventTileState extends State<EventTile> {
             return const SizedBox();
           }
 
-          return ElevatedButton(
+          return IconButton(
               onPressed: () {
                 launchUrl(Uri.parse(widget.event.data["signup"]["url"]))
                     .catchError((e) {
@@ -81,7 +81,7 @@ class _EventTileState extends State<EventTile> {
                           "Failed to open signup link: ${widget.event.data["signup"]["url"]}")));
                 });
               },
-              child: const Icon(Icons.open_in_browser));
+              icon: const Icon(Icons.open_in_browser));
         }
 
         return const SizedBox();
