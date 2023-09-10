@@ -1,28 +1,45 @@
 {
-description = "Flutter 3.10.0";
+description = "Flutter 3.13.0";
 
 inputs = {
-  nixpkgs.url = "github:NixOS/nixpkgs/23.05";
+  nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  #"github:NixOS/nixpkgs/23.05";
   flake-utils.url = "github:numtide/flake-utils";
 };
 outputs = { self, nixpkgs, flake-utils }:
+  #pkgs.androidenv.licenseAccepted = true;
   flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs {
         inherit system;
         config = {
+          system = "x86_64-linux";
           android_sdk.accept_license = true;
           allowUnfree = true;
+          #androidenv.licenseAccepted = true;
+          #accept_license = true;
         };
       };
-      buildToolsVersion = "30.0.3";
+      buildToolsVersion = "34.0.0-rc4";
       androidComposition = pkgs.androidenv.composeAndroidPackages {
-        buildToolsVersions = [ buildToolsVersion "33.0.2" ];
+        buildToolsVersions = [ buildToolsVersion "30.0.3" ];
         #buildToolsVersions = [ buildToolsVersion "28.0.3" ];
-        platformVersions = [ "33" "31" "28" ];
+        platformVersions = [ "33" ];
         abiVersions = [ "armeabi-v7a" "arm64-v8a" ];
+        #systemImageTypes = [ "google_apis" ];
+        
+        extraLicenses = [
+          "android-sdk-preview-license"
+          "android-googletv-license"
+          "android-sdk-arm-dbt-license"
+          "google-gdk-license"
+          "intel-android-extra-license"
+          "intel-android-sysimage-license"
+          "mips-android-sysimage-license"
+        ];
       };
       androidSdk = androidComposition.androidsdk;
+      #flutter_custom = pkgs.callPackage ./flutter_nix_3_13_0 {};
     in
     {
       devShell =
@@ -32,8 +49,12 @@ outputs = { self, nixpkgs, flake-utils }:
           buildInputs = [
             pkgs.flutter
             #./flutter_nix_3_13_0/default.nix
+            #flutter_custom.stable
             androidSdk
-            jdk11
+            #jdk
+            jdk17
+            android-tools
+            #android-studio
           ];
         };
     });
