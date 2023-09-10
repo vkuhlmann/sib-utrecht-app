@@ -10,8 +10,8 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 // final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
 // final GlobalKey<NavigatorState> _authScreensNav = GlobalKey<NavigatorState>();
-final GlobalKey<_ActivitiesPageState> _activitiesPageKey =
-    GlobalKey<_ActivitiesPageState>();
+final GlobalKey<_EventsPageState> _eventsPageKey =
+    GlobalKey<_EventsPageState>();
 // final GlobalKey<NavigatorState> _infoNavigatorKey = GlobalKey<NavigatorState>();
 // final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
 
@@ -59,7 +59,7 @@ final GoRouter router = GoRouter(
                             GoRoute(
                               path: '/',
                               builder: (context, state) =>
-                                  ActivitiesPage(key: _activitiesPageKey),
+                                  EventsPage(key: _eventsPageKey),
                             ),
                           ]),
                       StatefulShellBranch(routes: <RouteBase>[
