@@ -29,7 +29,7 @@ import 'package:hive/hive.dart';
 part 'login_manager.dart';
 part 'api_connector.dart';
 part 'async_patch.dart';
-part 'pages/activities.dart';
+part 'pages/events.dart';
 part 'pages/info.dart';
 // part 'pages/authorize.dart';
 part 'pages/event.dart';

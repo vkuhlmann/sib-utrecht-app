@@ -2,14 +2,14 @@ part of '../main.dart';
 
 // Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
 
-class ActivitiesPage extends StatefulWidget {
-  const ActivitiesPage({Key? key}) : super(key: key);
+class EventsPage extends StatefulWidget {
+  const EventsPage({Key? key}) : super(key: key);
 
   @override
-  State<ActivitiesPage> createState() => _ActivitiesPageState();
+  State<EventsPage> createState() => _EventsPageState();
 }
 
-class _ActivitiesPageState extends State<ActivitiesPage> {
+class _EventsPageState extends State<EventsPage> {
   late Future<APIConnector>? apiConnector;
 
   final CachedProvider<List<Event>, Map> eventsProvider =
@@ -78,7 +78,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
       log.fine(
-          "[ActivityPage] API connector changed from ${this.apiConnector} to $apiConnector");
+          "[EventsPage] API connector changed from ${this.apiConnector} to $apiConnector");
       this.apiConnector = apiConnector;
       eventsProvider.setConnector(apiConnector);
       bookingsProvider.setConnector(apiConnector);
@@ -331,7 +331,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         //       ],
         //     ))
         .map((e) => EventsGroup(
-              key: ValueKey(("activityGroup", e.key)),
+              key: ValueKey(("EventsGroup", e.key)),
               title: e.key,
               // children: e.value.map<EventsItem>(buildEventsItem).toList(),
               children: e.value
@@ -341,7 +341,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
 
   @override
   Widget build(BuildContext context) {
-    log.fine("Doing activity page build");
+    log.fine("Doing events page build");
     return Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
