@@ -1,19 +1,18 @@
 part of 'main.dart';
 
-
 // Go router code based on https://medium.com/@antonio.tioypedro1234/flutter-go-router-the-essential-guide-349ef39ec5b3
 // and https://pub.dev/packages/go_router/example
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _sectionNavigatorKey = GlobalKey<NavigatorState>();
-final _eventSpecNavigatorKey = GlobalKey<NavigatorState>();
+// final _sectionNavigatorKey = GlobalKey<NavigatorState>();
+// final _eventSpecNavigatorKey = GlobalKey<NavigatorState>();
 
 
-final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _authScreensNav = GlobalKey<NavigatorState>();
+// final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
+// final GlobalKey<NavigatorState> _authScreensNav = GlobalKey<NavigatorState>();
 final GlobalKey<_ActivitiesPageState> _activitiesPageKey =
     GlobalKey<_ActivitiesPageState>();
-final GlobalKey<NavigatorState> _infoNavigatorKey = GlobalKey<NavigatorState>();
+// final GlobalKey<NavigatorState> _infoNavigatorKey = GlobalKey<NavigatorState>();
 // final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
@@ -28,11 +27,6 @@ final GoRouter router = GoRouter(
               // navigatorKey: _authScreensNav,
               initialLocation: "/login",
               routes: <RouteBase>[
-                GoRoute(
-                  path: '/authorize',
-                  builder: (context, state) =>
-                      AuthorizePage(params: state.uri.queryParameters),
-                ),
                 GoRoute(
                   // parentNavigatorKey: _authScreensNav,
                   path: '/login',
@@ -74,12 +68,19 @@ final GoRouter router = GoRouter(
                             builder: (context, state) => const Placeholder()),
                       ]),
                       StatefulShellBranch(
+                        initialLocation: "/info",
                           // navigatorKey: _infoNavigatorKey,
                           routes: <RouteBase>[
                             GoRoute(
                                 path: '/info',
                                 // parentNavigatorKey: _infoNavigatorKey,
                                 builder: (context, state) => const InfoPage()),
+
+                            GoRoute(
+                              path: '/api-debug',
+                              builder: (context, state) =>
+                                  const APIDebugPage(),
+                            ),
                           ]),
                       StatefulShellBranch(
                           // navigatorKey: _eventSpecNavigatorKey,

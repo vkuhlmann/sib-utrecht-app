@@ -6,19 +6,16 @@ part of 'main.dart';
 //   Modified
 
 class APIConnector {
-  String apiAddress = apiUrl;
+  String apiAddress;
 
-  final String? user; // = "vincent";
-  // final String apiSecret = "PuNZ ZO31 bZCP har0 VYwo cNKP";
+  final String? user;
   late final String? basicAuth;
   late Map<String, String> headers;
   late Future<Box<dynamic>> boxFuture;
 
-  APIConnector({this.user, String? apiSecret}) {
-    // Hive.init(Directory.current.path);
+  APIConnector({this.user, String? apiSecret, required this.apiAddress}) {
     Hive.init(null);
     boxFuture = Hive.openBox("api_cache");
-    // box = Hive.box("api_cache");
 
     headers = {};
     if (user != null) {
@@ -54,7 +51,6 @@ class APIConnector {
         throw Exception("${obj['error']} (${obj['details'].join(', ')})");
       }
       throw Exception("${obj['error']}");
-      // throw Exception("Request returned error: ${obj['error']}");
     }
 
     return obj;
@@ -67,18 +63,22 @@ class APIConnector {
 
   Future<Map> get(url) async {
     log.info("Doing GET on $url");
-    // await Future.delayed(Duration(seconds: 3));
+
+    final Stopwatch stopwatch = Stopwatch()..start();
 
     http.Response response;
     try {
       response =
-          await http.get(Uri.parse("$apiAddress/$url"), headers: headers);
+          await http.get(getUri(url), headers: headers);
     } on http.ClientException catch (e) {
       if (e.message == "XMLHttpRequest error.") {
         throw Exception("Cannot connect to server.");
       }
       throw Exception("Cannot connect to server: ${e.message}");
     }
+    var elapsedTime = stopwatch.elapsedMilliseconds;
+    log.fine("Doing GET on $url took $elapsedTime ms");
+
     var ans = _handleResponse(response);
     var box = await boxFuture;
     box.put(url, {
@@ -88,25 +88,26 @@ class APIConnector {
     return ans;
   }
 
+  Uri getUri(String url) {
+    if (url.startsWith("/")) {
+      url = url.substring(1);
+    }
+
+    return Uri.parse("$apiAddress/$url");
+  }
+
   Future<Map> post(url) async {
-    // var response;
-    // try {
     log.info("Doing POST on $url");
-    // await Future.delayed(Duration(seconds: 3));
     final response =
-        await http.post(Uri.parse("$apiAddress/$url"), headers: headers);
-    // } catch (e) {
-    //   print("HTTP post errored");
-    // }
+        await http.post(getUri(url), headers: headers);
 
     return _handleResponse(response);
   }
 
   Future<Map> put(url) async {
     log.info("Doing PUT on $url");
-    // await Future.delayed(Duration(seconds: 3));
     final response =
-        await http.put(Uri.parse("$apiAddress/$url"), headers: headers);
+        await http.put(getUri(url), headers: headers);
 
     return _handleResponse(response);
   }
@@ -114,7 +115,7 @@ class APIConnector {
   Future<Map> delete(url) async {
     log.info("Doing DELETE on $url");
     final response =
-        await http.delete(Uri.parse("$apiAddress/$url"), headers: headers);
+        await http.delete(getUri(url), headers: headers);
 
     return _handleResponse(response);
   }

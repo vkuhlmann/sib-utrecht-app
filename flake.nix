@@ -20,7 +20,9 @@ outputs = { self, nixpkgs, flake-utils }:
           #accept_license = true;
         };
       };
-      buildToolsVersion = "34.0.0-rc4";
+
+      #buildToolsVersion = "34.0.0-rc4";
+      buildToolsVersion = "33.0.2";
       androidComposition = pkgs.androidenv.composeAndroidPackages {
         buildToolsVersions = [ buildToolsVersion "30.0.3" ];
         #buildToolsVersions = [ buildToolsVersion "28.0.3" ];
