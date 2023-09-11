@@ -1,0 +1,36 @@
+http://.../#/api-debug
+POST /events?accept_beta=true
+
+Timestamps are always in UTC
+
+{
+  "name": "September camp",
+  "nameNL": "Septemberkamp",
+  "start": "2023-09-21 22:00:00",
+  "end": "2023-09-24 21:59:59",
+  "status": "published",
+  "event_all_day": "1",
+  "signup": {
+    "url": "https://forms.gle/bnzubocmcC91yY4R6"
+  }
+}
+{
+  "name": "Meet the Sibbers drink",
+  "start": "2023-09-12 18:00:00",
+  "end": "2023-09-12 21:59:59",
+  "status": "published",
+  "event_id": 5002,
+  "signup": {
+    "type": "none"
+  }
+}
+{
+  "name": "Talk on Cold War Espionage",
+  "start": "2023-09-19 18:00:00",
+  "end": "2023-09-19 21:59:59",
+  "status": "published",
+  "event_id": 5003,
+  "signup": {
+    "type": "none"
+  }
+}

@@ -33,7 +33,7 @@ class _EventsPageState extends State<EventsPage> {
           postProcess: (bookingsRes) =>
               (bookingsRes["data"]["bookings"] as Iterable<dynamic>)
                   .where((v) => v["booking"]["status"] == "approved")
-                  .map<int>((e) => e["event"]["event_id"])
+                  .map<int>((e) => int.parse(e["event"]["event_id"].toString()))
                   .toSet());
 
   late void Function() listener;
@@ -213,7 +213,7 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   Iterable<AnnotatedEvent> buildEventsItem(Event e) sync* {
-    if (e.end.difference(e.start).inDays > 10) {
+    if (e.end != null && e.end!.difference(e.start).inDays > 10) {
       yield EventOngoing(
       key: ValueKey(("eventsItem", e.eventId)),
         event: e,
@@ -231,7 +231,7 @@ class _EventsPageState extends State<EventsPage> {
 
     var startDay = e.start;
     startDay = DateTime(startDay.year, startDay.month, startDay.day, 3, 0, 0);
-    var endDay = e.end;
+    var endDay = e.end ?? e.start;
     if (!startDay.isBefore(endDay)) {
       endDay = startDay.add(const Duration(hours: 1));
     }
@@ -271,10 +271,11 @@ class _EventsPageState extends State<EventsPage> {
       return [];
     }
 
-    events = [...events, Event(data: {
-      "event_name": "Septemberkamp",
-      "event_start": "2023-09-21 22:00:00",
-      "event_end": "2023-09-24 21:59:59",
+    events = [...events, 
+    /*Event(data: {
+      "name": "Septemberkamp",
+      "start": "2023-09-21 22:00:00",
+      "end": "2023-09-24 21:59:59",
       "event_all_day": "1",
       "event_id": 5001,
       "signup": {
@@ -282,27 +283,31 @@ class _EventsPageState extends State<EventsPage> {
       }
     }),
     Event(data: {
-      "event_name": "Meet the Sibbers drink",
-      "event_start": "2023-09-12 18:00:00",
-      "event_end": "2023-09-12 21:59:59",
+      "name": "Meet the Sibbers drink",
+      "start": "2023-09-12 18:00:00",
+      "end": "2023-09-12 21:59:59",
       "event_id": 5002,
       "signup": {
         "type": "none"
       }
     }),
     Event(data: {
-      "event_name": "Talk on Cold War Espionage",
-      "event_start": "2023-09-19 18:00:00",
-      "event_end": "2023-09-19 21:59:59",
+      "name": "Talk on Cold War Espionage",
+      "start": "2023-09-19 18:00:00",
+      "end": "2023-09-19 21:59:59",
       "event_id": 5003,
       "signup": {
         "type": "none"
       }
-    }),   
+    }),   */
     ];
 
+    /*
+
+    */
+
     var eventsItems = events.map(buildEventsItem).flattened.sortedBy(
-        (AnnotatedEvent e) => e.date ?? e.event.end
+        (AnnotatedEvent e) => e.date ?? e.event.end ?? e.event.start
       ).toList();
 
     if (!group) {
@@ -400,7 +405,7 @@ class _EventsPageState extends State<EventsPage> {
                     }
 
                     return Padding(
-                        padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
+                        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
                         child: Card(
                             child: Padding(
                                 padding: const EdgeInsets.all(16),
