@@ -106,7 +106,7 @@ class _EventTileState extends State<EventTile> {
     }
 
     return InkWell(
-        onTap: widget.event.data["post_id"] == null ? null : () {
+        onTap: (false && widget.event.data["post_id"] == null) ? null : () {
           GoRouter.of(context).go("/event/${widget.event.eventId}");
         },
         child: Container(

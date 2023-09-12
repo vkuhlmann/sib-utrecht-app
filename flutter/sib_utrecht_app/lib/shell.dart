@@ -46,10 +46,37 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
   late Future<LoginState> loginState;
   late void Function() listenerFunc;
+  late int selectedIndex;
+  final List<NavigationDestination> destinations = const [
+      NavigationDestination(
+        icon: Icon(Icons.event_outlined),
+        // icon: Icon(Symbols.calendar_month),
+        label: 'Activities',
+        selectedIcon: Icon(Icons.event),
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.timeline_outlined),
+        label: 'Feed',
+        selectedIcon: Icon(Icons.timeline),
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.tab_outlined),
+        label: "Info",
+        selectedIcon: Icon(Icons.tab),
+      )
+    ];
 
   @override
   void initState() {
     super.initState();
+
+    selectedIndex = (({
+      0: 0,
+      1: 1,
+      2: 2,
+      3: 0,
+      4: 2
+    })[widget.navigationShell.currentIndex]!);
 
     loginState = widget.loginController.assureLoginState();
 
@@ -178,69 +205,86 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
         });
   }
 
+
+Widget buildWide() {
+  return Builder(builder: (context) => Scaffold(
+      // bottomNavigationBar: NavigationBar(
+      //   onDestinationSelected: _onDestinationSelected,
+      //   selectedIndex: selectedIndex,
+      //   destinations: destinations,
+      // ),
+      appBar: AppBar(
+          backgroundColor:
+              Theme.of(context).colorScheme.inversePrimary,
+          title: Row(
+            children: <Widget>[
+              Text(widget.title),
+              const Spacer(),
+              buildLoginIcon(context)
+            ],
+          )),
+      body: SafeArea(child:
+        Row(children: [
+          NavigationRail(
+            selectedIndex: selectedIndex,
+            onDestinationSelected: _onDestinationSelected,
+            labelType: NavigationRailLabelType.all,
+            destinations: destinations.map((e) => NavigationRailDestination(
+              icon: e.icon,
+              label: Text(e.label),
+              selectedIcon: e.selectedIcon
+            )).toList(),
+          ),
+          const VerticalDivider(thickness: 1, width: 1),
+          Expanded(child: widget.navigationShell)
+        ])
+      )));
+}
+
+Widget buildMobile() {
+  return Builder(builder: (context) => Scaffold(
+      bottomNavigationBar: NavigationBar(
+        onDestinationSelected: _onDestinationSelected,
+        selectedIndex: selectedIndex,
+        destinations: destinations,
+      ),
+      appBar: AppBar(
+          backgroundColor:
+              Theme.of(context).colorScheme.inversePrimary,
+          title: Row(
+            children: <Widget>[
+              // BackButton(onPressed: () {
+              //   // Navigator.maybePop(context);
+              //   // context.pop();
+              //   if (GoRouterState.of(context)
+              //       .matchedLocation
+              //       .startsWith("/event/")) {
+              //     // context.go("/");
+              //     // _router.go("/");
+              //     // _router.go("/feed");
+              //     GoRouter.of(context).go("/");
+              //     // _sectionNavigatorKey.currentContext!.go("/");
+              //     return;
+              //   }
+
+              Text(widget.title),
+              const Spacer(),
+              buildLoginIcon(context)
+            ],
+          )),
+      body: SafeArea(child: widget.navigationShell)));
+}
+
   @override
   Widget build(BuildContext context) {
     return APIAccess(
             state: loginState,
-            child: Scaffold(
-                bottomNavigationBar: NavigationBar(
-                  onDestinationSelected: (int index) {
-                    _onTap(index);
-                  },
-                  selectedIndex: (({
-                    0: 0,
-                    1: 1,
-                    2: 2,
-                    3: 0,
-                    4: 2
-                  })[widget.navigationShell.currentIndex]!),
-                  destinations: const <Widget>[
-                    NavigationDestination(
-                      icon: Icon(Icons.event_outlined),
-                      // icon: Icon(Symbols.calendar_month),
-                      label: 'Activities',
-                      selectedIcon: Icon(Icons.event),
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.timeline_outlined),
-                      label: 'Feed',
-                      selectedIcon: Icon(Icons.timeline),
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.tab_outlined),
-                      label: "Info",
-                      selectedIcon: Icon(Icons.tab),
-                    )
-                  ],
-                ),
-                appBar: AppBar(
-                    backgroundColor:
-                        Theme.of(context).colorScheme.inversePrimary,
-                    title: Row(
-                      children: <Widget>[
-                        // BackButton(onPressed: () {
-                        //   // Navigator.maybePop(context);
-                        //   // context.pop();
-                        //   if (GoRouterState.of(context)
-                        //       .matchedLocation
-                        //       .startsWith("/event/")) {
-                        //     // context.go("/");
-                        //     // _router.go("/");
-                        //     // _router.go("/feed");
-                        //     GoRouter.of(context).go("/");
-                        //     // _sectionNavigatorKey.currentContext!.go("/");
-                        //     return;
-                        //   }
-
-                        Text(widget.title),
-                        const Spacer(),
-                        buildLoginIcon(context)
-                      ],
-                    )),
-                body: widget.navigationShell));
+            // child: buildMobile()
+            child: MediaQuery.of(context).size.width > 800 ? buildWide() : buildMobile()
+    );
   }
 
-  void _onTap(index) {
+  void _onDestinationSelected(index) {
     widget.navigationShell.goBranch(
       index,
       // A common pattern when using bottom navigation bars is to support

@@ -12,29 +12,36 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> {
   late Future<APIConnector>? apiConnector;
 
-  final CachedProvider<List<Event>, Map> eventsProvider =
-      CachedProvider<List<Event>, Map>(
-          getCached: (c) => c.then((conn) => conn?.getCached("events")),
-          getFresh: (c) => c.get("events"),
-          // getFresh: (c) => Future.delayed(const Duration(seconds: 20)).then((value) => c.get("events")),
-          postProcess: (eventsRes) =>
-              (eventsRes["data"]["events"] as Iterable<dynamic>)
-                  .map((e) => (e as Map<dynamic, dynamic>)
-                      .map((key, value) => MapEntry(key as String, value)))
-                  .map((e) => Event.fromJson(e))
-                  .toList());
+  final CachedProvider<List<Event>, Map> eventsProvider = CachedProvider<
+          List<Event>, Map>(
+      getCached: (c) => c.then((conn) => conn?.getCached("/events")),
+      // getCached: (c) {
+      //   throw Exception("This is a test");
+      //   return c.then((conn) => conn?.getCached("/events"));
+      // },
+      getFresh: (c) => c.get("/events"),
+      // getFresh: (c) {
+      //   throw Exception("This is a test2");
+      //   return c.get("/events");
+      // },
+      // getFresh: (c) => Future.delayed(const Duration(seconds: 20)).then((value) => c.get("events")),
+      postProcess: (eventsRes) =>
+          (eventsRes["data"]["events"] as Iterable<dynamic>)
+              .map((e) => (e as Map<dynamic, dynamic>)
+                  .map((key, value) => MapEntry(key as String, value)))
+              .map((e) => Event.fromJson(e))
+              .toList());
 
-  final CachedProvider<Set<int>, Map> bookingsProvider =
-      CachedProvider<Set<int>, Map>(
-          getCached: (c) =>
-              c.then((conn) => conn?.getCached("users/me/bookings")),
-          getFresh: (c) => c.get("users/me/bookings"),
-          // getFresh: (c) => Future.delayed(const Duration(seconds: 20)).then((value) => c.get("users/me/bookings")),
-          postProcess: (bookingsRes) =>
-              (bookingsRes["data"]["bookings"] as Iterable<dynamic>)
-                  .where((v) => v["booking"]["status"] == "approved")
-                  .map<int>((e) => int.parse(e["event"]["event_id"].toString()))
-                  .toSet());
+  final CachedProvider<Set<int>, Map> bookingsProvider = CachedProvider<
+          Set<int>, Map>(
+      getCached: (c) => c.then((conn) => conn?.getCached("/users/me/bookings")),
+      getFresh: (c) => c.get("/users/me/bookings"),
+      // getFresh: (c) => Future.delayed(const Duration(seconds: 20)).then((value) => c.get("users/me/bookings")),
+      postProcess: (bookingsRes) =>
+          (bookingsRes["data"]["bookings"] as Iterable<dynamic>)
+              .where((v) => v["booking"]["status"] == "approved")
+              .map<int>((e) => int.parse(e["event"]["event_id"].toString()))
+              .toSet());
 
   late void Function() listener;
 
@@ -42,6 +49,9 @@ class _EventsPageState extends State<EventsPage> {
   int _dirtyStateSequence = 0;
 
   final List<Future> _pendingMutations = [];
+
+  bool forceShowEventsStatus = true;
+  bool forceShowBookingsStatus = true;
 
   @override
   void initState() {
@@ -80,8 +90,26 @@ class _EventsPageState extends State<EventsPage> {
       log.fine(
           "[EventsPage] API connector changed from ${this.apiConnector} to $apiConnector");
       this.apiConnector = apiConnector;
-      eventsProvider.setConnector(apiConnector);
-      bookingsProvider.setConnector(apiConnector);
+      eventsProvider.setConnector(apiConnector).then(
+        (value) {
+          eventsProvider.loading
+              .then((_) => Future.delayed(const Duration(seconds: 3)))
+              .then((_) {
+            setState(() {
+              forceShowEventsStatus = false;
+            });
+          });
+        },
+      );
+      bookingsProvider.setConnector(apiConnector).then((value) {
+        bookingsProvider.loading
+            .then((_) => Future.delayed(const Duration(seconds: 3)))
+            .then((_) {
+          setState(() {
+            forceShowBookingsStatus = false;
+          });
+        });
+      });
     }
   }
 
@@ -124,7 +152,8 @@ class _EventsPageState extends State<EventsPage> {
     );
   }
 
-  void scheduleEventRegistration(int eventId, bool value, {bool initiateRefresh = true}) {
+  void scheduleEventRegistration(int eventId, bool value,
+      {bool initiateRefresh = true}) {
     setState(() {
       _dirtyStateSequence = bookingsProvider.firstValidId;
       _dirtyBookState.add(eventId);
@@ -142,7 +171,7 @@ class _EventsPageState extends State<EventsPage> {
       });
       return;
     }
-    
+
     fut.whenComplete(() {
       setState(() {
         _pendingMutations.remove(fut);
@@ -160,7 +189,7 @@ class _EventsPageState extends State<EventsPage> {
       Map res;
       try {
         res = await api!
-            .post("users/me/bookings/?event_id=$eventId&consent=true");
+            .post("/users/me/bookings/?event_id=$eventId&consent=true");
 
         bool isSuccess = res["status"] == "success";
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
@@ -176,7 +205,7 @@ class _EventsPageState extends State<EventsPage> {
     if (!value) {
       Map res;
       try {
-        res = await api!.delete("users/me/bookings/by-event-id/$eventId");
+        res = await api!.delete("/users/me/bookings/by-event-id/$eventId");
 
         bool isSuccess = res["status"] == "success";
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
@@ -215,14 +244,13 @@ class _EventsPageState extends State<EventsPage> {
   Iterable<AnnotatedEvent> buildEventsItem(Event e) sync* {
     if (e.end != null && e.end!.difference(e.start).inDays > 10) {
       yield EventOngoing(
-      key: ValueKey(("eventsItem", e.eventId)),
-        event: e,
-        isParticipating:
-            bookingsProvider.cached?.contains(e.eventId) == true,
-        isDirty: bookingsProvider.cached == null ||
-            _dirtyBookState.contains(e.eventId),
-        setParticipating: (value) =>
-            scheduleEventRegistration(e.eventId, value));
+          key: ValueKey(("eventsItem", e.eventId)),
+          event: e,
+          isParticipating: bookingsProvider.cached?.contains(e.eventId) == true,
+          isDirty: bookingsProvider.cached == null ||
+              _dirtyBookState.contains(e.eventId),
+          setParticipating: (value) =>
+              scheduleEventRegistration(e.eventId, value));
       return;
     }
 
@@ -236,21 +264,19 @@ class _EventsPageState extends State<EventsPage> {
       endDay = startDay.add(const Duration(hours: 1));
     }
 
-    for (
-      var i = startDay;
-      i.isBefore(endDay);
-      i = i.add(const Duration(days: 1))
-    ) {
-      yield EventTile(date: i,
-        key: ValueKey(("eventsItem", e.eventId, i)),
-        event: e,
-        isParticipating:
-            bookingsProvider.cached?.contains(e.eventId) == true,
-        isDirty: bookingsProvider.cached == null ||
-            _dirtyBookState.contains(e.eventId),
-        isConinuation: i != startDay,
-        setParticipating: (value) =>
-            scheduleEventRegistration(e.eventId, value));
+    for (var i = startDay;
+        i.isBefore(endDay);
+        i = i.add(const Duration(days: 1))) {
+      yield EventTile(
+          date: i,
+          key: ValueKey(("eventsItem", e.eventId, i)),
+          event: e,
+          isParticipating: bookingsProvider.cached?.contains(e.eventId) == true,
+          isDirty: bookingsProvider.cached == null ||
+              _dirtyBookState.contains(e.eventId),
+          isConinuation: i != startDay,
+          setParticipating: (value) =>
+              scheduleEventRegistration(e.eventId, value));
     }
 
     // EventsItem(
@@ -271,8 +297,9 @@ class _EventsPageState extends State<EventsPage> {
       return [];
     }
 
-    events = [...events, 
-    /*Event(data: {
+    events = [
+      ...events,
+      /*Event(data: {
       "name": "Septemberkamp",
       "start": "2023-09-21 22:00:00",
       "end": "2023-09-24 21:59:59",
@@ -306,23 +333,26 @@ class _EventsPageState extends State<EventsPage> {
 
     */
 
-    var eventsItems = events.map(buildEventsItem).flattened.sortedBy(
-        (AnnotatedEvent e) => e.date ?? e.event.end ?? e.event.start
-      ).toList();
+    var eventsItems = events
+        .map(buildEventsItem)
+        .flattened
+        .sortedBy((AnnotatedEvent e) => e.date ?? e.event.end ?? e.event.start)
+        .toList();
 
     if (!group) {
       return eventsItems;
     }
 
-
-    return groupBy(eventsItems,
-      // (Event e) => formatWeekNumber(e.start).substring(0, 7)
-      (AnnotatedEvent e) => 
-        // formatWeekNumber(e.date ?? DateTime.now().add(const Duration(days: 7)))
-      (e.date ?? DateTime.now().add(const Duration(days: 30)))
-      .toIso8601String().substring(0, 7)
-    ).entries
-    .sortedBy((element) => element.key)
+    return groupBy(
+            eventsItems,
+            // (Event e) => formatWeekNumber(e.start).substring(0, 7)
+            (AnnotatedEvent e) =>
+                // formatWeekNumber(e.date ?? DateTime.now().add(const Duration(days: 7)))
+                (e.date ?? DateTime.now().add(const Duration(days: 30)))
+                    .toIso8601String()
+                    .substring(0, 7))
+        .entries
+        .sortedBy((element) => element.key)
         // .map((e) => Column(
         //       children: [
         //         Padding(
@@ -336,12 +366,140 @@ class _EventsPageState extends State<EventsPage> {
         //       ],
         //     ))
         .map((e) => EventsGroup(
-              key: ValueKey(("EventsGroup", e.key)),
-              title: e.key,
-              // children: e.value.map<EventsItem>(buildEventsItem).toList(),
-              children: e.value
-            ))
+            key: ValueKey(("EventsGroup", e.key)),
+            title: e.key,
+            // children: e.value.map<EventsItem>(buildEventsItem).toList(),
+            children: e.value))
         .toList();
+  }
+
+  Widget buildLoadStatusCard(
+          BuildContext context, bool isError, bool isActive, Widget message) =>
+      Card(
+          child: ListTile(
+              leading: isError
+                  ? const Icon(Icons.error, color: Colors.red)
+                  : (isActive
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              // color: Colors.green,
+                              ))
+                      : const Icon(Icons.done, color: Colors.green)),
+              title: message));
+
+  Iterable<Widget> getBuildAlerts(
+      BuildContext context,
+      AsyncSnapshot<List<Event>> eventsSnapshot,
+      AsyncSnapshot<Set<int>> bookingsSnapshot) sync* {
+    String? errorMsg =
+        eventsSnapshot.error?.toString() ?? bookingsSnapshot.error?.toString();
+
+    if (errorMsg?.contains("Sorry, you are not allowed to do that") == true) {
+      yield FilledButton(
+          onPressed: () {
+            router.go("/login?immediate=true");
+          },
+          child: const Text("Please log in"));
+      return;
+    }
+
+    if (eventsSnapshot.connectionState == ConnectionState.waiting ||
+        eventsSnapshot.hasError ||
+        forceShowEventsStatus) {
+      // items.add(
+      //   Card(
+      //     child: Padding(
+      //         padding: const EdgeInsets.all(16),
+      //         child: Text(eventsProvider._cached != null
+      //         ? "Refreshing events list"
+      //         : "Loading events list")))
+      // );
+      // items.add();
+      bool hasError = eventsSnapshot.hasError;
+      bool isActive = eventsSnapshot.connectionState == ConnectionState.waiting;
+      Widget msg = eventsProvider._cached != null
+          ? const Text("Refreshing events list")
+          : const Text("Loading events list");
+
+      if (hasError) {
+        msg = Row(crossAxisAlignment: CrossAxisAlignment.start,
+        children: [const Text("Could not load events:"),
+        const SizedBox(width: 8),
+        formatError(eventsSnapshot.error)]);
+      }
+
+      if (!hasError && !isActive) {
+        msg = const Text("Successfully loaded events list");
+      }
+
+      yield buildLoadStatusCard(context, hasError, isActive, msg);
+    }
+
+    if (bookingsSnapshot.connectionState == ConnectionState.waiting ||
+        bookingsSnapshot.hasError ||
+        forceShowBookingsStatus) {
+      bool hasError = bookingsSnapshot.hasError;
+      bool isActive =
+          bookingsSnapshot.connectionState == ConnectionState.waiting;
+      Widget msg = bookingsProvider._cached != null
+          ? const Text("Refreshing bookings")
+          : const Text("Loading bookings");
+
+      // if (hasError) {
+      //   msg = formatError(bookingsSnapshot.error);
+      // }
+      if (hasError) {
+        msg = Row(crossAxisAlignment: CrossAxisAlignment.start,
+        children: [const Text("Could not load bookings:"),
+        const SizedBox(width: 8),
+        formatError(bookingsSnapshot.error)]);
+      }
+
+      if (!hasError && !isActive) {
+        msg = const Text("Successfully loaded bookings");
+      }
+
+      yield buildLoadStatusCard(context, hasError, isActive, msg);
+    }
+  }
+
+  Widget buildAlertsPanel(
+      BuildContext context,
+      AsyncSnapshot<List<Event>> eventsSnapshot,
+      AsyncSnapshot<Set<int>> bookingsSnapshot) {
+    // if (!eventsSnapshot.hasError &&
+    //     eventsSnapshot.connectionState ==
+    //         ConnectionState.waiting) {
+    //   return const SizedBox();
+    // }
+    List<Widget> items = getBuildAlerts(context, eventsSnapshot, bookingsSnapshot).toList();
+
+    // Widget? errorObj = buildError(eventsSnapshot.error, bookingsSnapshot.error);
+    // // if (errorObj == null) {
+    // //   return const SizedBox();
+    // // }
+
+    // if (errorObj != null) {
+    //   items.add(Card(
+    //       child: Padding(
+    //           padding: const EdgeInsets.all(16),
+    //           child: Center(
+    //               child: Column(
+    //                   mainAxisAlignment: MainAxisAlignment.center,
+    //                   children: [
+    //                 Container(
+    //                     alignment: eventsProvider.cached == null
+    //                         ? Alignment.center
+    //                         : Alignment.topCenter,
+    //                     child: errorObj)
+    //               ])))));
+    // }
+
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+        child: Column(children: items));
   }
 
   @override
@@ -349,81 +507,64 @@ class _EventsPageState extends State<EventsPage> {
     log.fine("Doing events page build");
     return Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Flexible(
-              child: ListView(reverse: true,
-              shrinkWrap: true, children: [
-                FutureBuilderPatched(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+          //   if (eventsProvider.cached != null || eventsSnapshot.connectionState == ConnectionState.waiting)
+          // Expanded(
+          //     child: ListView(reverse: true, children: [
+            FutureBuilderPatched(
               future: eventsProvider.loading,
               builder: (eventsContext, eventsSnapshot) {
                 if (eventsSnapshot.hasError) {
                   return const SizedBox();
                 }
-                if (eventsSnapshot.connectionState == ConnectionState.waiting) {
+                if (eventsSnapshot.connectionState == ConnectionState.waiting &&
+                    eventsProvider.cached == null) {
                   return const Padding(
                       padding: EdgeInsets.all(32),
                       child: Center(child: CircularProgressIndicator()));
                 }
 
-                return FutureBuilderPatched(
-                  future: bookingsProvider.loading,
-                  builder: (bookingsContext, bookingsSnapshot) {
-                    if (bookingsSnapshot.hasError) {
-                      return const SizedBox();
-                    }
-                    if (bookingsSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(
-                              child: CircularProgressIndicator(
-                                  color: Colors.green)));
-                    }
-
-                    return const SizedBox();
-                  },
+                return Expanded(child: ListView(reverse: true,
+                  children: 
+                  buildEvents().reversed.toList()
+                ),
                 );
+
+                // return const SizedBox();
+
+                // return FutureBuilderPatched(
+                //   future: bookingsProvider.loading,
+                //   builder: (bookingsContext, bookingsSnapshot) {
+                //     if (bookingsSnapshot.hasError) {
+                //       return const SizedBox();
+                //     }
+                //     if (bookingsSnapshot.connectionState ==
+                //         ConnectionState.waiting) {
+                //       return const Padding(
+                //           padding: EdgeInsets.all(32),
+                //           child: Center(
+                //               child: CircularProgressIndicator(
+                //                   color: Colors.green)));
+                //     }
+
+                //     return const SizedBox();
+                //   },
+                // );
               },
             ),
             // ...(eventsProvider.cached ?? [])
             //     .map<Widget>(buildEventsItem)
             //     .toList().reversed,
-            ...buildEvents().reversed,            
-          ])),
-
+            // ...buildEvents().reversed,
           FutureBuilderPatched(
               future: eventsProvider.loading,
               builder: (eventsContext, eventsSnapshot) => FutureBuilderPatched(
                   future: bookingsProvider.loading,
-                  builder: (bookingsContext, bookingsSnapshot) {
-                    Widget? errorObj = buildError(
-                        eventsSnapshot.error,
-                        bookingsSnapshot.error
-                      );
-                    if (errorObj == null) {
-                      return const SizedBox();
-                    }
-
-                    return Padding(
-                        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-                        child: Card(
-                            child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Center(
-                                    child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                      Container(
-                                          alignment:
-                                              eventsProvider.cached == null
-                                                  ? Alignment.center
-                                                  : Alignment.topCenter,
-                                          child:
-                                              errorObj)
-                                    ]))))
-                        );
-                  }))
+                  builder: (bookingsContext, bookingsSnapshot) =>
+                      buildAlertsPanel(
+                          bookingsContext, eventsSnapshot, bookingsSnapshot)))
         ]));
   }
 }

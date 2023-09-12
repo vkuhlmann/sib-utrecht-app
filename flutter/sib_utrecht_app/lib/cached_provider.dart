@@ -98,7 +98,7 @@ class CachedProvider<T, U> extends ChangeNotifier {
     }    
   }
 
-  void setConnector(Future<APIConnector> conn) async {
+  Future<void> setConnector(Future<APIConnector> conn) async {
     log.info("Setting connector on CachedProvider");
     connector = conn;
 
