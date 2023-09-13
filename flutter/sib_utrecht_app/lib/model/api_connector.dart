@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of '../main.dart';
 
 // For authorization:
 //   Contains code from https://stackoverflow.com/questions/50244416/how-to-pass-basic-auth-credentials-in-api-call-for-a-flutter-mobile-application

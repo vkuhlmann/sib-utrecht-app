@@ -46,7 +46,13 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
   late Future<LoginState> loginState;
   late void Function() listenerFunc;
-  late int selectedIndex;
+  int get selectedIndex => (({
+      0: 0,
+      1: 1,
+      2: 2,
+      3: 0,
+      4: 2
+    })[widget.navigationShell.currentIndex]!);
   final List<NavigationDestination> destinations = const [
       NavigationDestination(
         icon: Icon(Icons.event_outlined),
@@ -69,14 +75,6 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   @override
   void initState() {
     super.initState();
-
-    selectedIndex = (({
-      0: 0,
-      1: 1,
-      2: 2,
-      3: 0,
-      4: 2
-    })[widget.navigationShell.currentIndex]!);
 
     loginState = widget.loginController.assureLoginState();
 

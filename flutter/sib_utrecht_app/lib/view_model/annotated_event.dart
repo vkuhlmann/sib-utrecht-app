@@ -1,4 +1,4 @@
-part of '../main.dart';
+part of '../../main.dart';
 
 abstract interface class AnnotatedEvent extends Widget {
   final Event event;

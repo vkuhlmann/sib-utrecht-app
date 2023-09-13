@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of '../main.dart';
 
 class LocaleDateFormat extends StatelessWidget {
   const LocaleDateFormat({Key? key, required this.date, this.format = "yMMMMEEEEd"})

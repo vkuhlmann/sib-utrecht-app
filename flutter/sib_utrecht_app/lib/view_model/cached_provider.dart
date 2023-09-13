@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of '../main.dart';
 
 class CachedProvider<T, U> extends ChangeNotifier {
   Future<APIConnector>? connector;
