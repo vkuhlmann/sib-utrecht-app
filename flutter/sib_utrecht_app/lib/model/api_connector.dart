@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of '../main.dart';
 
 // For authorization:
 //   Contains code from https://stackoverflow.com/questions/50244416/how-to-pass-basic-auth-credentials-in-api-call-for-a-flutter-mobile-application
@@ -12,10 +12,13 @@ class APIConnector {
   late final String? basicAuth;
   late Map<String, String> headers;
   late Future<Box<dynamic>> boxFuture;
+  late http.Client client;
 
   APIConnector({this.user, String? apiSecret, required this.apiAddress}) {
     Hive.init(null);
     boxFuture = Hive.openBox("api_cache");
+
+    client = http.Client();
 
     headers = {};
     if (user != null) {
@@ -69,7 +72,7 @@ class APIConnector {
     http.Response response;
     try {
       response =
-          await http.get(getUri(url), headers: headers);
+          await client.get(getUri(url), headers: headers);
     } on http.ClientException catch (e) {
       if (e.message == "XMLHttpRequest error.") {
         throw Exception("Cannot connect to server.");
@@ -96,26 +99,56 @@ class APIConnector {
     return Uri.parse("$apiAddress/$url");
   }
 
-  Future<Map> post(url) async {
+  Future<Map> post(url, {Map? body}) async {
     log.info("Doing POST on $url");
-    final response =
-        await http.post(getUri(url), headers: headers);
+    http.Response response;
+    if (body != null) {
+      response = await client.post(getUri(url), headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(body),
+        );
+    } else {
+      response = await client.post(getUri(url), headers: headers);
+    }
 
     return _handleResponse(response);
   }
 
-  Future<Map> put(url) async {
+  Future<Map> put(url, {Map? body}) async {
     log.info("Doing PUT on $url");
-    final response =
-        await http.put(getUri(url), headers: headers);
+    http.Response response;
+    if (body != null) {
+      response = await client.put(getUri(url), headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(body),
+        );
+    } else {
+      response = await client.put(getUri(url), headers: headers);
+    }
 
     return _handleResponse(response);
   }
 
-  Future<Map> delete(url) async {
+  Future<Map> delete(url, {Map? body}) async {
     log.info("Doing DELETE on $url");
-    final response =
-        await http.delete(getUri(url), headers: headers);
+    // final response =
+    //     await client.delete(getUri(url), headers: headers);
+
+    http.Response response;
+    if (body != null) {
+      response = await client.delete(getUri(url), headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(body),
+        );
+    } else {
+      response = await client.delete(getUri(url), headers: headers);
+    }    
 
     return _handleResponse(response);
   }

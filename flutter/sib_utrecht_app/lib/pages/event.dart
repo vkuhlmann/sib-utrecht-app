@@ -239,10 +239,11 @@ class _EventPageState extends State<EventPage> {
                   return const SizedBox();
                 }),
             ...(() {
-              Event? event = _eventProvider.cached;
+              final Event? event = _eventProvider.cached;
               if (event == null) {
                 return [];
               }
+              var eventEnd = event.end;
 
               return [
                 Card(child: ListTile(title: Text(event.eventName))),
@@ -259,19 +260,20 @@ class _EventPageState extends State<EventPage> {
                     LocaleDateFormat(date: event.start, format: "Hm")
                   ])
                 ]))),
-                Card(
-                    child: ListTile(
-                        title: Wrap(children: [
-                  const SizedBox(width: 80, child: Text("Eindigt: ")),
-                  Wrap(children: [
-                    SizedBox(
-                        width: 260,
-                        child: LocaleDateFormat(
-                            date: event.end, format: "yMMMMEEEEd")),
-                    // const SizedBox(width: 20),
-                    LocaleDateFormat(date: event.end, format: "Hm")
-                  ])
-                ]))),
+                if (eventEnd != null)
+                  Card(
+                      child: ListTile(
+                          title: Wrap(children: [
+                    const SizedBox(width: 80, child: Text("Eindigt: ")),
+                    Wrap(children: [
+                      SizedBox(
+                          width: 260,
+                          child: LocaleDateFormat(
+                              date: eventEnd, format: "yMMMMEEEEd")),
+                      // const SizedBox(width: 20),
+                      LocaleDateFormat(date: eventEnd, format: "Hm")
+                    ])
+                  ]))),
                 // Table(columnWidths: const {
                 //   0: IntrinsicColumnWidth(),
                 //   1: FlexColumnWidth(),

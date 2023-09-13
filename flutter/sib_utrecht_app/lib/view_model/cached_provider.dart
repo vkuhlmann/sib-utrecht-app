@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of '../main.dart';
 
 class CachedProvider<T, U> extends ChangeNotifier {
   Future<APIConnector>? connector;
@@ -98,7 +98,7 @@ class CachedProvider<T, U> extends ChangeNotifier {
     }    
   }
 
-  void setConnector(Future<APIConnector> conn) async {
+  Future<void> setConnector(Future<APIConnector> conn) async {
     log.info("Setting connector on CachedProvider");
     connector = conn;
 

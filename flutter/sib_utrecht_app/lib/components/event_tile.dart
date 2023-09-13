@@ -72,7 +72,7 @@ class _EventTileState extends State<EventTile> {
             return const SizedBox();
           }
 
-          return ElevatedButton(
+          return IconButton(
               onPressed: () {
                 launchUrl(Uri.parse(widget.event.data["signup"]["url"]))
                     .catchError((e) {
@@ -81,7 +81,7 @@ class _EventTileState extends State<EventTile> {
                           "Failed to open signup link: ${widget.event.data["signup"]["url"]}")));
                 });
               },
-              child: const Icon(Icons.open_in_browser));
+              icon: const Icon(Icons.open_in_browser));
         }
 
         return const SizedBox();
@@ -106,7 +106,7 @@ class _EventTileState extends State<EventTile> {
     }
 
     return InkWell(
-        onTap: widget.event.data["post_id"] == null ? null : () {
+        onTap: (false && widget.event.data["post_id"] == null) ? null : () {
           GoRouter.of(context).go("/event/${widget.event.eventId}");
         },
         child: Container(

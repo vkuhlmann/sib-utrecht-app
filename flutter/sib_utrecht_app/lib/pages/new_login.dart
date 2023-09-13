@@ -49,6 +49,8 @@ class _NewLoginPageState extends State<NewLoginPage> {
   int nextLoginAttempt = 0;
   int? activeLoginAttempt;
 
+  bool advancedMode = false;
+
   @override
   void initState() {
     super.initState();
@@ -107,7 +109,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
               Container(
                   margin: const EdgeInsets.all(8),
                   child: Column(children: [
-                    if (Preferences.of(context).debugMode) ...[
+                    if (advancedMode) ...[
                       TextField(
                           controller: _apiUrlController,
                           decoration: const InputDecoration(
@@ -589,6 +591,11 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (Preferences.of(context).debugMode || widget.params["debug"] == ""
+    || widget.params["debug"] == "true") {
+      advancedMode = true;
+    }
+
     return Scaffold(
         appBar: AppBar(
             title: Row(children: [

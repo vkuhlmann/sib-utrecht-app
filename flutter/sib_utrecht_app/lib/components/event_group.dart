@@ -22,7 +22,10 @@ class EventsGroup extends StatelessWidget {
       for (var v in entry.value.sortedBy((element) => element.date ?? element.event.start)) {
         yield v;
       }
-      yield Divider(key: ValueKey(("divider", entry.key)));
+
+      if (entry.key != division.last.key) {
+        yield Divider(key: ValueKey(("divider", entry.key)));
+      }
     }
   }
 
@@ -49,7 +52,10 @@ class EventsGroup extends StatelessWidget {
       initiallyExpanded: true,
       title: Text(title),
       // children: children
-      children: getChildrenWeekDivided().toList()
+      children: [
+        ...getChildrenWeekDivided().toList(),
+        const SizedBox(height: 16)
+      ]
     );
 
     // return ExpansionTile(
