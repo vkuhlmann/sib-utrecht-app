@@ -8,6 +8,10 @@ String formatErrorMsg(String? error) {
   var m = RegExp(r"^(Exception: )?(<strong>Error:</strong> )?(?<message>.*)$")
       .firstMatch(error);
 
+  if (m?.namedGroup("message") == "Sorry, you are not allowed to do that.") {
+    return "Permission denied (make sure you are logged in)";
+  }
+
   return m?.namedGroup("message") ?? error;
 }
 

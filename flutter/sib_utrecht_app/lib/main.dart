@@ -50,6 +50,7 @@ part 'view_model/annotated_event.dart';
 part 'components/event_tile.dart';
 part 'components/event_group.dart';
 part 'components/event_ongoing.dart';
+part 'components/alerts_panel.dart';
 
 late Future<void> dateFormattingInitialization;
 // const String wordpressUrl = "http://192.168.50.200/wordpress";

@@ -562,13 +562,18 @@ class _EventsPageState extends State<EventsPage> {
             //     .map<Widget>(buildEventsItem)
             //     .toList().reversed,
             // ...buildEvents().reversed,
-          FutureBuilderPatched(
-              future: eventsProvider.loading,
-              builder: (eventsContext, eventsSnapshot) => FutureBuilderPatched(
-                  future: bookingsProvider.loading,
-                  builder: (bookingsContext, bookingsSnapshot) =>
-                      buildAlertsPanel(
-                          bookingsContext, eventsSnapshot, bookingsSnapshot)))
+            AlertsPanel(loadingFutures: [
+              ("events", eventsProvider.loading, eventsProvider.cached != null),
+              ("bookings", bookingsProvider.loading, bookingsProvider.cached != null),
+            ])
+
+          // FutureBuilderPatched(
+          //     future: eventsProvider.loading,
+          //     builder: (eventsContext, eventsSnapshot) => FutureBuilderPatched(
+          //         future: bookingsProvider.loading,
+          //         builder: (bookingsContext, bookingsSnapshot) =>
+          //             buildAlertsPanel(
+          //                 bookingsContext, eventsSnapshot, bookingsSnapshot)))
         ]));
   }
 }
