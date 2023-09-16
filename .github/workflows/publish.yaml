@@ -28,7 +28,7 @@ jobs:
       - run: flutter config --enable-web
         shell: bash
         working-directory: flutter/sib_utrecht_app
-      - run: flutter build web --release --web-renderer=auto --base-href /
+      - run: flutter build web --release --web-renderer=canvaskit --base-href /
         shell: bash
         working-directory: flutter/sib_utrecht_app
       - run: touch build/web/.nojekyll
