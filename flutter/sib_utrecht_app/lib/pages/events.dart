@@ -424,7 +424,7 @@ class _EventsPageState extends State<EventsPage> {
           : const Text("Loading events list");
 
       if (hasError) {
-        msg = Row(crossAxisAlignment: CrossAxisAlignment.start,
+        msg = Wrap(
         children: [const Text("Could not load events:"),
         const SizedBox(width: 8),
         formatError(eventsSnapshot.error)]);
@@ -451,7 +451,7 @@ class _EventsPageState extends State<EventsPage> {
       //   msg = formatError(bookingsSnapshot.error);
       // }
       if (hasError) {
-        msg = Row(crossAxisAlignment: CrossAxisAlignment.start,
+        msg = Wrap(
         children: [const Text("Could not load bookings:"),
         const SizedBox(width: 8),
         formatError(bookingsSnapshot.error)]);
@@ -516,14 +516,18 @@ class _EventsPageState extends State<EventsPage> {
             FutureBuilderPatched(
               future: eventsProvider.loading,
               builder: (eventsContext, eventsSnapshot) {
-                if (eventsSnapshot.hasError) {
-                  return const SizedBox();
-                }
+                // if (eventsSnapshot.hasError) {
+                //   return const SizedBox();
+                // }
                 if (eventsSnapshot.connectionState == ConnectionState.waiting &&
                     eventsProvider.cached == null) {
                   return const Padding(
                       padding: EdgeInsets.all(32),
                       child: Center(child: CircularProgressIndicator()));
+                }
+
+                if (eventsProvider.cached == null) {
+                  return const SizedBox();
                 }
 
                 return Expanded(child: ListView(reverse: true,

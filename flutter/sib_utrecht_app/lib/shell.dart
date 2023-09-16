@@ -310,12 +310,14 @@ class MyApp extends StatelessWidget {
                   seedColor: Colors.deepPurple, brightness: Brightness.light),
               useMaterial3: true,
               brightness: Brightness.light,
+              // fontFamily: 'Roboto',
             ),
             darkTheme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
                   seedColor: Colors.deepPurple, brightness: Brightness.dark),
               useMaterial3: true,
               brightness: Brightness.dark,
+              // fontFamily: 'Roboto',
             ),
             themeMode: ThemeMode.system,
             debugShowCheckedModeBanner: true));

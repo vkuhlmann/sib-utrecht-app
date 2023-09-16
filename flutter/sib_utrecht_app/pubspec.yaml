@@ -81,14 +81,21 @@ flutter:
         - asset: assets/fonts/RobotoMono/static/RobotoMono-Bold.ttf
           weight: 700
 
-    # - family: Roboto
-    #   fonts:
-    #     - asset: assets/fonts/Roboto/static/Roboto-Regular.ttf
-    #     - asset: assets/fonts/Roboto/static/Roboto-Bold.ttf
-    #       weight: 700
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto/Roboto-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Roboto/Roboto-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Roboto/Roboto-BoldItalic.ttf
+          weight: 700
+          style: italic
+          
 
   assets:
     - assets/fonts/RobotoMono/LICENSE.txt
+    - assets/fonts/Roboto/LICENSE.txt
     - LICENSE
 
   # To add assets to your application, add an assets section, like this:

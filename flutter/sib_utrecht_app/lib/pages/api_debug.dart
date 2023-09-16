@@ -154,8 +154,9 @@ class _APIDebugPageState extends State<APIDebugPage> {
                   }
 
                   if (snapshot.hasData) {
-                    return Expanded(
-                        child: SelectableText(snapshot.data.toString()));
+                    // return Expanded(
+                    //     child: SelectableText(snapshot.data.toString()));
+                      return SelectableText(snapshot.data.toString());
                   }
 
                   return const SizedBox();

@@ -90,6 +90,9 @@ void main() {
 
     final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+
+    final license3 = await rootBundle.loadString('assets/fonts/Roboto/LICENSE.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license3);
   });
 
   loginManager = LoginManager();
