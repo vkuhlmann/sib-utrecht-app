@@ -219,6 +219,13 @@ Widget buildWide() {
           title: Row(
             // crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              Image.asset(
+                'assets/sib_logo_64.png',
+                fit: BoxFit.contain,
+                height: 40,
+                filterQuality: FilterQuality.medium,
+              ),
+              const SizedBox(width: 16),
               Text(widget.title),
               const Spacer(),
               buildLoginIcon(context)
@@ -267,7 +274,13 @@ Widget buildMobile() {
               //     // _sectionNavigatorKey.currentContext!.go("/");
               //     return;
               //   }
-
+              Image.asset(
+                'assets/sib_logo_64.png',
+                fit: BoxFit.contain,
+                height: 40,
+                filterQuality: FilterQuality.medium,
+              ),
+              const SizedBox(width: 16),
               Text(widget.title),
               const Spacer(),
               buildLoginIcon(context)

@@ -96,6 +96,7 @@ flutter:
   assets:
     - assets/fonts/RobotoMono/LICENSE.txt
     - assets/fonts/Roboto/LICENSE.txt
+    - assets/sib_logo_64.png
     - LICENSE
 
   # To add assets to your application, add an assets section, like this:

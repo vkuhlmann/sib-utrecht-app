@@ -120,7 +120,8 @@ class _EventPageState extends State<EventPage> {
           .replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
     }
 
-    description = description.replaceAll(RegExp("^(\r|\n|<br */>|<br *>)*", multiLine: false), "");
+    description = description.replaceAll(
+        RegExp("^(\r|\n|<br */>|<br *>)*", multiLine: false), "");
 
     return (description.isEmpty ? null : description, thumbnail);
   }
@@ -163,98 +164,94 @@ class _EventPageState extends State<EventPage> {
                     //   imageProvider: NetworkImage("$wordpressUrl/${event.data["thumbnail"]["url"]}"),
                     // );
 
-                    return 
-                    Center(child:
-                    InkWell(
-                        onTap: () {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return Dialog(
-                                    alignment: AlignmentDirectional.center,
-                                    // insetPadding: const EdgeInsets.fromLTRB(
-                                    //     16, 70, 16, 16),
-                                    insetPadding: const EdgeInsets.all(0),
-                                    child:
-                                        //   Stack(alignment: AlignmentDirectional.center,
-                                        //   children: [
-                                        //  Container(
-                                        //     constraints: const BoxConstraints.expand(),
-                                        //     child: GestureDetector(
-                                        //     // padding: const EdgeInsets.fromLTRB(
-                                        //     //     16, 16, 16, 32),
-                                        //     // width: 200,
-                                        //     onTap: () => Navigator.pop(context)
-                                        //     )),
-                                        //   Center(child: InteractiveViewer(
-                                        //       clipBehavior: Clip.none,
-                                        //         child: GestureDetector(
-                                        //           child: Image.network(
-                                        //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
-                                        //     ))
-                                        //   ])
-                                        Center(
-                                            child: Builder(
-                                                builder: (context) =>
-                                                    InteractiveViewer(
-                                                        // clipBehavior: Clip.none,
-                                                        child: Stack(
-                                                      alignment:
-                                                          AlignmentDirectional
-                                                              .center,
-                                                      children: [
-                                                        Container(
-                                                            constraints:
-                                                                const BoxConstraints
-                                                                    .expand(),
-                                                            child:
-                                                                GestureDetector(
+                    return Center(
+                        child: InkWell(
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return Dialog(
+                                        alignment: AlignmentDirectional.center,
+                                        // insetPadding: const EdgeInsets.fromLTRB(
+                                        //     16, 70, 16, 16),
+                                        insetPadding: const EdgeInsets.all(0),
+                                        child:
+                                            //   Stack(alignment: AlignmentDirectional.center,
+                                            //   children: [
+                                            //  Container(
+                                            //     constraints: const BoxConstraints.expand(),
+                                            //     child: GestureDetector(
+                                            //     // padding: const EdgeInsets.fromLTRB(
+                                            //     //     16, 16, 16, 32),
+                                            //     // width: 200,
+                                            //     onTap: () => Navigator.pop(context)
+                                            //     )),
+                                            //   Center(child: InteractiveViewer(
+                                            //       clipBehavior: Clip.none,
+                                            //         child: GestureDetector(
+                                            //           child: Image.network(
+                                            //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
+                                            //     ))
+                                            //   ])
+                                            Center(
+                                                child: Builder(
+                                                    builder: (context) =>
+                                                        InteractiveViewer(
+                                                            // clipBehavior: Clip.none,
+                                                            child: Stack(
+                                                          alignment:
+                                                              AlignmentDirectional
+                                                                  .center,
+                                                          children: [
+                                                            Container(
+                                                                constraints:
+                                                                    const BoxConstraints
+                                                                        .expand(),
+                                                                child: GestureDetector(
                                                                     // padding: const EdgeInsets.fromLTRB(
                                                                     //     16, 16, 16, 32),
                                                                     // width: 200,
-                                                                    onTap: () =>
-                                                                        Navigator.pop(
-                                                                            context))),
-                                                        GestureDetector(
-                                                          onTap:() => Navigator.pop(context),
-                                                          child: 
-                                                        Image.network(
-                                                            thumbnail["url"])
-                                                        )
-                                                      ],
-                                                    )))));
-                                // return Dialog(
-                                //     alignment: AlignmentDirectional.center,
-                                //     // insetPadding: const EdgeInsets.fromLTRB(
-                                //     //     16, 70, 16, 16),
-                                //     insetPadding: const EdgeInsets.all(0),
-                                //     child: Container(
-                                //       constraints: const BoxConstraints.expand(),
-                                //       child: GestureDetector(
-                                //       // padding: const EdgeInsets.fromLTRB(
-                                //       //     16, 16, 16, 32),
-                                //       // width: 200,
-                                //       onTap: () => Navigator.pop(context),
-                                //       child: Center(child: InteractiveViewer(
-                                //         clipBehavior: Clip.none,
-                                //           child: GestureDetector(
-                                //             child: Image.network(
-                                //               "$wordpressUrl/${event.data["thumbnail"]["url"]}"))))),
-                                //     ));
-                              });
+                                                                    onTap: () => Navigator.pop(context))),
+                                                            GestureDetector(
+                                                                onTap: () =>
+                                                                    Navigator.pop(
+                                                                        context),
+                                                                child: Image.network(
+                                                                    thumbnail[
+                                                                        "url"]))
+                                                          ],
+                                                        )))));
+                                    // return Dialog(
+                                    //     alignment: AlignmentDirectional.center,
+                                    //     // insetPadding: const EdgeInsets.fromLTRB(
+                                    //     //     16, 70, 16, 16),
+                                    //     insetPadding: const EdgeInsets.all(0),
+                                    //     child: Container(
+                                    //       constraints: const BoxConstraints.expand(),
+                                    //       child: GestureDetector(
+                                    //       // padding: const EdgeInsets.fromLTRB(
+                                    //       //     16, 16, 16, 32),
+                                    //       // width: 200,
+                                    //       onTap: () => Navigator.pop(context),
+                                    //       child: Center(child: InteractiveViewer(
+                                    //         clipBehavior: Clip.none,
+                                    //           child: GestureDetector(
+                                    //             child: Image.network(
+                                    //               "$wordpressUrl/${event.data["thumbnail"]["url"]}"))))),
+                                    //     ));
+                                  });
 
-                          // Navigator.push(
-                          //     context,
-                          //     MaterialPageRoute(
-                          //         builder: (context) => InteractiveViewer(
-                          //             child: Image.network(
-                          //                 "$wordpressUrl/${event.data["thumbnail"]["url"]}"))));
-                        },
-                        child: Container(
-                            constraints: const BoxConstraints(
-                                maxWidth: 400, maxHeight: 500),
-                            child: Image.network(
-                                thumbnail["url"]))));
+                              // Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //         builder: (context) => InteractiveViewer(
+                              //             child: Image.network(
+                              //                 "$wordpressUrl/${event.data["thumbnail"]["url"]}"))));
+                            },
+                            child: Container(
+                                constraints: const BoxConstraints(
+                                    maxWidth: 400, maxHeight: 500),
+                                child: Image.network(thumbnail["url"]))));
 
                     // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
                   } catch (e) {
@@ -278,14 +275,17 @@ class _EventPageState extends State<EventPage> {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             sliver: SliverList(
                 delegate: SliverChildListDelegate([
+              const SizedBox(height: 20),
               if (_eventProvider.cached == null)
                 FutureBuilderPatched(
                     future: _eventProvider.loading,
                     builder: (eventContext, eventSnapshot) {
                       if (eventSnapshot.hasError) {
                         // return Text("${eventSnapshot.error}");
-                        return Padding(padding: const EdgeInsets.all(32),
-                        child: Center(child: formatError(eventSnapshot.error)));
+                        return Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Center(
+                                child: formatError(eventSnapshot.error)));
                       }
                       if (eventSnapshot.connectionState ==
                           ConnectionState.waiting) {
@@ -386,8 +386,9 @@ class _EventPageState extends State<EventPage> {
                     future: _participantsProvider.loading,
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        return Padding(padding: const EdgeInsets.all(16),
-                        child: Center(child: formatError(snapshot.error)));
+                        return Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Center(child: formatError(snapshot.error)));
                       }
 
                       if (snapshot.connectionState == ConnectionState.waiting) {
