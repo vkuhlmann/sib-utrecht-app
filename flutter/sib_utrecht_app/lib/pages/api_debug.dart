@@ -76,8 +76,9 @@ class _APIDebugPageState extends State<APIDebugPage> {
         //   ),
         //   body:
         Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
             child: ListView(children: [
+              const SizedBox(height: 16),
               Row(children: [
                 DropdownButton(
                   items: const [
@@ -161,7 +162,8 @@ class _APIDebugPageState extends State<APIDebugPage> {
 
                   return const SizedBox();
                 },
-              )
+              ),
+              const SizedBox(height: 16)
               // Expanded(child: Text(),)
               //
             ]));
