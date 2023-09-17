@@ -48,7 +48,9 @@
           serviceWorkerVersion: serviceWorkerVersion,
         },
         onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
+          engineInitializer.initializeEngine({
+            useColorEmoji: true // Source: https://github.com/flutter/flutter/issues/119536#issuecomment-1513309144
+          }).then(function(appRunner) {
             appRunner.runApp();
           });
         }

@@ -91,14 +91,62 @@ class _EventPageState extends State<EventPage> {
     super.didChangeDependencies();
   }
 
+  (String?, Map?) extractDescriptionAndThumbnail(Event event) {
+    String description = ((event.data["post_content"] ?? "") as String)
+        .replaceAll("\r\n\r\n", "<br/><br/>");
+    Map? thumbnail = event.data["thumbnail"];
+
+    if (thumbnail != null &&
+        thumbnail["url"] != null &&
+        !(thumbnail["url"] as String).startsWith("http")) {
+      thumbnail["url"] = "$wordpressUrl/${thumbnail["url"]}";
+    }
+
+    if (thumbnail == null && description.contains("<img")) {
+      final img = RegExp("<img[^>]+src=\"(?<url>[^\"]+)\"[^>]*>")
+          .firstMatch(description);
+
+      if (img != null) {
+        thumbnail = {"url": img.namedGroup("url")};
+        // description = description.replaceAll(img.group(0)!, "");
+        description = description.replaceFirst(img.group(0)!, "");
+      }
+    }
+
+    if (thumbnail != null &&
+        thumbnail["url"] != null &&
+        (thumbnail["url"] as String).startsWith("http://sib-utrecht.nl/")) {
+      thumbnail["url"] = (thumbnail["url"] as String)
+          .replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
+    }
+
+    description = description.replaceAll(RegExp("^(\r|\n|<br */>|<br *>)*", multiLine: false), "");
+
+    return (description.isEmpty ? null : description, thumbnail);
+  }
+
+  Widget buildDescription(BuildContext context, Event event) {
+    final (description, _) = extractDescriptionAndThumbnail(event);
+
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+        child: HtmlWidget(
+          // ((event.data["post_content"] ?? "") as String).replaceAll("\r\n\r\n", "<br/><br/>"),
+          description ?? "",
+          textStyle: Theme.of(context).textTheme.bodyMedium,
+        ));
+  }
+
   Widget buildThumbnailCard(BuildContext context, Event event) {
+    final (_, thumbnail) = extractDescriptionAndThumbnail(event);
+
     return Card(
         child: ListTile(
             title: const Text("Thumbnail"),
             subtitle: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
                 child: Builder(builder: (context) {
-                  if (event.data["thumbnail"] == null) {
+                  if (thumbnail == null) {
                     return const Text("Geen thumbnail");
                   }
                   try {
@@ -115,7 +163,9 @@ class _EventPageState extends State<EventPage> {
                     //   imageProvider: NetworkImage("$wordpressUrl/${event.data["thumbnail"]["url"]}"),
                     // );
 
-                    return InkWell(
+                    return 
+                    Center(child:
+                    InkWell(
                         onTap: () {
                           showDialog(
                               context: context,
@@ -165,8 +215,12 @@ class _EventPageState extends State<EventPage> {
                                                                     onTap: () =>
                                                                         Navigator.pop(
                                                                             context))),
+                                                        GestureDetector(
+                                                          onTap:() => Navigator.pop(context),
+                                                          child: 
                                                         Image.network(
-                                                            "$wordpressUrl/${event.data["thumbnail"]["url"]}")
+                                                            thumbnail["url"])
+                                                        )
                                                       ],
                                                     )))));
                                 // return Dialog(
@@ -200,12 +254,12 @@ class _EventPageState extends State<EventPage> {
                             constraints: const BoxConstraints(
                                 maxWidth: 400, maxHeight: 500),
                             child: Image.network(
-                                "$wordpressUrl/${event.data["thumbnail"]["url"]}")));
+                                thumbnail["url"]))));
 
                     // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
                   } catch (e) {
                     try {
-                      return Text("Error: ${event.data["thumbnail"]["error"]}");
+                      return Text("Error: ${thumbnail["error"]}");
                     } catch (_) {
                       return const Text("Error");
                     }
@@ -250,6 +304,7 @@ class _EventPageState extends State<EventPage> {
 
                 return [
                   Card(child: ListTile(title: Text(event.eventName))),
+                  // Card(child: ListTile(title: Text("your (student) room. \ud83e\ude84\ud83c\udfa8\r\n\r\nWe will"))),
                   Card(
                       child: ListTile(
                           title: Wrap(children: [
@@ -301,10 +356,7 @@ class _EventPageState extends State<EventPage> {
                   Card(
                       child: ListTile(
                           title: const Text("Beschrijving"),
-                          subtitle: Padding(
-                              padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
-                              child: HtmlWidget(
-                                  event.data["post_content"] ?? "")))),
+                          subtitle: buildDescription(context, event))),
 
                   buildThumbnailCard(context, event),
                   // Card(child:
