@@ -16,7 +16,36 @@ String formatErrorMsg(String? error) {
 }
 
 Widget formatError(Object? error) {
-  return Text(formatErrorMsg(error?.toString()));
+  if (
+    error is APIError
+    && [401, 403].contains(error.statusCode)
+    && error.connector.user == null
+    )
+  {
+    return FilledButton(
+          onPressed: () {
+            router.go("/login?immediate=true");
+          },
+          child: const Text("Please log in"));
+    // return Text(formatErrorMsg(error.message));
+  }
+
+  String msg = formatErrorMsg(error?.toString());
+
+  // if (msg.startsWith("Permission denied")) {
+  //   return FutureBuilderPatched(builder: (context, snapshot) {
+  //     if (snapshot.
+
+  //     return Text("Loading...");
+  //   });
+
+  //   return ElevatedButton(
+  //     onPressed: () => launch("https://www.lego.com/en-us/account/login"),
+  //     child: Text("Log in"),
+  //   );
+  // }
+
+  return Text(msg);
 }
 
 // Get a tuple of the ISO year and week number, e.g.:

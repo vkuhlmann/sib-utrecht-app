@@ -34,26 +34,48 @@ class APIConnector {
       try {
         message = (jsonDecode(response.body) as Map)["message"];
       } catch (e) {
-        throw Exception(
-            "Got status code ${response.statusCode}: ${response.body}");
+        throw APIError(
+            "Got status code ${response.statusCode}: ${response.body}",
+            connector: this,
+            statusCode: response.statusCode,
+            responseBody: response.body);
       }
 
-      throw Exception("$message");
+      throw APIError(message,
+          connector: this,
+          statusCode: response.statusCode,
+          responseBody: response.body);
     }
 
     if (response.body.startsWith('<div id="error">')) {
-      throw Exception("Unhandled error on server, please contact Vincent");
+      throw APIError("Unhandled error on server, please contact Vincent",
+          connector: this,
+          statusCode: response.statusCode,
+          responseBody: response.body);
     }
     if (response.body.startsWith('<br />')) {
-      throw Exception("Unhandled error on server, please contact Vincent");
+      throw APIError("Unhandled error on server, please contact Vincent",
+          connector: this,
+          statusCode: response.statusCode,
+          responseBody: response.body);
     }
 
     Map obj = jsonDecode(response.body);
     if (obj.containsKey("error")) {
       if (obj.containsKey("details")) {
-        throw Exception("${obj['error']} (${obj['details'].join(', ')})");
+        throw APIError(
+          "${obj['error']} (${obj['details'].join(', ')})",
+          connector: this,
+          statusCode: response.statusCode,
+          responseBody: response.body,
+        );
       }
-      throw Exception("${obj['error']}");
+      throw APIError(
+        "${obj['error']}",
+        connector: this,
+        statusCode: response.statusCode,
+        responseBody: response.body,
+      );
     }
 
     return obj;
@@ -71,8 +93,7 @@ class APIConnector {
 
     http.Response response;
     try {
-      response =
-          await client.get(getUri(url), headers: headers);
+      response = await client.get(getUri(url), headers: headers);
     } on http.ClientException catch (e) {
       if (e.message == "XMLHttpRequest error.") {
         throw Exception("Cannot connect to server.");
@@ -103,12 +124,14 @@ class APIConnector {
     log.info("Doing POST on $url");
     http.Response response;
     if (body != null) {
-      response = await client.post(getUri(url), headers: {
+      response = await client.post(
+        getUri(url),
+        headers: {
           ...headers,
           "Content-Type": "application/json",
         },
         body: jsonEncode(body),
-        );
+      );
     } else {
       response = await client.post(getUri(url), headers: headers);
     }
@@ -120,12 +143,14 @@ class APIConnector {
     log.info("Doing PUT on $url");
     http.Response response;
     if (body != null) {
-      response = await client.put(getUri(url), headers: {
+      response = await client.put(
+        getUri(url),
+        headers: {
           ...headers,
           "Content-Type": "application/json",
         },
         body: jsonEncode(body),
-        );
+      );
     } else {
       response = await client.put(getUri(url), headers: headers);
     }
@@ -140,15 +165,17 @@ class APIConnector {
 
     http.Response response;
     if (body != null) {
-      response = await client.delete(getUri(url), headers: {
+      response = await client.delete(
+        getUri(url),
+        headers: {
           ...headers,
           "Content-Type": "application/json",
         },
         body: jsonEncode(body),
-        );
+      );
     } else {
       response = await client.delete(getUri(url), headers: headers);
-    }    
+    }
 
     return _handleResponse(response);
   }

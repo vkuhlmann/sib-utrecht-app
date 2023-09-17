@@ -34,7 +34,10 @@ class Event {
         // vals[entry.key] = entry.value;
       }
 
-      vals.addAll(vals["details"]);
+      vals.addAll(
+        (vals["details"] as Map).map((key, value)
+        => MapEntry(key as String, value))
+      );
     }
     // if (vals["event_id"] is String) {
     //   vals["event_id"] = int.parse(vals["event_id"]);
