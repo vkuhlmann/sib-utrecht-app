@@ -8,11 +8,35 @@ String formatErrorMsg(String? error) {
   var m = RegExp(r"^(Exception: )?(<strong>Error:</strong> )?(?<message>.*)$")
       .firstMatch(error);
 
+  if (m?.namedGroup("message") == "Sorry, you are not allowed to do that.") {
+    return "Permission denied (make sure you are logged in)";
+  }
+
   return m?.namedGroup("message") ?? error;
 }
 
 Widget formatError(Object? error) {
-  return Text(formatErrorMsg(error?.toString()));
+  if (
+    error is APIError
+    && [401, 403].contains(error.statusCode)
+    )
+  {
+    if (error.connector.user == null) {
+      return FilledButton(
+          onPressed: () {
+            router.go("/login?immediate=true");
+          },
+          child: const Text("Please log in"));
+    }
+
+    if (error.message.toString() == "Sorry, you are not allowed to do that.") {
+      return const Text("Permission denied");
+    }
+  }
+
+  String msg = formatErrorMsg(error?.toString());
+
+  return Text(msg);
 }
 
 // Get a tuple of the ISO year and week number, e.g.:

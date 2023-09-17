@@ -39,7 +39,7 @@
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
 </head>
-<body style="background-color: #0175C2;">
+<body style="background-color: #21526F;"> <!-- 21526F  0175C2 006590 -->
   <script>
     window.addEventListener('load', function(ev) {
       // Download main.dart.js
@@ -48,7 +48,9 @@
           serviceWorkerVersion: serviceWorkerVersion,
         },
         onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
+          engineInitializer.initializeEngine({
+            useColorEmoji: true // Source: https://github.com/flutter/flutter/issues/119536#issuecomment-1513309144
+          }).then(function(appRunner) {
             appRunner.runApp();
           });
         }

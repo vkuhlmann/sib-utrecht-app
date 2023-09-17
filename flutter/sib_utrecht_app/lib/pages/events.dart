@@ -219,28 +219,6 @@ class _EventsPageState extends State<EventsPage> {
     }
   }
 
-  Widget? buildError(Object? eventsError, Object? bookingsError) {
-    String? errorMsg = eventsError?.toString() ?? bookingsError?.toString();
-
-    if (errorMsg?.contains("Sorry, you are not allowed to do that") == true) {
-      return FilledButton(
-          onPressed: () {
-            router.go("/login?immediate=true");
-          },
-          child: const Text("Please log in"));
-    }
-
-    if (eventsError != null) {
-      return formatError(eventsError);
-    }
-
-    if (bookingsError != null) {
-      return formatError(bookingsError);
-    }
-
-    return null;
-  }
-
   Iterable<AnnotatedEvent> buildEventsItem(Event e) sync* {
     if (e.end != null && e.end!.difference(e.start).inDays > 10) {
       yield EventOngoing(
@@ -373,198 +351,88 @@ class _EventsPageState extends State<EventsPage> {
         .toList();
   }
 
-  Widget buildLoadStatusCard(
-          BuildContext context, bool isError, bool isActive, Widget message) =>
-      Card(
-          child: ListTile(
-              leading: isError
-                  ? const Icon(Icons.error, color: Colors.red)
-                  : (isActive
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                              // color: Colors.green,
-                              ))
-                      : const Icon(Icons.done, color: Colors.green)),
-              title: message));
-
-  Iterable<Widget> getBuildAlerts(
-      BuildContext context,
-      AsyncSnapshot<List<Event>> eventsSnapshot,
-      AsyncSnapshot<Set<int>> bookingsSnapshot) sync* {
-    String? errorMsg =
-        eventsSnapshot.error?.toString() ?? bookingsSnapshot.error?.toString();
-
-    if (errorMsg?.contains("Sorry, you are not allowed to do that") == true) {
-      yield FilledButton(
-          onPressed: () {
-            router.go("/login?immediate=true");
-          },
-          child: const Text("Please log in"));
-      return;
-    }
-
-    if (eventsSnapshot.connectionState == ConnectionState.waiting ||
-        eventsSnapshot.hasError ||
-        forceShowEventsStatus) {
-      // items.add(
-      //   Card(
-      //     child: Padding(
-      //         padding: const EdgeInsets.all(16),
-      //         child: Text(eventsProvider._cached != null
-      //         ? "Refreshing events list"
-      //         : "Loading events list")))
-      // );
-      // items.add();
-      bool hasError = eventsSnapshot.hasError;
-      bool isActive = eventsSnapshot.connectionState == ConnectionState.waiting;
-      Widget msg = eventsProvider._cached != null
-          ? const Text("Refreshing events list")
-          : const Text("Loading events list");
-
-      if (hasError) {
-        msg = Row(crossAxisAlignment: CrossAxisAlignment.start,
-        children: [const Text("Could not load events:"),
-        const SizedBox(width: 8),
-        formatError(eventsSnapshot.error)]);
-      }
-
-      if (!hasError && !isActive) {
-        msg = const Text("Successfully loaded events list");
-      }
-
-      yield buildLoadStatusCard(context, hasError, isActive, msg);
-    }
-
-    if (bookingsSnapshot.connectionState == ConnectionState.waiting ||
-        bookingsSnapshot.hasError ||
-        forceShowBookingsStatus) {
-      bool hasError = bookingsSnapshot.hasError;
-      bool isActive =
-          bookingsSnapshot.connectionState == ConnectionState.waiting;
-      Widget msg = bookingsProvider._cached != null
-          ? const Text("Refreshing bookings")
-          : const Text("Loading bookings");
-
-      // if (hasError) {
-      //   msg = formatError(bookingsSnapshot.error);
-      // }
-      if (hasError) {
-        msg = Row(crossAxisAlignment: CrossAxisAlignment.start,
-        children: [const Text("Could not load bookings:"),
-        const SizedBox(width: 8),
-        formatError(bookingsSnapshot.error)]);
-      }
-
-      if (!hasError && !isActive) {
-        msg = const Text("Successfully loaded bookings");
-      }
-
-      yield buildLoadStatusCard(context, hasError, isActive, msg);
-    }
-  }
-
-  Widget buildAlertsPanel(
-      BuildContext context,
-      AsyncSnapshot<List<Event>> eventsSnapshot,
-      AsyncSnapshot<Set<int>> bookingsSnapshot) {
-    // if (!eventsSnapshot.hasError &&
-    //     eventsSnapshot.connectionState ==
-    //         ConnectionState.waiting) {
-    //   return const SizedBox();
-    // }
-    List<Widget> items = getBuildAlerts(context, eventsSnapshot, bookingsSnapshot).toList();
-
-    // Widget? errorObj = buildError(eventsSnapshot.error, bookingsSnapshot.error);
-    // // if (errorObj == null) {
-    // //   return const SizedBox();
-    // // }
-
-    // if (errorObj != null) {
-    //   items.add(Card(
-    //       child: Padding(
-    //           padding: const EdgeInsets.all(16),
-    //           child: Center(
-    //               child: Column(
-    //                   mainAxisAlignment: MainAxisAlignment.center,
-    //                   children: [
-    //                 Container(
-    //                     alignment: eventsProvider.cached == null
-    //                         ? Alignment.center
-    //                         : Alignment.topCenter,
-    //                     child: errorObj)
-    //               ])))));
-    // }
-
-    return Padding(
-        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-        child: Column(children: items));
-  }
-
   @override
   Widget build(BuildContext context) {
+    // if (eventsProvider.cached == null && apiConnector == null) {
+    //   return const SizedBox();
+    // }
+
+    // if (eventsProvider.cached == null && apiConnector) {
+    //   return const SizedBox();
+    // }
+
     log.fine("Doing events page build");
     return Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           //   if (eventsProvider.cached != null || eventsSnapshot.connectionState == ConnectionState.waiting)
           // Expanded(
           //     child: ListView(reverse: true, children: [
-            FutureBuilderPatched(
-              future: eventsProvider.loading,
-              builder: (eventsContext, eventsSnapshot) {
-                if (eventsSnapshot.hasError) {
-                  return const SizedBox();
-                }
-                if (eventsSnapshot.connectionState == ConnectionState.waiting &&
-                    eventsProvider.cached == null) {
-                  return const Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Center(child: CircularProgressIndicator()));
-                }
+          FutureBuilderPatched(
+            future: eventsProvider.loading,
+            builder: (eventsContext, eventsSnapshot) {
+              // if (eventsSnapshot.hasError) {
+              //   return const SizedBox();
+              // }
 
-                return Expanded(child: ListView(reverse: true,
-                  children: 
-                  buildEvents().reversed.toList()
-                ),
-                );
+              if (eventsProvider.cached == null) {
+                return FutureBuilderPatched(
+                    future: eventsProvider.connector,
+                    builder: (context, snapshot) {
+                      var data = snapshot.data;
+
+                      if (data != null && data.user == null) {
+                        return Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Column(children: [
+                              // IconButton(
+                              //   onPressed: () {
+                              //   router.go("/login?immediate=true");
+                              // }, icon: Icon(Icons.login, size: 64,
+                              // color: Theme.of(context).colorScheme.primary,),
+                              // // color: Theme.of(context).colorScheme.primaryContainer
+                              // ),
+                              FilledButton(
+                                onPressed: () {
+                                  router.go("/login?immediate=true");
+                                },
+                                child: Padding(padding: const EdgeInsets.all(16),
+                                child: Text("Log in",
+                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                          color: Theme.of(context).colorScheme.onPrimary,
+                                    
+                                ))))]));
+                      }
+
+                      if (eventsSnapshot.connectionState ==
+                              ConnectionState.waiting &&
+                          eventsProvider.cached == null) {
+                        return const Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Center(child: CircularProgressIndicator()));
+                      }
+
+                      return const SizedBox();
+                    });
+                // if (eventsProvider.connector != null)
 
                 // return const SizedBox();
+              }
 
-                // return FutureBuilderPatched(
-                //   future: bookingsProvider.loading,
-                //   builder: (bookingsContext, bookingsSnapshot) {
-                //     if (bookingsSnapshot.hasError) {
-                //       return const SizedBox();
-                //     }
-                //     if (bookingsSnapshot.connectionState ==
-                //         ConnectionState.waiting) {
-                //       return const Padding(
-                //           padding: EdgeInsets.all(32),
-                //           child: Center(
-                //               child: CircularProgressIndicator(
-                //                   color: Colors.green)));
-                //     }
-
-                //     return const SizedBox();
-                //   },
-                // );
-              },
+              return Expanded(
+                child: ListView(
+                    reverse: true, children: buildEvents().reversed.toList()),
+              );
+            },
+          ),
+          AlertsPanel(loadingFutures: [
+            ("events", eventsProvider.loading, eventsProvider.cached != null),
+            (
+              "bookings",
+              bookingsProvider.loading,
+              bookingsProvider.cached != null
             ),
-            // ...(eventsProvider.cached ?? [])
-            //     .map<Widget>(buildEventsItem)
-            //     .toList().reversed,
-            // ...buildEvents().reversed,
-          FutureBuilderPatched(
-              future: eventsProvider.loading,
-              builder: (eventsContext, eventsSnapshot) => FutureBuilderPatched(
-                  future: bookingsProvider.loading,
-                  builder: (bookingsContext, bookingsSnapshot) =>
-                      buildAlertsPanel(
-                          bookingsContext, eventsSnapshot, bookingsSnapshot)))
+          ])
         ]));
   }
 }

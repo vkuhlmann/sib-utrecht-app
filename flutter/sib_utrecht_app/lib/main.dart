@@ -26,9 +26,11 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
-part 'model/login_manager.dart';
-part 'model/api_connector.dart';
-part 'view_model/async_patch.dart';
+
+part 'utils.dart';
+part 'shell.dart';
+part 'router.dart';
+
 part 'pages/events.dart';
 part 'pages/info.dart';
 // part 'pages/authorize.dart';
@@ -38,18 +40,22 @@ part 'pages/new_login.dart';
 part 'pages/api_debug.dart';
 part 'pages/feed.dart';
 
-part 'utils.dart';
-part 'shell.dart';
-part 'router.dart';
-part 'view_model/cached_provider.dart';
-
-part 'model/event.dart';
-part 'view_model/locale_date_format.dart';
-part 'view_model/annotated_event.dart';
-
 part 'components/event_tile.dart';
 part 'components/event_group.dart';
 part 'components/event_ongoing.dart';
+part 'components/alerts_panel.dart';
+
+part 'view_model/cached_provider.dart';
+part 'view_model/async_patch.dart';
+part 'view_model/locale_date_format.dart';
+part 'view_model/annotated_event.dart';
+
+part 'model/login_manager.dart';
+part 'model/api_connector.dart';
+part 'model/api_error.dart';
+part 'model/event.dart';
+
+
 
 late Future<void> dateFormattingInitialization;
 // const String wordpressUrl = "http://192.168.50.200/wordpress";
@@ -64,7 +70,7 @@ late LoginManager loginManager;
 void main() {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
-    print('${record.level.name}: ${record.time}: ${record.message}');
+    print('${record.level.name}: ${record.time} [${record.loggerName}] ${record.message}');
   });
 
 // 2023-01-01 is in 2022-W52, hence returns (2022, 52)
@@ -90,6 +96,9 @@ void main() {
 
     final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+
+    final license3 = await rootBundle.loadString('assets/fonts/Roboto/LICENSE.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license3);
   });
 
   loginManager = LoginManager();

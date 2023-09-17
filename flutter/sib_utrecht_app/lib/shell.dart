@@ -127,7 +127,8 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
             const SizedBox(
               width: 16,
             ),
-            const CircleAvatar(backgroundColor: Colors.blue)
+            // const CircleAvatar(backgroundColor: Colors.blue)
+            Icon(Icons.favorite, color: Theme.of(context).colorScheme.primary, size: 40)
           ],
         ),
         const SizedBox(height: 15),
@@ -175,7 +176,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
           if (snapshot.hasData) {
             backgroundColor = Colors.white;
             if (snapshot.data?.activeProfileName != null) {
-              backgroundColor = Colors.blue;
+              backgroundColor = Theme.of(context).colorScheme.primary;
             }
           }
 
@@ -184,7 +185,8 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
           }
 
           return IconButton(
-              icon: CircleAvatar(backgroundColor: backgroundColor),
+              // icon: CircleAvatar(backgroundColor: backgroundColor),
+              icon: Icon(Icons.favorite, color: backgroundColor, size: 40),
               onPressed: () {
                 showDialog(
                     context: context,
@@ -215,6 +217,7 @@ Widget buildWide() {
           backgroundColor:
               Theme.of(context).colorScheme.inversePrimary,
           title: Row(
+            // crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Text(widget.title),
               const Spacer(),
@@ -294,6 +297,8 @@ Widget buildMobile() {
   }
 }
 
+const Color sibColor = Color.fromARGB(255, 33, 82, 111);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -307,15 +312,21 @@ class MyApp extends StatelessWidget {
             title: 'SIB-Utrecht',
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
-                  seedColor: Colors.deepPurple, brightness: Brightness.light),
+                  seedColor: sibColor, brightness: Brightness.light,
+                  // primary: sibColor,
+              ),
               useMaterial3: true,
               brightness: Brightness.light,
+              // fontFamily: 'Roboto',
             ),
             darkTheme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
-                  seedColor: Colors.deepPurple, brightness: Brightness.dark),
+                  seedColor: sibColor, brightness: Brightness.dark,
+                  // primary: sibColor,
+                  ),
               useMaterial3: true,
               brightness: Brightness.dark,
+              // fontFamily: 'Roboto',
             ),
             themeMode: ThemeMode.system,
             debugShowCheckedModeBanner: true));

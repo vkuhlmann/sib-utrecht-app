@@ -91,14 +91,62 @@ class _EventPageState extends State<EventPage> {
     super.didChangeDependencies();
   }
 
+  (String?, Map?) extractDescriptionAndThumbnail(Event event) {
+    String description = ((event.data["post_content"] ?? "") as String)
+        .replaceAll("\r\n\r\n", "<br/><br/>");
+    Map? thumbnail = event.data["thumbnail"];
+
+    if (thumbnail != null &&
+        thumbnail["url"] != null &&
+        !(thumbnail["url"] as String).startsWith("http")) {
+      thumbnail["url"] = "$wordpressUrl/${thumbnail["url"]}";
+    }
+
+    if (thumbnail == null && description.contains("<img")) {
+      final img = RegExp("<img[^>]+src=\"(?<url>[^\"]+)\"[^>]*>")
+          .firstMatch(description);
+
+      if (img != null) {
+        thumbnail = {"url": img.namedGroup("url")};
+        // description = description.replaceAll(img.group(0)!, "");
+        description = description.replaceFirst(img.group(0)!, "");
+      }
+    }
+
+    if (thumbnail != null &&
+        thumbnail["url"] != null &&
+        (thumbnail["url"] as String).startsWith("http://sib-utrecht.nl/")) {
+      thumbnail["url"] = (thumbnail["url"] as String)
+          .replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
+    }
+
+    description = description.replaceAll(RegExp("^(\r|\n|<br */>|<br *>)*", multiLine: false), "");
+
+    return (description.isEmpty ? null : description, thumbnail);
+  }
+
+  Widget buildDescription(BuildContext context, Event event) {
+    final (description, _) = extractDescriptionAndThumbnail(event);
+
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+        child: HtmlWidget(
+          // ((event.data["post_content"] ?? "") as String).replaceAll("\r\n\r\n", "<br/><br/>"),
+          description ?? "",
+          textStyle: Theme.of(context).textTheme.bodyMedium,
+        ));
+  }
+
   Widget buildThumbnailCard(BuildContext context, Event event) {
+    final (_, thumbnail) = extractDescriptionAndThumbnail(event);
+
     return Card(
         child: ListTile(
             title: const Text("Thumbnail"),
             subtitle: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
                 child: Builder(builder: (context) {
-                  if (event.data["thumbnail"] == null) {
+                  if (thumbnail == null) {
                     return const Text("Geen thumbnail");
                   }
                   try {
@@ -115,7 +163,9 @@ class _EventPageState extends State<EventPage> {
                     //   imageProvider: NetworkImage("$wordpressUrl/${event.data["thumbnail"]["url"]}"),
                     // );
 
-                    return InkWell(
+                    return 
+                    Center(child:
+                    InkWell(
                         onTap: () {
                           showDialog(
                               context: context,
@@ -126,23 +176,23 @@ class _EventPageState extends State<EventPage> {
                                     //     16, 70, 16, 16),
                                     insetPadding: const EdgeInsets.all(0),
                                     child:
-                                  //   Stack(alignment: AlignmentDirectional.center,
-                                  //   children: [
-                                  //  Container(
-                                  //     constraints: const BoxConstraints.expand(),
-                                  //     child: GestureDetector(
-                                  //     // padding: const EdgeInsets.fromLTRB(
-                                  //     //     16, 16, 16, 32),
-                                  //     // width: 200,
-                                  //     onTap: () => Navigator.pop(context)
-                                  //     )),
-                                  //   Center(child: InteractiveViewer(
-                                  //       clipBehavior: Clip.none,
-                                  //         child: GestureDetector(
-                                  //           child: Image.network(
-                                  //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
-                                  //     ))
-                                  //   ])
+                                        //   Stack(alignment: AlignmentDirectional.center,
+                                        //   children: [
+                                        //  Container(
+                                        //     constraints: const BoxConstraints.expand(),
+                                        //     child: GestureDetector(
+                                        //     // padding: const EdgeInsets.fromLTRB(
+                                        //     //     16, 16, 16, 32),
+                                        //     // width: 200,
+                                        //     onTap: () => Navigator.pop(context)
+                                        //     )),
+                                        //   Center(child: InteractiveViewer(
+                                        //       clipBehavior: Clip.none,
+                                        //         child: GestureDetector(
+                                        //           child: Image.network(
+                                        //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
+                                        //     ))
+                                        //   ])
                                         Center(
                                             child: Builder(
                                                 builder: (context) =>
@@ -165,8 +215,12 @@ class _EventPageState extends State<EventPage> {
                                                                     onTap: () =>
                                                                         Navigator.pop(
                                                                             context))),
+                                                        GestureDetector(
+                                                          onTap:() => Navigator.pop(context),
+                                                          child: 
                                                         Image.network(
-                                                            "$wordpressUrl/${event.data["thumbnail"]["url"]}")
+                                                            thumbnail["url"])
+                                                        )
                                                       ],
                                                     )))));
                                 // return Dialog(
@@ -200,12 +254,12 @@ class _EventPageState extends State<EventPage> {
                             constraints: const BoxConstraints(
                                 maxWidth: 400, maxHeight: 500),
                             child: Image.network(
-                                "$wordpressUrl/${event.data["thumbnail"]["url"]}")));
+                                thumbnail["url"]))));
 
                     // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
                   } catch (e) {
                     try {
-                      return Text("Error: ${event.data["thumbnail"]["error"]}");
+                      return Text("Error: ${thumbnail["error"]}");
                     } catch (_) {
                       return const Text("Error");
                     }
@@ -216,132 +270,146 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     log.fine("Building event page for event id ${widget.eventId}");
-    return SelectionArea(
-        child: CustomScrollView(slivers: [
-      SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-          sliver: SliverList(
-              delegate: SliverChildListDelegate([
-            FutureBuilderPatched(
-                future: _eventProvider.loading,
-                builder: (eventContext, eventSnapshot) {
-                  if (eventSnapshot.hasError) {
-                    // return Text("${eventSnapshot.error}");
-                    return formatError(eventSnapshot.error);
-                  }
-                  if (eventSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator()));
-                  }
+    return Column(children: [
+      Expanded(
+          child: SelectionArea(
+              child: CustomScrollView(slivers: [
+        SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            sliver: SliverList(
+                delegate: SliverChildListDelegate([
+              if (_eventProvider.cached == null)
+                FutureBuilderPatched(
+                    future: _eventProvider.loading,
+                    builder: (eventContext, eventSnapshot) {
+                      if (eventSnapshot.hasError) {
+                        // return Text("${eventSnapshot.error}");
+                        return Padding(padding: const EdgeInsets.all(32),
+                        child: Center(child: formatError(eventSnapshot.error)));
+                      }
+                      if (eventSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Center(child: CircularProgressIndicator()));
+                      }
 
-                  return const SizedBox();
-                }),
-            ...(() {
-              final Event? event = _eventProvider.cached;
-              if (event == null) {
-                return [];
-              }
-              var eventEnd = event.end;
+                      return const SizedBox();
+                    }),
+              ...(() {
+                final Event? event = _eventProvider.cached;
+                if (event == null) {
+                  return [];
+                }
+                var eventEnd = event.end;
 
-              return [
-                Card(child: ListTile(title: Text(event.eventName))),
-                Card(
-                    child: ListTile(
-                        title: Wrap(children: [
-                  const SizedBox(width: 80, child: Text("Start: ")),
-                  Wrap(children: [
-                    SizedBox(
-                        width: 260,
-                        child: LocaleDateFormat(
-                            date: event.start, format: "yMMMMEEEEd")),
-                    // const SizedBox(width: 20),
-                    LocaleDateFormat(date: event.start, format: "Hm")
-                  ])
-                ]))),
-                if (eventEnd != null)
+                return [
+                  Card(child: ListTile(title: Text(event.eventName))),
+                  // Card(child: ListTile(title: Text("your (student) room. \ud83e\ude84\ud83c\udfa8\r\n\r\nWe will"))),
                   Card(
                       child: ListTile(
                           title: Wrap(children: [
-                    const SizedBox(width: 80, child: Text("Eindigt: ")),
+                    const SizedBox(width: 80, child: Text("Start: ")),
                     Wrap(children: [
                       SizedBox(
                           width: 260,
                           child: LocaleDateFormat(
-                              date: eventEnd, format: "yMMMMEEEEd")),
+                              date: event.start, format: "yMMMMEEEEd")),
                       // const SizedBox(width: 20),
-                      LocaleDateFormat(date: eventEnd, format: "Hm")
+                      LocaleDateFormat(date: event.start, format: "Hm")
                     ])
                   ]))),
-                // Table(columnWidths: const {
-                //   0: IntrinsicColumnWidth(),
-                //   1: FlexColumnWidth(),
-                //   2: IntrinsicColumnWidth(),
-                //   3: FlexColumnWidth()
-                // }, children: <TableRow>[
-                //   TableRow(children: <Widget>[
-                //     const Text("Start: "),
-                //     LocaleDateFormat(
-                //         date: event.start, format: "yMMMMEEEEd"),
-                //     const SizedBox(width: 30),
-                //     LocaleDateFormat(date: event.start, format: "Hm")
-                //   ]),
-                //   TableRow(children: <Widget>[
-                //     const Text("Eindigt: "),
-                //     LocaleDateFormat(
-                //         date: event.end, format: "yMMMMEEEEd"),
-                //     const SizedBox(width: 30),
-                //     LocaleDateFormat(date: event.end, format: "Hm")
-                //   ])
-                // ]),
-                Card(
-                    child: ListTile(
-                        title: const Text("Beschrijving"),
-                        subtitle: Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
-                            child:
-                                HtmlWidget(event.data["post_content"] ?? "")))),
+                  if (eventEnd != null)
+                    Card(
+                        child: ListTile(
+                            title: Wrap(children: [
+                      const SizedBox(width: 80, child: Text("Eindigt: ")),
+                      Wrap(children: [
+                        SizedBox(
+                            width: 260,
+                            child: LocaleDateFormat(
+                                date: eventEnd, format: "yMMMMEEEEd")),
+                        // const SizedBox(width: 20),
+                        LocaleDateFormat(date: eventEnd, format: "Hm")
+                      ])
+                    ]))),
+                  // Table(columnWidths: const {
+                  //   0: IntrinsicColumnWidth(),
+                  //   1: FlexColumnWidth(),
+                  //   2: IntrinsicColumnWidth(),
+                  //   3: FlexColumnWidth()
+                  // }, children: <TableRow>[
+                  //   TableRow(children: <Widget>[
+                  //     const Text("Start: "),
+                  //     LocaleDateFormat(
+                  //         date: event.start, format: "yMMMMEEEEd"),
+                  //     const SizedBox(width: 30),
+                  //     LocaleDateFormat(date: event.start, format: "Hm")
+                  //   ]),
+                  //   TableRow(children: <Widget>[
+                  //     const Text("Eindigt: "),
+                  //     LocaleDateFormat(
+                  //         date: event.end, format: "yMMMMEEEEd"),
+                  //     const SizedBox(width: 30),
+                  //     LocaleDateFormat(date: event.end, format: "Hm")
+                  //   ])
+                  // ]),
+                  Card(
+                      child: ListTile(
+                          title: const Text("Beschrijving"),
+                          subtitle: buildDescription(context, event))),
 
-                buildThumbnailCard(context, event),
-                // Card(child:
-                // FutureBuilder(future: _image, builder: (context, snapshot) {
-                //   if (snapshot.hasData) {
-                //     return Image.memory(snapshot.data!.bodyBytes);
-                //   } else {
-                //     return const Text("Loading...");
-                //   }
-                // })),
-                // ListTile(title: const Text("aa")),)
-              ];
-            }()),
-            const SizedBox(height: 32),
-            Card(
-                child: ListTile(
-                    title: Text(
-                        "Participants (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
-          ]))),
-      SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-          sliver: SliverList(
-              delegate: SliverChildListDelegate([
-            FutureBuilderPatched(
-                future: _participantsProvider.loading,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return formatError(snapshot.error);
-                  }
+                  buildThumbnailCard(context, event),
+                  // Card(child:
+                  // FutureBuilder(future: _image, builder: (context, snapshot) {
+                  //   if (snapshot.hasData) {
+                  //     return Image.memory(snapshot.data!.bodyBytes);
+                  //   } else {
+                  //     return const Text("Loading...");
+                  //   }
+                  // })),
+                  // ListTile(title: const Text("aa")),)
+                ];
+              }()),
+              const SizedBox(height: 32),
+              Card(
+                  child: ListTile(
+                      title: Text(
+                          "Participants (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
+            ]))),
+        SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            sliver: SliverList(
+                delegate: SliverChildListDelegate([
+              if (_participantsProvider.cached == null)
+                FutureBuilderPatched(
+                    future: _participantsProvider.loading,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Padding(padding: const EdgeInsets.all(16),
+                        child: Center(child: formatError(snapshot.error)));
+                      }
 
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return const SizedBox();
-                }),
-            ...(_participantsProvider.cached ?? []).map<Widget>((e) => Padding(
-                padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
-                child: Card(child: ListTile(title: Text(e))))),
-            const SizedBox(height: 32),
-          ])))
-    ]));
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      return const SizedBox();
+                    }),
+              ...(_participantsProvider.cached ?? []).map<Widget>((e) =>
+                  Padding(
+                      padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
+                      child: Card(child: ListTile(title: Text(e))))),
+              const SizedBox(height: 32),
+            ])))
+      ]))),
+      AlertsPanel(loadingFutures: [
+        ("details", _eventProvider.loading, _eventProvider.cached != null),
+        (
+          "participants",
+          _participantsProvider.loading,
+          _participantsProvider.cached != null
+        )
+      ])
+    ]);
   }
 }
