@@ -70,7 +70,7 @@ late LoginManager loginManager;
 void main() {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
-    print('${record.level.name}: ${record.time}: [${record.loggerName}] ${record.message}');
+    print('${record.level.name}: ${record.time} [${record.loggerName}] ${record.message}');
   });
 
 // 2023-01-01 is in 2022-W52, hence returns (2022, 52)

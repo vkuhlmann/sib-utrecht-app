@@ -109,57 +109,49 @@ class _AlertsPanelState extends State<AlertsPanel> {
     return Card(child: ListTile(leading: icon, title: title));
   }
 
+  AlertsPanelStatusMessage getStatusMessageForSnapshot(
+      (String, AsyncSnapshot, bool isRefreshing) snapshot) {
+    if (snapshot.$2.hasError) {
+      return AlertsPanelStatusMessage(
+          component: snapshot.$1, status: "error", data: snapshot.$2.error);
+    }
+    if (snapshot.$2.connectionState == ConnectionState.waiting) {
+      return AlertsPanelStatusMessage(
+          component: snapshot.$1,
+          status: "loading",
+          data: {"isRefreshing": snapshot.$3});
+    }
+    if (snapshot.$2.connectionState == ConnectionState.done) {
+      return AlertsPanelStatusMessage(
+          component: snapshot.$1, status: "done", data: null);
+    }
+    return AlertsPanelStatusMessage(
+        component: snapshot.$1, status: "unknown", data: null);
+  }
+
   Iterable<Widget> getBuildAlerts(BuildContext context,
       List<(String, AsyncSnapshot, bool isRefreshing)> snapshots) sync* {
-    // var byState = snapshots.groupListsBy((element) {
-    //   if (element.$2.hasError) {
-    //     return "error";
-    //   }
-    //   if (element.$2.connectionState == ConnectionState.waiting) {
-    //     return "loading";
-    //   }
-    //   if (element.$2.connectionState == ConnectionState.done) {
-    //     return "done";
-    //   }
-    // });
-    var msgs = snapshots.map((element) {
-      if (element.$2.hasError) {
-        // var cont = APIAccess.of(context);
-        // if (cont.key)
-
-        return AlertsPanelStatusMessage(
-            component: element.$1, status: "error", data: element.$2.error);
-      }
-      if (element.$2.connectionState == ConnectionState.waiting) {
-        return AlertsPanelStatusMessage(
-            component: element.$1,
-            status: "loading",
-            data: {"isRefreshing": element.$3});
-      }
-      if (element.$2.connectionState == ConnectionState.done) {
-        return AlertsPanelStatusMessage(
-            component: element.$1, status: "done", data: null);
-      }
-      return AlertsPanelStatusMessage(
-          component: element.$1, status: "unknown", data: null);
-    }).toList();
+    var msgs = snapshots.map(getStatusMessageForSnapshot).toList();
 
     msgs =
         msgs.where((element) => !dismissedMessages.contains(element)).toList();
 
     var errorMsgs = msgs
-      .where((msg) => msg.status == "error")
-      .groupListsBy((msg) => msg.data.toString())
-      .entries
-      .map((e) => 
-        e.value.length == 1 ? e.value.first : AlertsPanelStatusMessage(
-          component:
-          // ignore: prefer_interpolation_to_compose_strings
-          e.value.take(e.value.length - 1).map((e) => e.component).join(', ')
-          + " & ${e.value.last.component}",
-          status: "error",
-          data: e.value.first.data
-        ));
+        .where((msg) => msg.status == "error")
+        .groupListsBy((msg) => msg.data.toString())
+        .entries
+        .map((e) => e.value.length == 1
+            ? e.value.first
+            : AlertsPanelStatusMessage(
+                component:
+                    // ignore: prefer_interpolation_to_compose_strings
+                    e.value
+                            .take(e.value.length - 1)
+                            .map((e) => e.component)
+                            .join(', ') +
+                        " & ${e.value.last.component}",
+                status: "error",
+                data: e.value.first.data));
 
     msgs = msgs.where((element) => element.status != "error").toList();
 
@@ -182,55 +174,29 @@ class _AlertsPanelState extends State<AlertsPanel> {
 
   @override
   Widget build(BuildContext context) {
-    // return Padding(
-    //     padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-    //     child:
-    //     FutureBuilder(
-    //   future: Future.wait(widget.loadingFutures.map((e) => e.$2.then((v) => (e.$1, v)))),
-    //   builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-    //     if (snapshot.connectionState == ConnectionState.done) {
-    //       var alerts = widget.loadingFutures
-    //         .map((e) => (e.item1, e.item2, snapshot.data!.firstWhere((element) => element is List<dynamic> && element.length > 0)))
-    //         .toList();
-
-    //       return Column(children: getBuildAlerts(context, alerts));
-    //     }
-
-    //     return const SizedBox();
-    //   }
-    // ));
-
-    // scheduleMessageDismissals();
-
     log.info("Building alerts panel");
 
     Widget Function(
             BuildContext, List<(String, AsyncSnapshot, bool isRefreshing)>)
-        innerWidget = (context, snapshots) =>
-            Column(children: getBuildAlerts(context, snapshots).toList());
+        innerWidget = (context, snapshots) {
+      List<Widget> alerts = getBuildAlerts(context, snapshots).toList();
+      if (alerts.isEmpty) {
+        return const SizedBox();
+      }
+
+      return Padding(
+          padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+          child: Column(children: alerts));
+    };
 
     for (var a in widget.loadingFutures.reversed) {
       var capturedInnerWidg = innerWidget;
       innerWidget = (context, snapshots) => FutureBuilderPatched(
           future: a.$2,
           builder: (context, snapshot) =>
-              capturedInnerWidg(context, snapshots + [(a.$1, snapshot, a.$3)])
-          // if (snapshot.connectionState == ConnectionState.done) {
-          //   return innerWidget(context, snapshots + [(a.$1, snapshot)]);
-          // }
-
-          // return const SizedBox();
-          // }
-          );
+              capturedInnerWidg(context, snapshots + [(a.$1, snapshot, a.$3)]));
     }
 
-    return Padding(
-        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-        child: innerWidget(context, []));
-
-    // return Container();
-    // return
-
-    //     Column(children: items));
+    return innerWidget(context, []);
   }
 }

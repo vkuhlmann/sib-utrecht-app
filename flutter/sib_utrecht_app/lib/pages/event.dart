@@ -126,23 +126,23 @@ class _EventPageState extends State<EventPage> {
                                     //     16, 70, 16, 16),
                                     insetPadding: const EdgeInsets.all(0),
                                     child:
-                                  //   Stack(alignment: AlignmentDirectional.center,
-                                  //   children: [
-                                  //  Container(
-                                  //     constraints: const BoxConstraints.expand(),
-                                  //     child: GestureDetector(
-                                  //     // padding: const EdgeInsets.fromLTRB(
-                                  //     //     16, 16, 16, 32),
-                                  //     // width: 200,
-                                  //     onTap: () => Navigator.pop(context)
-                                  //     )),
-                                  //   Center(child: InteractiveViewer(
-                                  //       clipBehavior: Clip.none,
-                                  //         child: GestureDetector(
-                                  //           child: Image.network(
-                                  //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
-                                  //     ))
-                                  //   ])
+                                        //   Stack(alignment: AlignmentDirectional.center,
+                                        //   children: [
+                                        //  Container(
+                                        //     constraints: const BoxConstraints.expand(),
+                                        //     child: GestureDetector(
+                                        //     // padding: const EdgeInsets.fromLTRB(
+                                        //     //     16, 16, 16, 32),
+                                        //     // width: 200,
+                                        //     onTap: () => Navigator.pop(context)
+                                        //     )),
+                                        //   Center(child: InteractiveViewer(
+                                        //       clipBehavior: Clip.none,
+                                        //         child: GestureDetector(
+                                        //           child: Image.network(
+                                        //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
+                                        //     ))
+                                        //   ])
                                         Center(
                                             child: Builder(
                                                 builder: (context) =>
@@ -216,132 +216,146 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     log.fine("Building event page for event id ${widget.eventId}");
-    return SelectionArea(
-        child: CustomScrollView(slivers: [
-      SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-          sliver: SliverList(
-              delegate: SliverChildListDelegate([
-            FutureBuilderPatched(
-                future: _eventProvider.loading,
-                builder: (eventContext, eventSnapshot) {
-                  if (eventSnapshot.hasError) {
-                    // return Text("${eventSnapshot.error}");
-                    return formatError(eventSnapshot.error);
-                  }
-                  if (eventSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator()));
-                  }
+    return Column(children: [
+      Expanded(
+          child: SelectionArea(
+              child: CustomScrollView(slivers: [
+        SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            sliver: SliverList(
+                delegate: SliverChildListDelegate([
+              if (_eventProvider.cached == null)
+                FutureBuilderPatched(
+                    future: _eventProvider.loading,
+                    builder: (eventContext, eventSnapshot) {
+                      if (eventSnapshot.hasError) {
+                        // return Text("${eventSnapshot.error}");
+                        return formatError(eventSnapshot.error);
+                      }
+                      if (eventSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Center(child: CircularProgressIndicator()));
+                      }
 
-                  return const SizedBox();
-                }),
-            ...(() {
-              final Event? event = _eventProvider.cached;
-              if (event == null) {
-                return [];
-              }
-              var eventEnd = event.end;
+                      return const SizedBox();
+                    }),
+              ...(() {
+                final Event? event = _eventProvider.cached;
+                if (event == null) {
+                  return [];
+                }
+                var eventEnd = event.end;
 
-              return [
-                Card(child: ListTile(title: Text(event.eventName))),
-                Card(
-                    child: ListTile(
-                        title: Wrap(children: [
-                  const SizedBox(width: 80, child: Text("Start: ")),
-                  Wrap(children: [
-                    SizedBox(
-                        width: 260,
-                        child: LocaleDateFormat(
-                            date: event.start, format: "yMMMMEEEEd")),
-                    // const SizedBox(width: 20),
-                    LocaleDateFormat(date: event.start, format: "Hm")
-                  ])
-                ]))),
-                if (eventEnd != null)
+                return [
+                  Card(child: ListTile(title: Text(event.eventName))),
                   Card(
                       child: ListTile(
                           title: Wrap(children: [
-                    const SizedBox(width: 80, child: Text("Eindigt: ")),
+                    const SizedBox(width: 80, child: Text("Start: ")),
                     Wrap(children: [
                       SizedBox(
                           width: 260,
                           child: LocaleDateFormat(
-                              date: eventEnd, format: "yMMMMEEEEd")),
+                              date: event.start, format: "yMMMMEEEEd")),
                       // const SizedBox(width: 20),
-                      LocaleDateFormat(date: eventEnd, format: "Hm")
+                      LocaleDateFormat(date: event.start, format: "Hm")
                     ])
                   ]))),
-                // Table(columnWidths: const {
-                //   0: IntrinsicColumnWidth(),
-                //   1: FlexColumnWidth(),
-                //   2: IntrinsicColumnWidth(),
-                //   3: FlexColumnWidth()
-                // }, children: <TableRow>[
-                //   TableRow(children: <Widget>[
-                //     const Text("Start: "),
-                //     LocaleDateFormat(
-                //         date: event.start, format: "yMMMMEEEEd"),
-                //     const SizedBox(width: 30),
-                //     LocaleDateFormat(date: event.start, format: "Hm")
-                //   ]),
-                //   TableRow(children: <Widget>[
-                //     const Text("Eindigt: "),
-                //     LocaleDateFormat(
-                //         date: event.end, format: "yMMMMEEEEd"),
-                //     const SizedBox(width: 30),
-                //     LocaleDateFormat(date: event.end, format: "Hm")
-                //   ])
-                // ]),
-                Card(
-                    child: ListTile(
-                        title: const Text("Beschrijving"),
-                        subtitle: Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
-                            child:
-                                HtmlWidget(event.data["post_content"] ?? "")))),
+                  if (eventEnd != null)
+                    Card(
+                        child: ListTile(
+                            title: Wrap(children: [
+                      const SizedBox(width: 80, child: Text("Eindigt: ")),
+                      Wrap(children: [
+                        SizedBox(
+                            width: 260,
+                            child: LocaleDateFormat(
+                                date: eventEnd, format: "yMMMMEEEEd")),
+                        // const SizedBox(width: 20),
+                        LocaleDateFormat(date: eventEnd, format: "Hm")
+                      ])
+                    ]))),
+                  // Table(columnWidths: const {
+                  //   0: IntrinsicColumnWidth(),
+                  //   1: FlexColumnWidth(),
+                  //   2: IntrinsicColumnWidth(),
+                  //   3: FlexColumnWidth()
+                  // }, children: <TableRow>[
+                  //   TableRow(children: <Widget>[
+                  //     const Text("Start: "),
+                  //     LocaleDateFormat(
+                  //         date: event.start, format: "yMMMMEEEEd"),
+                  //     const SizedBox(width: 30),
+                  //     LocaleDateFormat(date: event.start, format: "Hm")
+                  //   ]),
+                  //   TableRow(children: <Widget>[
+                  //     const Text("Eindigt: "),
+                  //     LocaleDateFormat(
+                  //         date: event.end, format: "yMMMMEEEEd"),
+                  //     const SizedBox(width: 30),
+                  //     LocaleDateFormat(date: event.end, format: "Hm")
+                  //   ])
+                  // ]),
+                  Card(
+                      child: ListTile(
+                          title: const Text("Beschrijving"),
+                          subtitle: Padding(
+                              padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+                              child: HtmlWidget(
+                                  event.data["post_content"] ?? "")))),
 
-                buildThumbnailCard(context, event),
-                // Card(child:
-                // FutureBuilder(future: _image, builder: (context, snapshot) {
-                //   if (snapshot.hasData) {
-                //     return Image.memory(snapshot.data!.bodyBytes);
-                //   } else {
-                //     return const Text("Loading...");
-                //   }
-                // })),
-                // ListTile(title: const Text("aa")),)
-              ];
-            }()),
-            const SizedBox(height: 32),
-            Card(
-                child: ListTile(
-                    title: Text(
-                        "Participants (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
-          ]))),
-      SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-          sliver: SliverList(
-              delegate: SliverChildListDelegate([
-            FutureBuilderPatched(
-                future: _participantsProvider.loading,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return formatError(snapshot.error);
-                  }
+                  buildThumbnailCard(context, event),
+                  // Card(child:
+                  // FutureBuilder(future: _image, builder: (context, snapshot) {
+                  //   if (snapshot.hasData) {
+                  //     return Image.memory(snapshot.data!.bodyBytes);
+                  //   } else {
+                  //     return const Text("Loading...");
+                  //   }
+                  // })),
+                  // ListTile(title: const Text("aa")),)
+                ];
+              }()),
+              const SizedBox(height: 32),
+              Card(
+                  child: ListTile(
+                      title: Text(
+                          "Participants (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
+            ]))),
+        SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            sliver: SliverList(
+                delegate: SliverChildListDelegate([
+              if (_participantsProvider.cached == null)
+                FutureBuilderPatched(
+                    future: _participantsProvider.loading,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(child: formatError(snapshot.error));
+                      }
 
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return const SizedBox();
-                }),
-            ...(_participantsProvider.cached ?? []).map<Widget>((e) => Padding(
-                padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
-                child: Card(child: ListTile(title: Text(e))))),
-            const SizedBox(height: 32),
-          ])))
-    ]));
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      return const SizedBox();
+                    }),
+              ...(_participantsProvider.cached ?? []).map<Widget>((e) =>
+                  Padding(
+                      padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
+                      child: Card(child: ListTile(title: Text(e))))),
+              const SizedBox(height: 32),
+            ])))
+      ]))),
+      AlertsPanel(loadingFutures: [
+        ("details", _eventProvider.loading, _eventProvider.cached != null),
+        (
+          "participants",
+          _participantsProvider.loading,
+          _participantsProvider.cached != null
+        )
+      ])
+    ]);
   }
 }

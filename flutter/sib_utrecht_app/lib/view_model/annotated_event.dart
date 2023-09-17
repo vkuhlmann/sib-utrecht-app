@@ -12,5 +12,6 @@ abstract interface class AnnotatedEvent extends Widget {
       {required this.event,
       required this.isParticipating,
       required this.setParticipating,
-      required this.isDirty});
+      required this.isDirty,
+      super.key});
 }

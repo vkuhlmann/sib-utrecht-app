@@ -19,31 +19,22 @@ Widget formatError(Object? error) {
   if (
     error is APIError
     && [401, 403].contains(error.statusCode)
-    && error.connector.user == null
     )
   {
-    return FilledButton(
+    if (error.connector.user == null) {
+      return FilledButton(
           onPressed: () {
             router.go("/login?immediate=true");
           },
           child: const Text("Please log in"));
-    // return Text(formatErrorMsg(error.message));
+    }
+
+    if (error.message.toString() == "Sorry, you are not allowed to do that.") {
+      return const Text("Permission denied");
+    }
   }
 
   String msg = formatErrorMsg(error?.toString());
-
-  // if (msg.startsWith("Permission denied")) {
-  //   return FutureBuilderPatched(builder: (context, snapshot) {
-  //     if (snapshot.
-
-  //     return Text("Loading...");
-  //   });
-
-  //   return ElevatedButton(
-  //     onPressed: () => launch("https://www.lego.com/en-us/account/login"),
-  //     child: Text("Log in"),
-  //   );
-  // }
 
   return Text(msg);
 }
