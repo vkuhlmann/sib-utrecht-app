@@ -353,43 +353,86 @@ class _EventsPageState extends State<EventsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // if (eventsProvider.cached == null && apiConnector == null) {
+    //   return const SizedBox();
+    // }
+
+    // if (eventsProvider.cached == null && apiConnector) {
+    //   return const SizedBox();
+    // }
+
     log.fine("Doing events page build");
     return Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           //   if (eventsProvider.cached != null || eventsSnapshot.connectionState == ConnectionState.waiting)
           // Expanded(
           //     child: ListView(reverse: true, children: [
-            FutureBuilderPatched(
-              future: eventsProvider.loading,
-              builder: (eventsContext, eventsSnapshot) {
-                // if (eventsSnapshot.hasError) {
-                //   return const SizedBox();
-                // }
-                if (eventsSnapshot.connectionState == ConnectionState.waiting &&
-                    eventsProvider.cached == null) {
-                  return const Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Center(child: CircularProgressIndicator()));
-                }
+          FutureBuilderPatched(
+            future: eventsProvider.loading,
+            builder: (eventsContext, eventsSnapshot) {
+              // if (eventsSnapshot.hasError) {
+              //   return const SizedBox();
+              // }
 
-                if (eventsProvider.cached == null) {
-                  return const SizedBox();
-                }
+              if (eventsProvider.cached == null) {
+                return FutureBuilderPatched(
+                    future: eventsProvider.connector,
+                    builder: (context, snapshot) {
+                      var data = snapshot.data;
 
-                return Expanded(child: ListView(reverse: true,
-                  children: 
-                  buildEvents().reversed.toList()
-                ),
-                );
-              },
+                      if (data != null && data.user == null) {
+                        return Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Column(children: [
+                              // IconButton(
+                              //   onPressed: () {
+                              //   router.go("/login?immediate=true");
+                              // }, icon: Icon(Icons.login, size: 64,
+                              // color: Theme.of(context).colorScheme.primary,),
+                              // // color: Theme.of(context).colorScheme.primaryContainer
+                              // ),
+                              FilledButton(
+                                onPressed: () {
+                                  router.go("/login?immediate=true");
+                                },
+                                child: Padding(padding: const EdgeInsets.all(16),
+                                child: Text("Log in",
+                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                          color: Theme.of(context).colorScheme.onPrimary,
+                                    
+                                ))))]));
+                      }
+
+                      if (eventsSnapshot.connectionState ==
+                              ConnectionState.waiting &&
+                          eventsProvider.cached == null) {
+                        return const Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Center(child: CircularProgressIndicator()));
+                      }
+
+                      return const SizedBox();
+                    });
+                // if (eventsProvider.connector != null)
+
+                // return const SizedBox();
+              }
+
+              return Expanded(
+                child: ListView(
+                    reverse: true, children: buildEvents().reversed.toList()),
+              );
+            },
+          ),
+          AlertsPanel(loadingFutures: [
+            ("events", eventsProvider.loading, eventsProvider.cached != null),
+            (
+              "bookings",
+              bookingsProvider.loading,
+              bookingsProvider.cached != null
             ),
-            AlertsPanel(loadingFutures: [
-              ("events", eventsProvider.loading, eventsProvider.cached != null),
-              ("bookings", bookingsProvider.loading, bookingsProvider.cached != null),
-            ])
+          ])
         ]));
   }
 }

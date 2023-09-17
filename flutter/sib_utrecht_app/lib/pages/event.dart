@@ -284,7 +284,8 @@ class _EventPageState extends State<EventPage> {
                     builder: (eventContext, eventSnapshot) {
                       if (eventSnapshot.hasError) {
                         // return Text("${eventSnapshot.error}");
-                        return formatError(eventSnapshot.error);
+                        return Padding(padding: const EdgeInsets.all(32),
+                        child: Center(child: formatError(eventSnapshot.error)));
                       }
                       if (eventSnapshot.connectionState ==
                           ConnectionState.waiting) {
@@ -385,7 +386,8 @@ class _EventPageState extends State<EventPage> {
                     future: _participantsProvider.loading,
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        return Center(child: formatError(snapshot.error));
+                        return Padding(padding: const EdgeInsets.all(16),
+                        child: Center(child: formatError(snapshot.error)));
                       }
 
                       if (snapshot.connectionState == ConnectionState.waiting) {

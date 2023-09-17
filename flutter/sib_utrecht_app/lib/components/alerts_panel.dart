@@ -71,26 +71,31 @@ class _AlertsPanelState extends State<AlertsPanel> {
     scheduleMessageDismissals();
   }
 
-  final Map<String, (Widget, Widget) Function(AlertsPanelStatusMessage)>
+  final Map<String, (Widget, Widget, Widget?) Function(AlertsPanelStatusMessage)>
       makeStatusCardContent = {
     "error": (msg) => (
           const Icon(Icons.error, color: Colors.red),
-          Wrap(children: [
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
             Text("Could not load ${msg.component}:"),
-            const SizedBox(width: 8),
-            formatError(msg.data)
-          ])
+            // const SizedBox(width: 8),
+            // Padding(padding: const EdgeInsets.all(8), child: formatError(msg.data))
+          ]),
+          Padding(padding: const EdgeInsets.all(8), child: formatError(msg.data))
         ),
     "loading": (msg) => (
           const SizedBox(
               width: 16, height: 16, child: CircularProgressIndicator()),
           (msg.data as Map)["isRefreshing"] == true
               ? Text("Refreshing ${msg.component}...")
-              : Text("Loading ${msg.component}...")
+              : Text("Loading ${msg.component}..."),
+          null
         ),
     "done": (msg) => (
           const Icon(Icons.done, color: Colors.green),
-          Text("Loaded ${msg.component}")
+          Text("Loaded ${msg.component}"),
+          null
         ),
   };
 
@@ -102,11 +107,11 @@ class _AlertsPanelState extends State<AlertsPanel> {
       return const SizedBox();
     }
 
-    Widget icon;
-    Widget title;
-    (icon, title) = makeFunc(msg);
+    // Widget icon;
+    // Widget title;
+    final (icon, title, subtitle) = makeFunc(msg);
 
-    return Card(child: ListTile(leading: icon, title: title));
+    return Card(child: ListTile(leading: icon, title: title, subtitle: subtitle,));
   }
 
   AlertsPanelStatusMessage getStatusMessageForSnapshot(
