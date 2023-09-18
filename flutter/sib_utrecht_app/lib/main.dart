@@ -42,13 +42,16 @@ part 'pages/feed.dart';
 
 part 'components/event_tile.dart';
 part 'components/event_group.dart';
-part 'components/event_ongoing.dart';
 part 'components/alerts_panel.dart';
+part 'components/weekday_indicator.dart';
+part 'components/signup_indicator.dart';
 
 part 'view_model/cached_provider.dart';
 part 'view_model/async_patch.dart';
 part 'view_model/locale_date_format.dart';
 part 'view_model/annotated_event.dart';
+part 'view_model/event_participation.dart';
+part 'view_model/event_placement.dart';
 
 part 'model/login_manager.dart';
 part 'model/api_connector.dart';

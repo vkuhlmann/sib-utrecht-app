@@ -1,38 +1,31 @@
 part of '../main.dart';
 
-class EventTile extends StatefulWidget implements AnnotatedEvent {
-  @override
-  final Event event;
+class EventTile extends StatefulWidget {
+  // final DateTime date;
+  final AnnotatedEvent event;
 
-  @override
-  final bool isParticipating;
-  @override
-  final ValueSetter<bool> setParticipating;
-  @override
-  final bool isDirty;
-  @override
-  final DateTime date;
+  // @override
+  // final Event event;
 
-  final bool isConinuation;
+  // @override
+  // final bool isParticipating;
+  // @override
+  // final ValueSetter<bool> setParticipating;
+  // @override
+  // final bool isDirty;
+  // @override
+  // final DateTime date;
 
-  static final List<Color> weekDayColors = [
-    Colors.pink, // Monday
-    Colors.blueAccent, // Tuesday
-    Colors.pink, // Wednesday
-    Colors.green, // Thursday
-    Colors.pink, // Friday
-    Colors.pink, // Saturday
-    Colors.pink // Sunday
-  ]; //.map((e) => HSLColor.fromColor(e).withLightness(0.4).toColor()).toList();
+  // final bool isContinuation;
 
   const EventTile(
       {Key? key,
       required this.event,
-      required this.isParticipating,
-      required this.setParticipating,
-      required this.isDirty,
-      required this.date,
-      this.isConinuation = false})
+      // required this.isParticipating,
+      // required this.setParticipating,
+      // required this.isDirty,
+      // required this.date,
+    })
       : super(key: key);
 
   @override
@@ -42,132 +35,111 @@ class EventTile extends StatefulWidget implements AnnotatedEvent {
 class _EventTileState extends State<EventTile> {
   final _timeFormat = DateFormat("HH:mm");
 
-  // final Map<String, List<String>> WeekDays = {
-  //   "en_GB": ["mo", "tu", "we", "th", "fr", "sa", "su"],
-  //   "nl_NL": ["ma", "di", "wo", "do", "vr", "za", "zo"],
-  // };
+  // Widget buildSignupInteraction() => Builder(builder: (context) {
+  //       if (widget.event.data["signup"]?["type"] == "none") {
+  //         return const SizedBox();
+  //       }
 
-  Widget buildSignupInteraction() => Builder(builder: (context) {
-        if (widget.event.data["signup"]?["type"] == "none") {
-          return const SizedBox();
-        }
+  //       if (widget.event.data["signup"] == null) {
+  //         if (widget.event?.participation?.isDirty) {
+  //           return const CircularProgressIndicator();
+  //         }
 
-        if (widget.event.data["signup"] == null) {
-          if (widget.isDirty) {
-            return const CircularProgressIndicator();
-          }
+  //         return Checkbox(
+  //           value: widget.isParticipating,
+  //           onChanged: widget.isContinuation
+  //               ? null
+  //               : (value) {
+  //                   widget.setParticipating(value!);
+  //                 },
+  //         );
+  //       }
 
-          return Checkbox(
-            value: widget.isParticipating,
-            onChanged: widget.isConinuation
-                ? null
-                : (value) {
-                    widget.setParticipating(value!);
-                  },
-          );
-        }
+  //       if (widget.event.data["signup"]["url"] != null) {
+  //         if (widget.isContinuation) {
+  //           return const SizedBox();
+  //         }
 
-        if (widget.event.data["signup"]["url"] != null) {
-          if (widget.isConinuation) {
-            return const SizedBox();
-          }
+  //         return IconButton(
+  //             onPressed: () {
+  //               launchUrl(Uri.parse(widget.event.data["signup"]["url"]))
+  //                   .catchError((e) {
+  //                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //                     content: Text(
+  //                         "Failed to open signup link: ${widget.event.data["signup"]["url"]}")));
+  //               });
+  //             },
+  //             icon: const Icon(Icons.open_in_browser));
+  //       }
 
-          return IconButton(
-              onPressed: () {
-                launchUrl(Uri.parse(widget.event.data["signup"]["url"]))
-                    .catchError((e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          "Failed to open signup link: ${widget.event.data["signup"]["url"]}")));
-                });
-              },
-              icon: const Icon(Icons.open_in_browser));
-        }
-
-        return const SizedBox();
-      });
+  //       return const SizedBox();
+  //     });
 
   @override
   Widget build(BuildContext context) {
-    bool isActive = widget.event.data["tickets"] != null &&
-        widget.event.data["tickets"].length > 0;
-    Color color = EventTile.weekDayColors[widget.date.weekday - 1];
-    if (widget.isConinuation) {
-      color =
-          HSLColor.fromColor(Colors.orangeAccent).withLightness(0.4).toColor();
-    }
+    // bool isActive = widget.event.data["tickets"] != null &&
+    //     widget.event.data["tickets"].length > 0;
+    // Color color = EventTile.weekDayColors[widget.date.weekday - 1];
+    // if (widget.isConinuation) {
+    //   color =
+    //       HSLColor.fromColor(Colors.orangeAccent).withLightness(0.4).toColor();
+    // }
 
-    Color activeColor = HSLColor.fromColor(color).withLightness(0.7).toColor();
+    // Color activeColor = HSLColor.fromColor(color).withLightness(0.7).toColor();
 
-    if (Theme.of(context).brightness == Brightness.light) {
-      color = HSLColor.fromColor(color).withLightness(0.8).toColor();
-      activeColor =
-          HSLColor.fromColor(activeColor).withLightness(0.6).toColor();
-    }
+    // if (Theme.of(context).brightness == Brightness.light) {
+    //   color = HSLColor.fromColor(color).withLightness(0.8).toColor();
+    //   activeColor =
+    //       HSLColor.fromColor(activeColor).withLightness(0.6).toColor();
+    // }
+
+    var placement = widget.event.placement;
 
     return InkWell(
-        onTap: (false && widget.event.data["post_id"] == null) ? null : () {
+        // onTap: (false && widget.event.data["post_id"] == null)
+        //     ? null
+        //     : () {
+        //         GoRouter.of(context).go("/event/${widget.event.eventId}");
+        //       },
+        onTap: () {
           GoRouter.of(context).go("/event/${widget.event.eventId}");
         },
         child: Container(
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
             child: Row(children: [
-              SizedBox(
-                width: 50,
-                height: 50,
-                child: Container(
-                    decoration: BoxDecoration(
-                        border: isActive
-                            ? Border.all(
-                                // color: Colors isActive ? Colors.purple : Colors.grey,
-                                color: activeColor,
-                                width: 3)
-                            : null,
-                        // color: Colors.grey
-                        color: color),
-                    alignment: Alignment.center,
-                    // padding: const EdgeInsets.all(10),
-                    margin: const EdgeInsets.all(5),
-                    // color: Colors.blueAccent,
-                    // child: Text('${widget.event.start.day}')),
-                    child: LocaleDateFormat(format: "E", date: widget.date)),
-                // child: Text(WeekDays[Preferences.of(context).locale.toString()]![widget.event.start.weekday - 1])
-              ),
+              WeekdayIndicator(event: widget.event),
               SizedBox(
                   width: 80,
-                  child: Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(10),
-                      margin: const EdgeInsets.all(5),
-                      child: LocaleDateFormat(
-                          format: "d MMM", date: widget.date))),
+                  child: placement == null
+                      ? const SizedBox()
+                      : Container(
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.all(10),
+                          margin: const EdgeInsets.all(5),
+                          child: LocaleDateFormat(
+                              format: "d MMM", date: placement.date))),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.all(10),
                       margin: const EdgeInsets.all(5),
                       child: Text(widget.event.eventName))),
-              Container(
-                  alignment: Alignment.center, child: buildSignupInteraction()),
-              Container(
+              if (placement?.isContinuation != true)
+                SignupIndicator(event: widget.event),
+              if (widget.event.start.toIso8601String().substring(0, 10) ==
+                  placement?.date.toIso8601String().substring(0, 10))
+                Container(
                   alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.all(10),
                   margin: const EdgeInsets.all(5),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (widget.event.start
-                                .toIso8601String()
-                                .substring(0, 10) ==
-                            widget.date.toIso8601String().substring(0, 10))
-                          Text(_timeFormat.format(widget.event.start)),
-                        // Text(_timeFormat.format(widget.end)),
-                        // Text(start_time.format(context)),
-                        // Text(end_time.format(context))
-                        // Text('${widget.start.hour:2d}:${widget.start.minute}'),
-                        // Text('${widget.end.hour}:${widget.end.minute}'),
-                      ]))
+                  child: Text(_timeFormat.format(widget.event.start)),
+                  // Text(_timeFormat.format(widget.end)),
+                  // Text(start_time.format(context)),
+                  // Text(end_time.format(context))
+                  // Text('${widget.start.hour:2d}:${widget.start.minute}'),
+                  // Text('${widget.end.hour}:${widget.end.minute}'),
+                )
             ])));
   }
 }

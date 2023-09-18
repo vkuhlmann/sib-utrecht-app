@@ -26,8 +26,8 @@ class _NewLoginPageState extends State<NewLoginPage> {
       RegExp("^([a-zA-Z0-9]{4} ){5}[a-zA-Z0-9]{4}\$");
 
   final TextEditingController _apiUrlController = TextEditingController();
-  final TextEditingController _authorizationUrlController =
-      TextEditingController();
+  // final TextEditingController _authorizationUrlController =
+  //     TextEditingController();
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _applicationPasswordController =
