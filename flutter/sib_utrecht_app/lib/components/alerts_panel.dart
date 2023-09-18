@@ -71,28 +71,31 @@ class _AlertsPanelState extends State<AlertsPanel> {
     scheduleMessageDismissals();
   }
 
-  final Map<String, (Widget, Widget, Widget?) Function(AlertsPanelStatusMessage)>
+  final Map<String, (Widget, Widget, Widget?) Function(BuildContext, AlertsPanelStatusMessage)>
       makeStatusCardContent = {
-    "error": (msg) => (
+    "error": (context, msg) => (
           const Icon(Icons.error, color: Colors.red),
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-            Text("Could not load ${msg.component}:"),
+            // Text("Could not load ${msg.component}:"),
+            Text(AppLocalizations.of(context)!.couldNotLoad(msg.component))
             // const SizedBox(width: 8),
             // Padding(padding: const EdgeInsets.all(8), child: formatError(msg.data))
           ]),
           Padding(padding: const EdgeInsets.all(8), child: formatError(msg.data))
         ),
-    "loading": (msg) => (
+    "loading": (context, msg) => (
           const SizedBox(
               width: 16, height: 16, child: CircularProgressIndicator()),
           (msg.data as Map)["isRefreshing"] == true
-              ? Text("Refreshing ${msg.component}...")
-              : Text("Loading ${msg.component}..."),
+              ? Text(AppLocalizations.of(context)!.refreshingComponent(msg.component))
+              // Text("Refreshing ${msg.component}...")
+              : Text(AppLocalizations.of(context)!.loadingComponent(msg.component)),
+              // Text("Loading ${msg.component}..."),
           null
         ),
-    "done": (msg) => (
+    "done": (context, msg) => (
           const Icon(Icons.done, color: Colors.green),
           Text("Loaded ${msg.component}"),
           null
@@ -109,7 +112,7 @@ class _AlertsPanelState extends State<AlertsPanel> {
 
     // Widget icon;
     // Widget title;
-    final (icon, title, subtitle) = makeFunc(msg);
+    final (icon, title, subtitle) = makeFunc(context, msg);
 
     return Card(child: ListTile(leading: icon, title: title, subtitle: subtitle,));
   }

@@ -318,9 +318,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Preferences(
-        locale: "nl_NL",
+        // locale: "nl_NL",
+        locale: const Locale('nl', 'NL'),
         debugMode: false,
-        child: MaterialApp.router(
+        child: Builder(builder: (context) => MaterialApp.router(
             routerConfig: router,
             title: 'SIB-Utrecht',
             theme: ThemeData(
@@ -341,7 +342,20 @@ class MyApp extends StatelessWidget {
               brightness: Brightness.dark,
               // fontFamily: 'Roboto',
             ),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate
+            ],
+            supportedLocales: const [
+              Locale('en', 'GB'),
+              Locale('nl', 'NL'),
+            ],
+            locale: Preferences.of(context).locale,
+            // locale: const Locale('nl', 'NL'),
+            // locale: const Locale('en', 'GB'),
             themeMode: ThemeMode.system,
-            debugShowCheckedModeBanner: true));
+            debugShowCheckedModeBanner: true)));
   }
 }

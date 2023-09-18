@@ -1,0 +1,48 @@
+{
+  "@@locale": "en",
+
+  "helloWorld": "Hello World!",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  },
+
+  "events": "activities",
+  "bookings": "bookings",
+  "tabEvents": "Activities",
+  "tabFeed": "Feed",
+  "tabInfo": "Info",
+  "logIn": "Log in",
+  "loginRequired": "Please log in",
+
+  "loadingComponent": "Loading {componentString}...",
+  "@loadingComponent": {
+    "type": "text",
+    "placeholders": {
+      "componentString": {
+        "type": "String"
+      }
+    },
+    "description": "Message displayed when a component is loading"
+  },
+  "refreshingComponent": "Refreshing {componentString}...",
+  "@refreshingComponent": {
+    "type": "text",
+    "placeholders": {
+      "componentString": {
+        "type": "String"
+      }
+    },
+    "description": "Message displayed when a component is refreshing"
+  },
+
+  "couldNotLoad": "Could not load {componentsString}(:)",
+  "@couldNotLoad": {
+    "type": "text",
+    "placeholders": {
+      "componentsString": {
+        "type": "String"
+      }
+    },
+    "description": "Error message when a component fails to load"
+  }
+}

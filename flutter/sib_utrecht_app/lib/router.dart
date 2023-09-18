@@ -21,7 +21,11 @@ final GoRouter router = GoRouter(
   routes: <RouteBase>[
     StatefulShellRoute.indexedStack(
         // builder: (context, state, navigationShell) => Padding(padding: const EdgeInsets.all(64), child: navigationShell),
-        builder: (context, state, navigationShell) => navigationShell,
+        // builder: (context, state, navigationShell) => 
+        //   Localizations.override(context: context, locale: const Locale("nl", "NL"), child: navigationShell)
+        // ,
+        builder: (context, state, navigationShell) => navigationShell
+        ,
         branches: [
           StatefulShellBranch(
               // navigatorKey: _authScreensNav,

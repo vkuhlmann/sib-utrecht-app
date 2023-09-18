@@ -94,6 +94,12 @@ class _EventTileState extends State<EventTile> {
     // }
 
     var placement = widget.event.placement;
+    String? dayMonth;
+    if (placement != null) {
+      dayMonth = DateFormat.MMMd(Localizations.localeOf(context).toString())
+                            .format(placement.date);
+      dayMonth = dayMonth.replaceFirst(RegExp("\\.\$"), "");
+    }
 
     return InkWell(
         // onTap: (false && widget.event.data["post_id"] == null)
@@ -111,14 +117,17 @@ class _EventTileState extends State<EventTile> {
               WeekdayIndicator(event: widget.event),
               SizedBox(
                   width: 80,
-                  child: placement == null
+                  child: dayMonth == null
                       ? const SizedBox()
                       : Container(
                           alignment: Alignment.center,
                           padding: const EdgeInsets.all(10),
                           margin: const EdgeInsets.all(5),
-                          child: LocaleDateFormat(
-                              format: "d MMM", date: placement.date))),
+                          child: 
+                          Text(dayMonth)
+                          // LocaleDateFormat(
+                          //     format: "d MMM", date: placement.date)
+                              )),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,

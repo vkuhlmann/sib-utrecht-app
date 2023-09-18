@@ -7,12 +7,17 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+
 // import 'package:flutter/scheduler.dart';
 // import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 // import 'package:tuple/tuple.dart';
+
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
+// import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 // import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
@@ -60,7 +65,7 @@ part 'model/event.dart';
 
 
 
-late Future<void> dateFormattingInitialization;
+// late Future<void> dateFormattingInitialization;
 // const String wordpressUrl = "http://192.168.50.200/wordpress";
 const String wordpressUrl = "https://sib-utrecht.nl";
 const String defaultApiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
@@ -85,11 +90,11 @@ void main() {
   // log.info(formatWeekNumber(DateTime(2024, 12, 30)));
   // log.info(formatWeekNumber(DateTime(2023, 9, 9)));
 
-  dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
-      .then((_) => Future.wait([
-            initializeDateFormatting("nl_NL"),
-            initializeDateFormatting("en_GB")
-          ]));
+  // var dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
+  //     .then((_) => Future.wait([
+  //           initializeDateFormatting("nl_NL"),
+  //           initializeDateFormatting("en_GB")
+  //         ]));
 
   GoogleFonts.config.allowRuntimeFetching = true;
 
@@ -111,7 +116,7 @@ void main() {
 class Preferences extends InheritedWidget {
   const Preferences({super.key, required super.child, required this.locale, required this.debugMode});
 
-  final String locale;
+  final Locale locale;
   final bool debugMode;
 
   static Preferences? maybeOf(BuildContext context) {

@@ -22,11 +22,15 @@ Widget formatError(Object? error) {
     )
   {
     if (error.connector.user == null) {
-      return FilledButton(
+      return 
+      Builder(builder: (context) =>
+      FilledButton(
           onPressed: () {
             router.go("/login?immediate=true");
           },
-          child: const Text("Please log in"));
+          child: Text(AppLocalizations.of(context)?.loginRequired ?? "Please log in")
+          )
+          );
     }
 
     if (error.message.toString() == "Sorry, you are not allowed to do that.") {
