@@ -129,8 +129,16 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                 color: Theme.of(context).colorScheme.primary, size: 40)
           ],
         ),
+        // const SizedBox(height: 15),
+        // const Text("test"),
         const SizedBox(height: 15),
-        const Text("test"),
+        Row(children: [
+          const Text("Dark theme"),
+          const Spacer(),
+          Switch(value: Theme.of(context).brightness == Brightness.dark, onChanged: (val) {
+            MyApp.setDark(context, val);
+          }),
+        ]),
         const SizedBox(height: 15),
         Row(children: [
           const Text("Dutch"),
@@ -334,12 +342,26 @@ class MyApp extends StatefulWidget {
     state.setDutch(val);
   }
 
+  static void setDark(BuildContext context, bool? val) {
+    // Source: https://stackoverflow.com/questions/55889889/how-to-change-a-flutter-app-language-without-restarting-the-app
+    // answer by https://stackoverflow.com/users/7639019/seddiq-sorush
+
+    _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
+    if (state == null) {
+      log.severe("Could not find _MyAppState for setDark");
+      return;
+    }
+
+    state.setDark(val);
+  }
+
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
   bool? isDutch;
+  bool? isDark;
 
   void setDutch(bool? val) {
     setState(() {
@@ -347,8 +369,17 @@ class _MyAppState extends State<MyApp> {
     });    
   }
 
+
+  void setDark(bool? val) {
+    setState(() {
+      isDark = val;
+    });    
+  }
+
   @override
   Widget build(BuildContext context) {
+    bool? darkTheme = isDark;
+
     return Preferences(
         // locale: "nl_NL",
         locale: isDutch == true ? const Locale("nl", "NL") : const Locale("en", "GB"),
@@ -391,7 +422,7 @@ class _MyAppState extends State<MyApp> {
                 ),
                 // locale: const Locale('nl', 'NL'),
                 // locale: const Locale('en', 'GB'),
-                themeMode: ThemeMode.system,
+                themeMode: darkTheme == null ? ThemeMode.system : (darkTheme ? ThemeMode.dark : ThemeMode.light),
                 debugShowCheckedModeBanner: true)));
   }
 }
