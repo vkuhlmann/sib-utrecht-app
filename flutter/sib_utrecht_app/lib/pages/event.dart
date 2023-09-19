@@ -143,12 +143,12 @@ class _EventPageState extends State<EventPage> {
 
     return Card(
         child: ListTile(
-            title: const Text("Thumbnail"),
+            title: Text(AppLocalizations.of(context)!.eventImage),
             subtitle: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
                 child: Builder(builder: (context) {
                   if (thumbnail == null) {
-                    return const Text("Geen thumbnail");
+                    return Text(AppLocalizations.of(context)!.eventNoImage);
                   }
                   try {
                     // return Text(jsonEncode(event.data["thumbnail"]));
@@ -309,7 +309,7 @@ class _EventPageState extends State<EventPage> {
                   Card(
                       child: ListTile(
                           title: Wrap(children: [
-                    const SizedBox(width: 80, child: Text("Start: ")),
+                    SizedBox(width: 80, child: Text("${AppLocalizations.of(context)!.eventStarts}: ")),
                     Wrap(children: [
                       SizedBox(
                           width: 260,
@@ -323,7 +323,7 @@ class _EventPageState extends State<EventPage> {
                     Card(
                         child: ListTile(
                             title: Wrap(children: [
-                      const SizedBox(width: 80, child: Text("Eindigt: ")),
+                      SizedBox(width: 80, child: Text("${AppLocalizations.of(context)!.eventEnds}: ")),
                       Wrap(children: [
                         SizedBox(
                             width: 260,
@@ -356,7 +356,7 @@ class _EventPageState extends State<EventPage> {
                   // ]),
                   Card(
                       child: ListTile(
-                          title: const Text("Beschrijving"),
+                          title: Text(AppLocalizations.of(context)!.eventDescription),
                           subtitle: buildDescription(context, event))),
 
                   buildThumbnailCard(context, event),
@@ -375,7 +375,7 @@ class _EventPageState extends State<EventPage> {
               Card(
                   child: ListTile(
                       title: Text(
-                          "Participants (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
+                          "${AppLocalizations.of(context)!.eventParticipants} (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
             ]))),
         SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),

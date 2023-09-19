@@ -13,6 +13,20 @@
   "tabInfo": "Info",
   "logIn": "Log in",
   "loginRequired": "Please log in",
+  "committees": "Committees",
+  "societies": "Societies",
+  "board": "Board",
+  "eventStarts": "Starts",
+  "eventEnds": "Ends",
+  "eventDescription": "Description",
+  "eventImage": "Promo image",
+  "eventNoImage": "No image",
+  "eventParticipants": "Participants",
+
+
+  "confidentialAdvisers": "Confidential advisers",
+  "aboutSIB": "About SIB",
+  "aboutApp": "About this app",
 
   "loadingComponent": "Loading {componentString}...",
   "@loadingComponent": {

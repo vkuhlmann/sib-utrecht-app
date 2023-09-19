@@ -46,31 +46,28 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
   late Future<LoginState> loginState;
   late void Function() listenerFunc;
-  int get selectedIndex => (({
-      0: 0,
-      1: 1,
-      2: 2,
-      3: 0,
-      4: 2
-    })[widget.navigationShell.currentIndex]!);
-  final List<NavigationDestination> destinations = const [
+  int get selectedIndex =>
+      (({0: 0, 1: 1, 2: 2, 3: 0, 4: 2})[widget.navigationShell.currentIndex]!);
+  List<NavigationDestination> getDestinations(BuildContext context) {
+    return [
       NavigationDestination(
-        icon: Icon(Icons.event_outlined),
+        icon: const Icon(Icons.event_outlined),
         // icon: Icon(Symbols.calendar_month),
-        label: 'Activities',
-        selectedIcon: Icon(Icons.event),
+        label: AppLocalizations.of(context)!.tabEvents,
+        selectedIcon: const Icon(Icons.event),
       ),
       NavigationDestination(
-        icon: Icon(Icons.timeline_outlined),
-        label: 'Feed',
-        selectedIcon: Icon(Icons.timeline),
+        icon: const Icon(Icons.timeline_outlined),
+        label: AppLocalizations.of(context)!.tabFeed,
+        selectedIcon: const Icon(Icons.timeline),
       ),
       NavigationDestination(
-        icon: Icon(Icons.tab_outlined),
-        label: "Info",
-        selectedIcon: Icon(Icons.tab),
+        icon: const Icon(Icons.tab_outlined),
+        label: AppLocalizations.of(context)!.tabInfo,
+        selectedIcon: const Icon(Icons.tab),
       )
     ];
+  }
 
   @override
   void initState() {
@@ -128,11 +125,20 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
               width: 16,
             ),
             // const CircleAvatar(backgroundColor: Colors.blue)
-            Icon(Icons.favorite, color: Theme.of(context).colorScheme.primary, size: 40)
+            Icon(Icons.favorite,
+                color: Theme.of(context).colorScheme.primary, size: 40)
           ],
         ),
         const SizedBox(height: 15),
         const Text("test"),
+        const SizedBox(height: 15),
+        Row(children: [
+          const Text("Dutch"),
+          const Spacer(),
+          Switch(value: Localizations.localeOf(context).languageCode == "nl", onChanged: (val) {
+            MyApp.setDutch(context, val);
+          }),
+        ]),
         ...((snapshot.data?.activeProfileName != null)
             ? ([
                 const SizedBox(height: 15),
@@ -205,97 +211,97 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
         });
   }
 
-
-Widget buildWide() {
-  return Builder(builder: (context) => Scaffold(
-      // bottomNavigationBar: NavigationBar(
-      //   onDestinationSelected: _onDestinationSelected,
-      //   selectedIndex: selectedIndex,
-      //   destinations: destinations,
-      // ),
-      appBar: AppBar(
-          backgroundColor:
-              Theme.of(context).colorScheme.inversePrimary,
-          title: Row(
-            // crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Image.asset(
-                'assets/sib_logo_64.png',
-                fit: BoxFit.contain,
-                height: 40,
-                filterQuality: FilterQuality.medium,
+  Widget buildWide() {
+    return Builder(
+        builder: (context) => Scaffold(
+            // bottomNavigationBar: NavigationBar(
+            //   onDestinationSelected: _onDestinationSelected,
+            //   selectedIndex: selectedIndex,
+            //   destinations: destinations,
+            // ),
+            appBar: AppBar(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                title: Row(
+                  // crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Image.asset(
+                      'assets/sib_logo_64.png',
+                      fit: BoxFit.contain,
+                      height: 40,
+                      filterQuality: FilterQuality.medium,
+                    ),
+                    const SizedBox(width: 16),
+                    Text(widget.title),
+                    const Spacer(),
+                    buildLoginIcon(context)
+                  ],
+                )),
+            body: SafeArea(
+                child: Row(children: [
+              NavigationRail(
+                selectedIndex: selectedIndex,
+                onDestinationSelected: _onDestinationSelected,
+                labelType: NavigationRailLabelType.all,
+                destinations: getDestinations(context)
+                    .map((e) => NavigationRailDestination(
+                        icon: e.icon,
+                        label: Text(e.label),
+                        selectedIcon: e.selectedIcon))
+                    .toList(),
               ),
-              const SizedBox(width: 16),
-              Text(widget.title),
-              const Spacer(),
-              buildLoginIcon(context)
-            ],
-          )),
-      body: SafeArea(child:
-        Row(children: [
-          NavigationRail(
-            selectedIndex: selectedIndex,
-            onDestinationSelected: _onDestinationSelected,
-            labelType: NavigationRailLabelType.all,
-            destinations: destinations.map((e) => NavigationRailDestination(
-              icon: e.icon,
-              label: Text(e.label),
-              selectedIcon: e.selectedIcon
-            )).toList(),
-          ),
-          const VerticalDivider(thickness: 1, width: 1),
-          Expanded(child: widget.navigationShell)
-        ])
-      )));
-}
+              const VerticalDivider(thickness: 1, width: 1),
+              Expanded(child: widget.navigationShell)
+            ]))));
+  }
 
-Widget buildMobile() {
-  return Builder(builder: (context) => Scaffold(
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: _onDestinationSelected,
-        selectedIndex: selectedIndex,
-        destinations: destinations,
-      ),
-      appBar: AppBar(
-          backgroundColor:
-              Theme.of(context).colorScheme.inversePrimary,
-          title: Row(
-            children: <Widget>[
-              // BackButton(onPressed: () {
-              //   // Navigator.maybePop(context);
-              //   // context.pop();
-              //   if (GoRouterState.of(context)
-              //       .matchedLocation
-              //       .startsWith("/event/")) {
-              //     // context.go("/");
-              //     // _router.go("/");
-              //     // _router.go("/feed");
-              //     GoRouter.of(context).go("/");
-              //     // _sectionNavigatorKey.currentContext!.go("/");
-              //     return;
-              //   }
-              Image.asset(
-                'assets/sib_logo_64.png',
-                fit: BoxFit.contain,
-                height: 40,
-                filterQuality: FilterQuality.medium,
-              ),
-              const SizedBox(width: 16),
-              Text(widget.title),
-              const Spacer(),
-              buildLoginIcon(context)
-            ],
-          )),
-      body: SafeArea(child: widget.navigationShell)));
-}
+  Widget buildMobile() {
+    return Builder(
+        builder: (context) => Scaffold(
+            bottomNavigationBar: NavigationBar(
+              onDestinationSelected: _onDestinationSelected,
+              selectedIndex: selectedIndex,
+              destinations: getDestinations(context),
+            ),
+            appBar: AppBar(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                title: Row(
+                  children: <Widget>[
+                    // BackButton(onPressed: () {
+                    //   // Navigator.maybePop(context);
+                    //   // context.pop();
+                    //   if (GoRouterState.of(context)
+                    //       .matchedLocation
+                    //       .startsWith("/event/")) {
+                    //     // context.go("/");
+                    //     // _router.go("/");
+                    //     // _router.go("/feed");
+                    //     GoRouter.of(context).go("/");
+                    //     // _sectionNavigatorKey.currentContext!.go("/");
+                    //     return;
+                    //   }
+                    Image.asset(
+                      'assets/sib_logo_64.png',
+                      fit: BoxFit.contain,
+                      height: 40,
+                      filterQuality: FilterQuality.medium,
+                    ),
+                    const SizedBox(width: 16),
+                    Text(widget.title),
+                    const Spacer(),
+                    buildLoginIcon(context)
+                  ],
+                )),
+            body: SafeArea(child: widget.navigationShell)));
+  }
 
   @override
   Widget build(BuildContext context) {
     return APIAccess(
-            state: loginState,
-            // child: buildMobile()
-            child: MediaQuery.of(context).size.width > 800 ? buildWide() : buildMobile()
-    );
+        state: loginState,
+        // child: buildMobile()
+        child: MediaQuery.of(context).size.width > 800
+            ? buildWide()
+            : buildMobile());
   }
 
   void _onDestinationSelected(index) {
@@ -312,50 +318,80 @@ Widget buildMobile() {
 
 const Color sibColor = Color.fromARGB(255, 33, 82, 111);
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  static void setDutch(BuildContext context, bool? val) {
+    // Source: https://stackoverflow.com/questions/55889889/how-to-change-a-flutter-app-language-without-restarting-the-app
+    // answer by https://stackoverflow.com/users/7639019/seddiq-sorush
+
+    _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
+    if (state == null) {
+      log.severe("Could not find _MyAppState for setDutch");
+      return;
+    }
+
+    state.setDutch(val);
+  }
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool? isDutch;
+
+  void setDutch(bool? val) {
+    setState(() {
+      isDutch = val;
+    });    
+  }
 
   @override
   Widget build(BuildContext context) {
     return Preferences(
         // locale: "nl_NL",
-        locale: const Locale('nl', 'NL'),
+        locale: isDutch == true ? const Locale("nl", "NL") : const Locale("en", "GB"),
         debugMode: false,
-        child: Builder(builder: (context) => MaterialApp.router(
-            routerConfig: router,
-            title: 'SIB-Utrecht',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                  seedColor: sibColor, brightness: Brightness.light,
-                  // primary: sibColor,
-              ),
-              useMaterial3: true,
-              brightness: Brightness.light,
-              // fontFamily: 'Roboto',
-            ),
-            darkTheme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                  seedColor: sibColor, brightness: Brightness.dark,
-                  // primary: sibColor,
+        child: Builder(
+            builder: (context) => MaterialApp.router(
+                routerConfig: router,
+                title: 'SIB-Utrecht',
+                theme: ThemeData(
+                  colorScheme: ColorScheme.fromSeed(
+                    seedColor: sibColor, brightness: Brightness.light,
+                    // primary: sibColor,
                   ),
-              useMaterial3: true,
-              brightness: Brightness.dark,
-              // fontFamily: 'Roboto',
-            ),
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate
-            ],
-            supportedLocales: const [
-              Locale('en', 'GB'),
-              Locale('nl', 'NL'),
-            ],
-            locale: Preferences.of(context).locale,
-            // locale: const Locale('nl', 'NL'),
-            // locale: const Locale('en', 'GB'),
-            themeMode: ThemeMode.system,
-            debugShowCheckedModeBanner: true)));
+                  useMaterial3: true,
+                  brightness: Brightness.light,
+                  // fontFamily: 'Roboto',
+                ),
+                darkTheme: ThemeData(
+                  colorScheme: ColorScheme.fromSeed(
+                    seedColor: sibColor, brightness: Brightness.dark,
+                    // primary: sibColor,
+                  ),
+                  useMaterial3: true,
+                  brightness: Brightness.dark,
+                  // fontFamily: 'Roboto',
+                ),
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate
+                ],
+                supportedLocales: const [
+                  Locale('en', 'GB'),
+                  Locale('nl', 'NL'),
+                ],
+                // locale: Preferences.of(context).locale,
+                locale: isDutch == true ? const Locale('nl', 'NL') : (
+                  isDutch == false ? const Locale('en', 'GB') : null
+                ),
+                // locale: const Locale('nl', 'NL'),
+                // locale: const Locale('en', 'GB'),
+                themeMode: ThemeMode.system,
+                debugShowCheckedModeBanner: true)));
   }
 }

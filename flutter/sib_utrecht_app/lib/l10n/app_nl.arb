@@ -12,6 +12,19 @@
   "tabInfo": "Info",
   "logIn": "Log in",
   "loginRequired": "Gelieve in te loggen",
+  "committees": "Commissies",
+  "societies": "Genootschappen",
+  "board": "Bestuur <3",
+
+  "confidentialAdvisers": "Vertrouwenspersonen",
+  "aboutSIB": "Over SIB",
+  "aboutApp": "Over deze app",
+  "eventStarts": "Begint",
+  "eventEnds": "Eindigt",
+  "eventDescription": "Beschrijving",
+  "eventImage": "Promo afbeelding",
+  "eventNoImage": "Geen afbeelding",
+  "eventParticipants": "Deelnemers",
 
   "loadingComponent": "Laden: {componentString}...",
   "@loadingComponent": {

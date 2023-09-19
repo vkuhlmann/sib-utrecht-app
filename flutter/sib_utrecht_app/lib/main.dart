@@ -74,6 +74,7 @@ const String authorizeAppUrl =
 
 final log = Logger("main.dart");
 late LoginManager loginManager;
+late MyApp app;
 
 void main() {
   Logger.root.level = Level.ALL;
@@ -99,7 +100,7 @@ void main() {
   GoogleFonts.config.allowRuntimeFetching = true;
 
   LicenseRegistry.addLicense(() async* {
-    final license2 = await rootBundle.loadString('LICENSE');
+    final license2 = await rootBundle.loadString('../../LICENSE');
     yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license2);
 
     final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
@@ -110,7 +111,9 @@ void main() {
   });
 
   loginManager = LoginManager();
-  runApp(const MyApp());
+  var a = const MyApp();
+  app = a;
+  runApp(a);
 }
 
 class Preferences extends InheritedWidget {
