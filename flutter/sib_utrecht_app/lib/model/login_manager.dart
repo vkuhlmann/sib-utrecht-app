@@ -75,6 +75,27 @@ class LoginManager extends ChangeNotifier {
     return refreshLoginState();
   }
 
+  void removeProfile(String? name) async {
+    var a = _loadingState;
+    if (a != null) {
+      var _ = await a;
+    }
+
+    // await storage.write(key: 'activeProfileName', value: name);
+
+    var profilesContent = await storage.read(key: 'profiles');
+
+    Map<String, dynamic> profiles = {};
+    if (profilesContent != null) {
+      profiles = jsonDecode(profilesContent);
+    }
+
+    profiles.remove(name);
+    await storage.write(key: 'profiles', value: jsonEncode(profiles));
+
+    refreshLoginState();
+  }
+
   Future<LoginState> assureLoginState() {
     var a = _loadingState;
     if (a != null) {
@@ -139,8 +160,8 @@ class LoginManager extends ChangeNotifier {
 
   (String, Uri) getAuthorizationUrl({required bool withRedirect}) {
     return (
-      "https://sib-utrecht.nl/authorize-app",
-      Uri.parse("https://sib-utrecht.nl/authorize-app")
+      "https://sib-utrecht.nl/en/authorize-app",
+      Uri.parse("https://sib-utrecht.nl/en/authorize-app")
     );
 
     if (!withRedirect || !canLoginByRedirect) {
