@@ -44,6 +44,7 @@ part 'pages/login.dart';
 part 'pages/new_login.dart';
 part 'pages/api_debug.dart';
 part 'pages/feed.dart';
+part 'pages/management.dart';
 
 part 'components/event_tile.dart';
 part 'components/event_group.dart';

@@ -455,7 +455,15 @@ class _EventsPageState extends State<EventsPage> {
               }
 
               return Expanded(
-                child: ListView(
+                child: 
+                // RefreshIndicator(
+                //   onRefresh: () async {
+                //     eventsProvider.invalidate();
+                //     bookingsProvider.invalidate();
+                //     await Future.wait([eventsProvider.loading, bookingsProvider.loading]);
+                //   },
+                //   child:
+                ListView(
                     reverse: true, children: buildEvents().reversed.toList()),
               );
             },

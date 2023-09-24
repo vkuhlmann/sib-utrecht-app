@@ -25,6 +25,7 @@
   "eventImage": "Promo afbeelding",
   "eventNoImage": "Geen afbeelding",
   "eventParticipants": "Deelnemers",
+  "management": "Beheer",
 
   "loadingComponent": "Laden: {componentString}...",
   "@loadingComponent": {

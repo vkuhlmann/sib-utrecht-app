@@ -47,14 +47,12 @@ class _InfoPageState extends State<InfoPage> {
                         //         ListTile(title: Text("Vertrouwenspersonen"))),
                         // const Card(child: ListTile(title: Text("Over SIB"))),
                         Card(
-                            child:
-                                ListTile(title: Text(
-                                  AppLocalizations.of(context)!.confidentialAdvisers
-                                ))),
+                            child: ListTile(
+                                title: Text(AppLocalizations.of(context)!
+                                    .confidentialAdvisers))),
                         Card(child: ListTile(title: Text(
-                          // "Over SIB"
-                          AppLocalizations.of(context)!.aboutSIB
-                          ))),
+                            // "Over SIB"
+                            AppLocalizations.of(context)!.aboutSIB))),
                         Card(
                             child: InkWell(
                                 onTap: () {
@@ -64,9 +62,27 @@ class _InfoPageState extends State<InfoPage> {
                                       applicationVersion: "0.1.5");
                                 },
                                 child: ListTile(title: Text(
-                                  // "Over app"
-                                  AppLocalizations.of(context)!.aboutApp
-                                  ))))
+                                    // "Over app"
+                                    AppLocalizations.of(context)!.aboutApp)))),
+                        Card(
+                            child:InkWell(
+                                onTap: () {
+                                  // showMenu(context: context,
+                                  //     position: const RelativeRect.fromLTRB(
+                                  //         32, 32, 32, 32),
+                                  //     items: const [
+                                  //       PopupMenuItem(
+                                  //           child: ListTile(
+                                  //               title: Text("API requests"))),
+                                  //       PopupMenuItem(
+                                  //           child: ListTile(
+                                  //               title: Text("Groups")))
+                                  //     ]);
+                                  router.go("/management");
+                                },
+                                child:  ListTile(
+                                title: Text(AppLocalizations.of(context)!
+                                    .management)))),
                       ])))
         ]));
   }

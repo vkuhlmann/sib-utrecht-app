@@ -90,6 +90,10 @@ final GoRouter router = GoRouter(
                               path: '/api-debug',
                               builder: (context, state) => const APIDebugPage(),
                             ),
+                            GoRoute(
+                              path: '/management',
+                              builder: (context, state) => const ManagementPage(),
+                            ),
                           ]),
                       StatefulShellBranch(
                           // navigatorKey: _eventSpecNavigatorKey,
