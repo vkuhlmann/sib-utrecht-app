@@ -84,6 +84,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
         _usernameController.text = widget.params["user_login"];
         _applicationPasswordController.text = widget.params["password"];
+        _step2IsUsernameNonEmpty = _usernameController.text.isNotEmpty;
 
         trySubmit();
       });
@@ -109,7 +110,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
               Container(
                   margin: const EdgeInsets.all(8),
                   child: Column(children: [
-                    if (advancedMode) ...[
+                    if (advancedMode || _apiUrlController.text != defaultApiUrl) ...[
                       TextField(
                           controller: _apiUrlController,
                           decoration: const InputDecoration(

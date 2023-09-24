@@ -49,7 +49,7 @@
     "description": "Message displayed when a component is refreshing"
   },
 
-  "couldNotLoad": "Could not load {componentsString}(:)",
+  "couldNotLoad": "Could not load {componentsString}:",
   "@couldNotLoad": {
     "type": "text",
     "placeholders": {

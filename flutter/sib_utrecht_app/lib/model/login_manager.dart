@@ -138,6 +138,11 @@ class LoginManager extends ChangeNotifier {
   }
 
   (String, Uri) getAuthorizationUrl({required bool withRedirect}) {
+    return (
+      "https://sib-utrecht.nl/authorize-app",
+      Uri.parse("https://sib-utrecht.nl/authorize-app")
+    );
+
     if (!withRedirect || !canLoginByRedirect) {
       return (
         "https://sib-utrecht.nl/app",

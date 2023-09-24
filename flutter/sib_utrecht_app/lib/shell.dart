@@ -219,6 +219,14 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
         });
   }
 
+  String? getBackAddress(BuildContext context) {
+    if (GoRouterState.of(context).matchedLocation.startsWith("/event/")) {
+      return "/";
+    }
+
+    return null;
+  }
+
   Widget buildWide() {
     return Builder(
         builder: (context) => Scaffold(
@@ -263,6 +271,8 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   }
 
   Widget buildMobile() {
+    String? backAddress = getBackAddress(context);
+
     return Builder(
         builder: (context) => Scaffold(
             bottomNavigationBar: NavigationBar(
@@ -274,6 +284,18 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 title: Row(
                   children: <Widget>[
+                    if (backAddress != null || Navigator.of(context).canPop())
+                    BackButton(
+                      onPressed: 
+                      backAddress == null ? null :
+                      () {
+                        // if () {
+                        //   GoRouter.of(context).go("/");
+                        //   return;
+                        // }
+                        router.go(backAddress);
+                      },
+                    ),
                     // BackButton(onPressed: () {
                     //   // Navigator.maybePop(context);
                     //   // context.pop();

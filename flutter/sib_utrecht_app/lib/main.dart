@@ -50,6 +50,7 @@ part 'components/event_group.dart';
 part 'components/alerts_panel.dart';
 part 'components/weekday_indicator.dart';
 part 'components/signup_indicator.dart';
+part 'components/dialog_page.dart';
 
 part 'view_model/cached_provider.dart';
 part 'view_model/async_patch.dart';

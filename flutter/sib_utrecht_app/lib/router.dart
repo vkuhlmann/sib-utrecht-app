@@ -7,7 +7,6 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 // final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 // final _eventSpecNavigatorKey = GlobalKey<NavigatorState>();
 
-
 // final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
 // final GlobalKey<NavigatorState> _authScreensNav = GlobalKey<NavigatorState>();
 final GlobalKey<_EventsPageState> _eventsPageKey =
@@ -21,10 +20,18 @@ final GoRouter router = GoRouter(
   routes: <RouteBase>[
     StatefulShellRoute.indexedStack(
         // builder: (context, state, navigationShell) => Padding(padding: const EdgeInsets.all(64), child: navigationShell),
-        // builder: (context, state, navigationShell) => 
+        // builder: (context, state, navigationShell) =>
         //   Localizations.override(context: context, locale: const Locale("nl", "NL"), child: navigationShell)
         // ,
         builder: (context, state, navigationShell) => navigationShell
+        // WillPopScope(
+        //   onWillPop: () async {
+        //     log.info("Master WillPopScope received onWillPop");
+        //     // Navigator.pop(context);
+        //     return false;
+        //   },
+        //   child: Padding(padding: const EdgeInsets.all(16), child: navigationShell)
+        // )
         ,
         branches: [
           StatefulShellBranch(
@@ -72,18 +79,16 @@ final GoRouter router = GoRouter(
                             builder: (context, state) => const Placeholder()),
                       ]),
                       StatefulShellBranch(
-                        initialLocation: "/info",
+                          initialLocation: "/info",
                           // navigatorKey: _infoNavigatorKey,
                           routes: <RouteBase>[
                             GoRoute(
                                 path: '/info',
                                 // parentNavigatorKey: _infoNavigatorKey,
                                 builder: (context, state) => const InfoPage()),
-
                             GoRoute(
                               path: '/api-debug',
-                              builder: (context, state) =>
-                                  const APIDebugPage(),
+                              builder: (context, state) => const APIDebugPage(),
                             ),
                           ]),
                       StatefulShellBranch(
@@ -102,7 +107,20 @@ final GoRouter router = GoRouter(
                                   return EventPage(
                                       eventId: eventId,
                                       key: ValueKey("event/$eventId"));
-                                })
+                                },
+                                routes: [
+                                  GoRoute(
+                                    path: 'image',
+                                    name: "event_image_dialog",
+                                    pageBuilder: (BuildContext context,
+                                        GoRouterState state) {
+                                      return DialogPage(
+                                          // builder: (_) => AboutDialog()
+                                          builder: (_) => ThumbnailImageDialog(url: state.uri.queryParameters["url"] as String)
+                                          );
+                                    },
+                                  )
+                                ])
                           ])
                       // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
                       //   GoRoute(
@@ -131,4 +149,3 @@ final GoRouter router = GoRouter(
     // ),
   ],
 );
-
