@@ -42,6 +42,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
   bool _step2IsUsernameNonEmpty = false;
   bool _step2IsPasswordComplete = false;
+  bool _step2ObscurePassword = false;
 
   Future<void>? _step3Substep1;
   Future<void>? _step3Substep2;
@@ -65,11 +66,11 @@ class _NewLoginPageState extends State<NewLoginPage> {
     authorizationUrlDisplay = disp;
     authorizationUrl = url;
 
-    log.info("params are ${jsonEncode(widget.params)}");
+    // log.info("params are ${jsonEncode(widget.params)}");
 
     bool isSuccess = widget.params["success"] != "false" &&
         widget.params["user_login"] != null;
-    log.info("isSuccess: $isSuccess");
+    // log.info("isSuccess: $isSuccess");
 
     _apiUrlController.text = widget.params["api_url"] ?? defaultApiUrl;
 
@@ -77,6 +78,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           step1Done = true;
+          _step2ObscurePassword = true;
         });
 
         _step1Expansion.collapse();
@@ -388,7 +390,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
           if (!value) {
             return;
           }
-          attemptFillAppPasswordFromClipboard();
+          // attemptFillAppPasswordFromClipboard();
         },
         child: ExpansionTile(
           title: const Text("Step 2: Enter application password"),
@@ -430,6 +432,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
                     },
                   ),
                   const SizedBox(height: 16),
+                  Wrap(children: [
                   TextField(
                     controller: _applicationPasswordController,
                     style: const TextStyle(fontFamily: 'RobotoMono'),
@@ -439,7 +442,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
                     ),
                     keyboardType: TextInputType.visiblePassword,
                     inputFormatters: getWordPressAppPasswordFormatter(),
-                    obscureText: false,
+                    obscureText: _step2ObscurePassword,
                     onChanged: (value) {
                       cancelStep3();
                       setState(() {
@@ -450,6 +453,25 @@ class _NewLoginPageState extends State<NewLoginPage> {
                       trySubmit();
                     },
                   ),
+                  IconButton(
+                      icon: const Icon(Icons.content_copy),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(
+                            text: _applicationPasswordController.value.text));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content: Text(
+                                "Application password copied to clipboard")));
+                      }),
+                  IconButton(
+                      icon: const Icon(Icons.content_paste),
+                      onPressed: attemptFillAppPasswordFromClipboard),
+                  IconButton(icon: _step2ObscurePassword ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _step2ObscurePassword = !_step2ObscurePassword;
+                        });
+                      })
+                  ]),
                   const SizedBox(height: 10),
                   FilledButton(
                       onPressed: (_step2IsPasswordComplete &&
