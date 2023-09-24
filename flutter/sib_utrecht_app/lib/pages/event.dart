@@ -194,6 +194,8 @@ class _EventPageState extends State<EventPage> {
   }
 
   Widget buildDescription(BuildContext context, Event event) {
+    // return const SizedBox();
+
     final (description, _) = extractDescriptionAndThumbnail(event);
 
     return Padding(

@@ -426,6 +426,12 @@ class _MyAppState extends State<MyApp> {
                   ),
                   useMaterial3: true,
                   brightness: Brightness.dark,
+                  // textTheme: ThemeData.dark().textTheme.copyWith(
+                  //   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
+                  //     fontFamily: "RobotoMono",
+                  //     fontFamilyFallback: ["Roboto", "NotoEmoji", "NotoSans", "RobotoMono"]
+                  //   ),
+                  // ),
                   // fontFamily: 'Roboto',
                 ),
                 localizationsDelegates: const [
