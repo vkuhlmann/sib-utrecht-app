@@ -58,7 +58,8 @@ class LoginManager extends ChangeNotifier {
     return LoginState(
         connector: APIConnector(
             apiAddress: activeProfile["api"]?["url"] ?? defaultApiUrl,
-            user: activeProfile["user"], apiSecret: activeProfile["apiSecret"]),
+            user: activeProfile["user"],
+            apiSecret: activeProfile["apiSecret"]),
         profiles: profiles
             .map((key, value) => MapEntry(key, value as Map<String, dynamic>)),
         activeProfileName: activeProfileName,
@@ -127,7 +128,9 @@ class LoginManager extends ChangeNotifier {
   // }
 
   Future<LoginState> _completeLogin(
-      {required String user, required String apiSecret, required String apiAddress}) async {
+      {required String user,
+      required String apiSecret,
+      required String apiAddress}) async {
     var prof = (await assureLoginState()).profiles;
 
     String profileName = user;
@@ -159,15 +162,19 @@ class LoginManager extends ChangeNotifier {
   }
 
   (String, Uri) getAuthorizationUrl({required bool withRedirect}) {
-    return (
-      "https://sib-utrecht.nl/en/authorize-app",
-      Uri.parse("https://sib-utrecht.nl/en/authorize-app")
-    );
+    // return (
+    //   "https://sib-utrecht.nl/en/authorize-app",
+    //   Uri.parse("https://sib-utrecht.nl/en/authorize-app")
+    // );
 
     if (!withRedirect || !canLoginByRedirect) {
+      // return (
+      //   "https://sib-utrecht.nl/app",
+      //   Uri.parse("https://sib-utrecht.nl/app")
+      // );
       return (
-        "https://sib-utrecht.nl/app",
-        Uri.parse("https://sib-utrecht.nl/app")
+        "https://sib-utrecht.nl/en/authorize-app",
+        Uri.parse("https://sib-utrecht.nl/en/authorize-app")
       );
     }
 
@@ -234,11 +241,7 @@ class LoginManager extends ChangeNotifier {
 }
 
 class APIAccess extends InheritedWidget {
-  const APIAccess({
-    super.key,
-    required super.child,
-    required this.state
-  });
+  const APIAccess({super.key, required super.child, required this.state});
 
   final Future<LoginState> state;
 
@@ -253,6 +256,5 @@ class APIAccess extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(APIAccess oldWidget) =>
-      state != oldWidget.state;
+  bool updateShouldNotify(APIAccess oldWidget) => state != oldWidget.state;
 }

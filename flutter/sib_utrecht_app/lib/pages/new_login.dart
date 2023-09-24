@@ -60,6 +60,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
     Uri url;
 
     useRedirect = loginManager.canLoginByRedirect;
+    useRedirect = false;
 
     (disp, url) = loginManager.getAuthorizationUrl(withRedirect: useRedirect);
 
@@ -278,6 +279,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
     }
 
     setState(() {
+      _step2ObscurePassword = true;
       _step2IsPasswordComplete = true;
     });
 
@@ -334,9 +336,14 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
               Future<void> testConnection() async {
                 // throw Exception("Test aborting");
-                var result = await st.connector.get("events");
-                if (result["data"]?["events"] == null) {
-                  throw Exception("Could not load events");
+                var result = await st.connector.get("/auth");
+                var roles = result["data"]?["roles"];
+                if (roles == null) {
+                  throw Exception("Could not retrieve available roles");
+                }
+
+                if (!(roles as List).contains("account")) {
+                  throw Exception("No 'account' role available");
                 }
               }
 
@@ -587,6 +594,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
     log.fine("Found application password in clipboard data");
     setState(() {
+      _step2ObscurePassword = true;
       _applicationPasswordController.text = text;
     });
     trySubmit();
