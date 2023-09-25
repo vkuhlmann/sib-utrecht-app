@@ -50,6 +50,11 @@ final GoRouter router = GoRouter(
                   builder: (context, state) =>
                       NewLoginPage(params: state.uri.queryParameters),
                 ),
+                GoRoute(
+                  path: '/new-login2',
+                  builder: (context, state) =>
+                      NewLogin2Page(params: state.uri.queryParameters),
+                ),
               ]),
           StatefulShellBranch(
               // navigatorKey: _mainScreensNav,

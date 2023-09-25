@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+// import 'dart:html';
 // import 'dart:collection';
 
 import "package:collection/collection.dart";
@@ -31,6 +32,9 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
+import 'model/cors_fallback.dart'
+  if (dart.library.html) 'model/cors_web.dart';
+
 
 part 'utils.dart';
 part 'shell.dart';
@@ -42,6 +46,7 @@ part 'pages/info.dart';
 part 'pages/event.dart';
 part 'pages/login.dart';
 part 'pages/new_login.dart';
+part 'pages/new_login2.dart';
 part 'pages/api_debug.dart';
 part 'pages/feed.dart';
 part 'pages/management.dart';
