@@ -25,7 +25,21 @@
   "eventImage": "Promo afbeelding",
   "eventNoImage": "Geen afbeelding",
   "eventParticipants": "Deelnemers",
+  "eventCategoryOngoing": "Langdurend",
+
+  "darkTheme": "Donker thema",
+  "actionLogout": "Uitloggen",
+  "actionNewLogin": "Account toevoegen",
+  "actionGoToHome": "Naar de homepagina gaan",
+
+  "pageNewLogin": "Account toevoegen",
+
   "management": "Beheer",
+
+  "loginStep1": "Stap 1: Authorizatie aanmaken",
+  "loginStep2": "Stap 2: Authorizatie invullen",
+  "loginStep3": "Stap 3: Verbindingscheck",
+
 
   "loadingComponent": "Laden: {componentString}...",
   "@loadingComponent": {

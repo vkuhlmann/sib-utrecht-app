@@ -23,11 +23,23 @@
   "eventNoImage": "No image",
   "eventParticipants": "Participants",
   "management": "Management",
+  "eventCategoryOngoing": "Ongoing",
 
+  "darkTheme": "Dark theme",
+
+  "actionLogout": "Log out",
+  "actionNewLogin": "New login",
+  "pageNewLogin": "New login",
+  "actionGoToHome": "Go to home screen",
 
   "confidentialAdvisers": "Confidential advisers",
   "aboutSIB": "About SIB",
   "aboutApp": "About this app",
+
+  "loginStep1": "Step 1: Create a new application password",
+  "loginStep2": "Step 2: Enter application password",
+  "loginStep3": "Step 3: Connection test",
+
 
   "loadingComponent": "Loading {componentString}...",
   "@loadingComponent": {

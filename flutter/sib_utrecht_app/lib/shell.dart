@@ -133,7 +133,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
         // const Text("test"),
         const SizedBox(height: 15),
         Row(children: [
-          const Text("Dark theme"),
+          Text(AppLocalizations.of(context)!.darkTheme),
           const Spacer(),
           Switch(value: Theme.of(context).brightness == Brightness.dark, onChanged: (val) {
             MyApp.setDark(context, val);
@@ -159,7 +159,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                       });
                     });
                   },
-                  child: const Text('Logout'),
+                  child: Text(AppLocalizations.of(context)!.actionLogout)// const Text('Logout'),
                 ),
               ])
             : ([])),

@@ -353,11 +353,20 @@ class _EventsPageState extends State<EventsPage> {
     return groupBy(
             eventsItems,
             // (Event e) => formatWeekNumber(e.start).substring(0, 7)
-            (AnnotatedEvent e) =>
+            (AnnotatedEvent e) {
                 // formatWeekNumber(e.date ?? DateTime.now().add(const Duration(days: 7)))
-                (e.placement?.date ?? DateTime.now().add(const Duration(days: 30)))
-                    .toIso8601String()
-                    .substring(0, 7))
+                var date = e.placement?.date;
+                if (date == null) {
+                  // return "${DateTime.now().add(const Duration(days: 30)).toIso8601String()
+                  //     .substring(0, 7)}+";
+                  return AppLocalizations.of(context)!.eventCategoryOngoing;
+                }
+                return date.toIso8601String().substring(0, 7);
+                  // (e.placement?.date ?? DateTime.now().add(const Duration(days: 30)))
+                  //     .toIso8601String()
+                  //     .substring(0, 7)
+              }
+            )
         .entries
         .sortedBy((element) => element.key)
         // .map((e) => Column(

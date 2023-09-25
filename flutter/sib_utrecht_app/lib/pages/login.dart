@@ -108,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                           // loginManager.scheduleLogin();
                           router.go("/new-login");
                         },
-                        child: const Text("New login")))
+                        child: Text(AppLocalizations.of(context)!.actionNewLogin)))
               ])
             ])),
           ),

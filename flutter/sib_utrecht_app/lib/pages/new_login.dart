@@ -105,7 +105,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
   Widget buildStep1(BuildContext context) => Card(
         child: ExpansionTile(
-            title: const Text("Step 1: Create a new application password"),
+            title: Text(AppLocalizations.of(context)!.loginStep1),
             controller: _step1Expansion,
             leading: step1Done ? doneIcon : startIcon,
             initiallyExpanded: !step1Done,
@@ -400,7 +400,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
           // attemptFillAppPasswordFromClipboard();
         },
         child: ExpansionTile(
-          title: const Text("Step 2: Enter application password"),
+          title: Text(AppLocalizations.of(context)!.loginStep2),
           controller: _step2Expansion,
           leading: step2Done
               ? doneIcon
@@ -524,7 +524,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
           future: step3Result,
           builder: (context, snapshot) {
             return ExpansionTile(
-              title: const Text("Step 3: Connection test"),
+              title: Text(AppLocalizations.of(context)!.loginStep3),
               controller: _step3Expansion,
               leading: getStep3Leading(snapshot),
               children: [
@@ -615,10 +615,72 @@ class _NewLoginPageState extends State<NewLoginPage> {
           ])));
 
   Widget buildFocus() => Builder(
-      builder: (context) => ListView(shrinkWrap: true, children: [
+      builder: (context) {
+        bool isDutch = Localizations.localeOf(context).languageCode == "nl";
+        bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+        return ListView(shrinkWrap: true, children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              // radius: 50,
+              backgroundColor: !isDutch ? Theme.of(context).colorScheme.primaryContainer
+              : Colors.transparent, //Theme.of(context).highlightColor,
+              //Theme.of(context).colorScheme.background,
+              // backgroundColor: !isDutch ? Colors.red : null,
+              child: IconButton(
+            onPressed: () {
+            MyApp.setDutch(context, !isDutch);
+          }, icon: const Icon(Icons.language)),
+            ),
+            const SizedBox(width: 10),
+            CircleAvatar(
+              // radius: 50,
+              // backgroundColor: isDark ? Theme.of(context).highlightColor : null,
+              backgroundColor: isDark ? Theme.of(context).colorScheme.primaryContainer
+              : Colors.transparent,
+              child: IconButton(
+            onPressed: () {
+            MyApp.setDark(context, !isDark);
+          }, icon: const Icon(Icons.dark_mode)),
+            ),
+          // BEGIN Source https://stackoverflow.com/questions/52777164/how-to-set-background-color-for-an-icon-button
+          // Answer by https://stackoverflow.com/users/7924072/viren-v-varasadiya
+          // Container(
+          //     color: Colors.green,
+          //     child: new IconButton(
+          //         icon: new Icon(Icons.search,color: Colors.white,),onPressed: null),
+          //   ),
+          // END Source
+
+          // IconButton(
+          //   onPressed: () {
+          //   MyApp.setDutch(context, !isDutch);
+          // }, icon: const Icon(Icons.language)),
+        //   IconButton(onPressed: () {
+        //     MyApp.setDark(context, !isDark);
+        //   }, icon: const Icon(Icons.dark_mode))
+          ],),
+        const SizedBox(height: 8),
+        // Row(
+        //   children: [
+        //   Text(AppLocalizations.of(context)!.darkTheme),
+        //   Switch(value: , onChanged: (val) {
+        //     MyApp.setDark(context, val);
+        //   }),
+        // ]),
+        // const SizedBox(height: 15),
+        // Row(children: [
+        //   const Text("Dutch"),
+        //   Switch(value: , onChanged: (val) {
+        //     MyApp.setDutch(context, val);
+        //   }),
+        // ]),
             buildSteps(context),
             if (completed) buildCompletedPrompt()
-          ]));
+          ]);          
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -635,7 +697,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
               router.go("/login?immediate=false");
             },
           ),
-          const Text('New login')
+          Text(AppLocalizations.of(context)!.pageNewLogin)
         ])),
         body: SafeArea(
             child: Container(
