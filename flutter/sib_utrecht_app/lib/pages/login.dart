@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
       loginManager.assureLoginState().then((state) {
         if (state.profiles.isEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-            router.go("/new-login");
+            router.go("/new-login2");
           });
         }
       });
@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
         ])),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            router.go("/new-login");
+            router.go("/new-login2");
           },
           child: const Icon(Icons.add),
         ),
@@ -106,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: FilledButton(
                         onPressed: () {
                           // loginManager.scheduleLogin();
-                          router.go("/new-login");
+                          router.go("/new-login2");
                         },
                         child: Text(AppLocalizations.of(context)!.actionNewLogin)))
               ])

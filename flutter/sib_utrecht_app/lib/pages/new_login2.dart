@@ -11,6 +11,7 @@ class NewLogin2Page extends StatefulWidget {
 
 class _NewLogin2PageState extends State<NewLogin2Page> {
   late Future<Map?> userIdentity;
+  Future<Map?>? authorizingUserIdentity;
 
   @override
   void initState() {
@@ -27,10 +28,30 @@ class _NewLogin2PageState extends State<NewLogin2Page> {
     //     Future.value(
 
     // );
-    userIdentity = getUserIdentity();
+    userIdentity = getUserIdentity(doAuthorize: false);
   }
 
-  Future<Map?> getUserIdentity() async {
+  Future<Map?> getUserIdentity(
+      {required bool doAuthorize, String? userLogin}) async {
+    var dummyRes = {
+      "identity": {
+        "user_id": "6001",
+        "user_login": "me@example.org",
+        "user_email": "me@example.org",
+        "user_display_name": "Vincent Kuhlmann",
+        "user_firstname": "Vincent",
+      },
+      // "request_origin": $_SERVER['HTTP_ORIGIN'],
+      "authorization": {
+        "user_login": "me@example.org",
+        "app_name": "sib-utrecht-app-0a0a0",
+        "password": "aaaaaa",
+        "api_url": 'https://sib-utrecht.nl/wp-json/sib-utrecht-wp-plugin/v1',
+      }
+    };
+
+    // return dummyRes;
+
     var client = getCorsClient(withCredentials: true);
 
     if (client == null) {
@@ -39,8 +60,19 @@ class _NewLogin2PageState extends State<NewLogin2Page> {
 
     http.Response res;
     try {
-      res = await client
-          .get(Uri.parse("https://sib-utrecht.nl/cors-authorize-app"));
+      var url = Uri.parse("https://sib-utrecht.nl/cors-authorize-app");
+      Map<String, dynamic> params = {};
+
+      if (userLogin != null) {
+        params["user_login"] = userLogin;
+      }
+
+      if (doAuthorize) {
+        params["action"] = "authorize";
+      }
+      url = url.replace(queryParameters: params);
+
+      res = await client.get(url);
     } catch (ex) {
       client = getCorsClient(withCredentials: false);
       if (client == null) {
@@ -65,26 +97,113 @@ class _NewLogin2PageState extends State<NewLogin2Page> {
     return body;
   }
 
+  Widget buildCorsLogin(BuildContext context, Map data) {
+    // return Text('userIdentity: ${jsonEncode(snapshot.data)}');
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('Continue as '),
+      const SizedBox(height: 4),
+      Card(
+          // child: InkWell(
+          child: ListTile(
+        title: Text(data["identity"]["user_display_name"]),
+        subtitle: Text(data["identity"]["user_email"]),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          var corsAuth = getUserIdentity(
+              doAuthorize: true, userLogin: data["identity"]["user_login"]);
+          authorizingUserIdentity = corsAuth;
+
+          corsAuth.then((value) async {
+            if (value == null) {
+              throw Exception("CORS authorization is unavailable");
+            }
+
+            if (value["error"] != null) {
+              throw Exception(value["error"]);
+            }
+
+            var auth = value["authorization"];
+
+            if (auth?["password"] == null) {
+              throw Exception("Failed to authorize");
+            }
+
+            LoginState stFut = await loginManager._completeLogin(
+              user: auth["user_login"],
+              apiSecret: auth["password"],
+              apiAddress: auth["api_url"],
+            );
+
+            router.go("/");
+          }).catchError((err) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: formatError(err)));
+          });
+        },
+      )),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-          child: Column(children: [
-        const Text('NewLogin2Page'),
-        const SizedBox(height: 20),
-        FutureBuilder(
-            future: userIdentity,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Text('userIdentity: ${jsonEncode(snapshot.data)}');
-              } else if (snapshot.hasError) {
-                return Text('Error for userIdentity: ${snapshot.error}');
-              } else {
-                return const CircularProgressIndicator();
-              }
-            }),
-        // Text('userIdentity: ${jsonEncode(userIdentity)}'),
-      ])),
+      body: SafeArea(
+          child: Center(
+              child: Container(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // const Text('NewLogin2Page'),
+                        const SizedBox(height: 20),
+                        FutureBuilder(
+                            future: userIdentity,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasError) {
+                                return ListTile(
+                                    leading: const Icon(Icons.error),
+                                    title: const Text(
+                                        "Direct login is not available"),
+                                    subtitle: formatError(snapshot.error));
+                              }
+
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
+
+                              var data = snapshot.data;
+
+                              if (data == null) {
+                                return const SizedBox();
+                                // return const ListTile(
+                                //   title: const Text("Login via website unavailable"),
+                                //   // subtitle: const Text("Failed to load user identity")
+                                // );
+                              }
+
+                              return buildCorsLogin(context, data);
+                            }),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            final (_, url) = loginManager.getAuthorizationUrl(
+                                withRedirect: false);
+
+                            launchUrl(url).then((v) {
+                              if (!v) {
+                                throw Exception("Failed to launch url");
+                              }
+                            }).catchError((err) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: formatError(err)));
+                            });
+                          },
+                          child: const Text("Log in via browser redirect"),
+                        )
+                        // Text('userIdentity: ${jsonEncode(userIdentity)}'),
+                      ])))),
     );
   }
 }
