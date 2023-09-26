@@ -13,14 +13,20 @@ class EventsGroup extends StatelessWidget {
   // final bool demark
 
   Iterable<Widget> getChildrenWeekDivided() sync* {
-    var division = groupBy(children, (p0) => formatWeekNumber(p0.date ?? p0.event.start))
+    var division = groupBy(children, (p0) => formatWeekNumber(p0.placement?.date ?? p0.start))
     .entries.sorted((a, b) => a.key.compareTo(b.key));
     
     // division.entries.sorted((a, b) => a.key.compareTo(b.key)).map((e) => )
 
     for (var entry in division) {
-      for (var v in entry.value.sortedBy((element) => element.date ?? element.event.start)) {
-        yield v;
+      for (var v in entry.value.sortedBy((element) => element.placement?.date ?? element.start)) {
+        // if (v.participation == null) {
+        //   yield EventOngoing(event: v, );
+        //   continue;
+        // }
+        // yield EventTile(event: v);
+
+        yield EventsPage.buildItem(v);
       }
 
       if (entry.key != division.last.key) {
@@ -31,7 +37,6 @@ class EventsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var a = children;
     // if (start != null && end != null) {
     //   // a = children.where((element) => element.event.start.isAfter(start!) && element.event.start.isBefore(end!)).toList();
     // }

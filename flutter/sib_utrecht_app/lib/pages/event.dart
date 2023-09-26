@@ -9,6 +9,73 @@ class EventPage extends StatefulWidget {
   State<EventPage> createState() => _EventPageState();
 }
 
+// class PromoImageView<T> extends Page<T> {
+//   const PromoImageView({Key? key, required this.url}) : super(key: key);
+// }
+
+class ThumbnailImageDialog extends StatelessWidget {
+  const ThumbnailImageDialog({Key? key, required this.url}) : super(key: key);
+
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    // return DialogPage(
+    //     builder: (_) => Center(
+    //           child: Image.network(url),
+    //         ));
+
+    return 
+    // Dialog(
+    //     alignment: AlignmentDirectional.center,
+    //     // insetPadding: const EdgeInsets.fromLTRB(
+    //     //     16, 70, 16, 16),
+    //     insetPadding: const EdgeInsets.all(0),
+    //     child:
+            //   Stack(alignment: AlignmentDirectional.center,
+            //   children: [
+            //  Container(
+            //     constraints: const BoxConstraints.expand(),
+            //     child: GestureDetector(
+            //     // padding: const EdgeInsets.fromLTRB(
+            //     //     16, 16, 16, 32),
+            //     // width: 200,
+            //     onTap: () => Navigator.pop(context)
+            //     )),
+            //   Center(child: InteractiveViewer(
+            //       clipBehavior: Clip.none,
+            //         child: GestureDetector(
+            //           child: Image.network(
+            //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
+            //     ))
+            //   ])
+            Center(
+                child: Builder(
+                    builder: (context) => InteractiveViewer(
+                      minScale: 0.1,
+                            // clipBehavior: Clip.none,
+                            child: Stack(
+                          alignment: AlignmentDirectional.center,
+                          children: [
+                            Container(
+                                constraints: const BoxConstraints.expand(),
+                                child: GestureDetector(
+                                    // padding: const EdgeInsets.fromLTRB(
+                                    //     16, 16, 16, 32),
+                                    // width: 200,
+                                    onTap: () => Navigator.pop(context))),
+                                    Container(
+                                constraints: const BoxConstraints.expand(),
+                                child: GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: 
+                                Padding(padding: const EdgeInsets.all(32),
+                                child: Image.network(url, fit: BoxFit.contain))))
+                          ],
+                        ))));
+  }
+}
+
 class _EventPageState extends State<EventPage> {
   Future<APIConnector>? apiConnector;
 
@@ -127,6 +194,8 @@ class _EventPageState extends State<EventPage> {
   }
 
   Widget buildDescription(BuildContext context, Event event) {
+    // return const SizedBox();
+
     final (description, _) = extractDescriptionAndThumbnail(event);
 
     return Padding(
@@ -138,130 +207,170 @@ class _EventPageState extends State<EventPage> {
         ));
   }
 
+  Widget openThumbnailView(BuildContext context, Map thumbnail) {
+    return ThumbnailImageDialog(url: thumbnail["url"] as String);
+    // return Dialog(
+    //     alignment: AlignmentDirectional.center,
+    //     // insetPadding: const EdgeInsets.fromLTRB(
+    //     //     16, 70, 16, 16),
+    //     insetPadding: const EdgeInsets.all(0),
+    //     child:
+    //         //   Stack(alignment: AlignmentDirectional.center,
+    //         //   children: [
+    //         //  Container(
+    //         //     constraints: const BoxConstraints.expand(),
+    //         //     child: GestureDetector(
+    //         //     // padding: const EdgeInsets.fromLTRB(
+    //         //     //     16, 16, 16, 32),
+    //         //     // width: 200,
+    //         //     onTap: () => Navigator.pop(context)
+    //         //     )),
+    //         //   Center(child: InteractiveViewer(
+    //         //       clipBehavior: Clip.none,
+    //         //         child: GestureDetector(
+    //         //           child: Image.network(
+    //         //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
+    //         //     ))
+    //         //   ])
+    //         Center(
+    //             child: Builder(
+    //                 builder: (context) => InteractiveViewer(
+    //                         // clipBehavior: Clip.none,
+    //                         child: Stack(
+    //                       alignment: AlignmentDirectional.center,
+    //                       children: [
+    //                         Container(
+    //                             constraints: const BoxConstraints.expand(),
+    //                             child: GestureDetector(
+    //                                 // padding: const EdgeInsets.fromLTRB(
+    //                                 //     16, 16, 16, 32),
+    //                                 // width: 200,
+    //                                 onTap: () => Navigator.pop(context))),
+    //                         GestureDetector(
+    //                             onTap: () => Navigator.pop(context),
+    //                             child: Image.network(thumbnail["url"]))
+    //                       ],
+    //                     )))));
+    // return Dialog(
+    //     alignment: AlignmentDirectional.center,
+    //     // insetPadding: const EdgeInsets.fromLTRB(
+    //     //     16, 70, 16, 16),
+    //     insetPadding: const EdgeInsets.all(0),
+    //     child: Container(
+    //       constraints: const BoxConstraints.expand(),
+    //       child: GestureDetector(
+    //       // padding: const EdgeInsets.fromLTRB(
+    //       //     16, 16, 16, 32),
+    //       // width: 200,
+    //       onTap: () => Navigator.pop(context),
+    //       child: Center(child: InteractiveViewer(
+    //         clipBehavior: Clip.none,
+    //           child: GestureDetector(
+    //             child: Image.network(
+    //               "$wordpressUrl/${event.data["thumbnail"]["url"]}"))))),
+    //     ));
+  }
+
   Widget buildThumbnailCard(BuildContext context, Event event) {
     final (_, thumbnail) = extractDescriptionAndThumbnail(event);
 
     return Card(
-        child: ListTile(
-            title: const Text("Thumbnail"),
-            subtitle: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
-                child: Builder(builder: (context) {
-                  if (thumbnail == null) {
-                    return const Text("Geen thumbnail");
-                  }
-                  try {
-                    // return Text(jsonEncode(event.data["thumbnail"]));
-                    // return Image.network("$wordpressUrl/wp-content/uploads/" +
-                    //     event.data["thumbnail"]["path"] +
-                    //     "?width=200")
-                    // return Image.network("$wordpressUrl/${event.data["thumbnail"]["url"]}");
-                    // return InteractiveViewer(child:
-                    //  Image.network("$wordpressUrl/${event.data["thumbnail"]["url"]}")
-                    // );
+        child: WillPopScope(
+            onWillPop: () async {
+              log.info("Received onWillPop");
+              Navigator.pop(context);
+              return false;
+            },
+            child: ListTile(
+                title: Text(AppLocalizations.of(context)!.eventImage),
+                subtitle: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+                    child: Builder(builder: (context) {
+                      if (thumbnail == null) {
+                        return Text(AppLocalizations.of(context)!.eventNoImage);
+                      }
+                      try {
+                        // return Text(jsonEncode(event.data["thumbnail"]));
+                        // return Image.network("$wordpressUrl/wp-content/uploads/" +
+                        //     event.data["thumbnail"]["path"] +
+                        //     "?width=200")
+                        // return Image.network("$wordpressUrl/${event.data["thumbnail"]["url"]}");
+                        // return InteractiveViewer(child:
+                        //  Image.network("$wordpressUrl/${event.data["thumbnail"]["url"]}")
+                        // );
 
-                    // return PhotoView(
-                    //   imageProvider: NetworkImage("$wordpressUrl/${event.data["thumbnail"]["url"]}"),
-                    // );
+                        // return PhotoView(
+                        //   imageProvider: NetworkImage("$wordpressUrl/${event.data["thumbnail"]["url"]}"),
+                        // );
 
-                    return Center(
-                        child: InkWell(
-                            onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return Dialog(
-                                        alignment: AlignmentDirectional.center,
-                                        // insetPadding: const EdgeInsets.fromLTRB(
-                                        //     16, 70, 16, 16),
-                                        insetPadding: const EdgeInsets.all(0),
-                                        child:
-                                            //   Stack(alignment: AlignmentDirectional.center,
-                                            //   children: [
-                                            //  Container(
-                                            //     constraints: const BoxConstraints.expand(),
-                                            //     child: GestureDetector(
-                                            //     // padding: const EdgeInsets.fromLTRB(
-                                            //     //     16, 16, 16, 32),
-                                            //     // width: 200,
-                                            //     onTap: () => Navigator.pop(context)
-                                            //     )),
-                                            //   Center(child: InteractiveViewer(
-                                            //       clipBehavior: Clip.none,
-                                            //         child: GestureDetector(
-                                            //           child: Image.network(
-                                            //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
-                                            //     ))
-                                            //   ])
-                                            Center(
-                                                child: Builder(
-                                                    builder: (context) =>
-                                                        InteractiveViewer(
-                                                            // clipBehavior: Clip.none,
-                                                            child: Stack(
-                                                          alignment:
-                                                              AlignmentDirectional
-                                                                  .center,
-                                                          children: [
-                                                            Container(
-                                                                constraints:
-                                                                    const BoxConstraints
-                                                                        .expand(),
-                                                                child: GestureDetector(
-                                                                    // padding: const EdgeInsets.fromLTRB(
-                                                                    //     16, 16, 16, 32),
-                                                                    // width: 200,
-                                                                    onTap: () => Navigator.pop(context))),
-                                                            GestureDetector(
-                                                                onTap: () =>
-                                                                    Navigator.pop(
-                                                                        context),
-                                                                child: Image.network(
-                                                                    thumbnail[
-                                                                        "url"]))
-                                                          ],
-                                                        )))));
-                                    // return Dialog(
-                                    //     alignment: AlignmentDirectional.center,
-                                    //     // insetPadding: const EdgeInsets.fromLTRB(
-                                    //     //     16, 70, 16, 16),
-                                    //     insetPadding: const EdgeInsets.all(0),
-                                    //     child: Container(
-                                    //       constraints: const BoxConstraints.expand(),
-                                    //       child: GestureDetector(
-                                    //       // padding: const EdgeInsets.fromLTRB(
-                                    //       //     16, 16, 16, 32),
-                                    //       // width: 200,
-                                    //       onTap: () => Navigator.pop(context),
-                                    //       child: Center(child: InteractiveViewer(
-                                    //         clipBehavior: Clip.none,
-                                    //           child: GestureDetector(
-                                    //             child: Image.network(
-                                    //               "$wordpressUrl/${event.data["thumbnail"]["url"]}"))))),
-                                    //     ));
-                                  });
+                        return Center(
+                            child: InkWell(
+                                onTap: () {
+                                  // showDialog(
+                                  //     context: context,
+                                  //     builder: (BuildContext context) {
+                                  //       return openThumbnailView(
+                                  //           context, thumbnail);
+                                  //     });
+                                  // router.push(GoRouterState.of(context).matchedLocation + "#");
+                                  // router.push("/#/event/96#");
 
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => InteractiveViewer(
-                              //             child: Image.network(
-                              //                 "$wordpressUrl/${event.data["thumbnail"]["url"]}"))));
-                            },
-                            child: Container(
-                                constraints: const BoxConstraints(
-                                    maxWidth: 400, maxHeight: 500),
-                                child: Image.network(thumbnail["url"]))));
+                                  // router.push("/event/96/image", extra: {"url": thumbnail["url"]});
+                                  router.pushNamed("event_image_dialog", 
+                                  pathParameters: {"event_id": widget.eventId.toString()},
+                                  queryParameters: {"url": thumbnail["url"]});
+                                  return;
 
-                    // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
-                  } catch (e) {
-                    try {
-                      return Text("Error: ${thumbnail["error"]}");
-                    } catch (_) {
-                      return const Text("Error");
-                    }
-                  }
-                }))));
+                                  final CapturedThemes themes =
+                                      InheritedTheme.capture(
+                                    from: context,
+                                    to: Navigator.of(
+                                      context,
+                                      rootNavigator: true,
+                                    ).context,
+                                  );
+
+                                  // GoRouterState.of(context)
+                                  //     .push(DialogRoute(
+                                  //   context: context,
+                                  //   builder: (context) =>
+                                  //       openThumbnailView(context, thumbnail),
+                                  //   themes: themes,
+                                  //   traversalEdgeBehavior:
+                                  //       TraversalEdgeBehavior.closedLoop,
+                                  // ));
+
+                                  // Navigator.of(context, rootNavigator: true)
+                                  //     .push(DialogRoute(
+                                  //   context: context,
+                                  //   builder: (context) =>
+                                  //       openThumbnailView(context, thumbnail),
+                                  //   themes: themes,
+                                  //   traversalEdgeBehavior:
+                                  //       TraversalEdgeBehavior.closedLoop,
+                                  // ));
+
+                                  // Navigator.push(
+                                  //     context,
+                                  //     MaterialPageRoute(
+                                  //         builder: (context) => InteractiveViewer(
+                                  //             child: Image.network(
+                                  //                 "$wordpressUrl/${event.data["thumbnail"]["url"]}"))));
+                                },
+                                child: Container(
+                                    constraints: const BoxConstraints(
+                                        maxWidth: 400, maxHeight: 500),
+                                    child: Image.network(thumbnail["url"]))));
+
+                        // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
+                      } catch (e) {
+                        try {
+                          return Text("Error: ${thumbnail["error"]}");
+                        } catch (_) {
+                          return const Text("Error");
+                        }
+                      }
+                    })))));
   }
 
   @override
@@ -309,7 +418,10 @@ class _EventPageState extends State<EventPage> {
                   Card(
                       child: ListTile(
                           title: Wrap(children: [
-                    const SizedBox(width: 80, child: Text("Start: ")),
+                    SizedBox(
+                        width: 80,
+                        child: Text(
+                            "${AppLocalizations.of(context)!.eventStarts}: ")),
                     Wrap(children: [
                       SizedBox(
                           width: 260,
@@ -323,7 +435,10 @@ class _EventPageState extends State<EventPage> {
                     Card(
                         child: ListTile(
                             title: Wrap(children: [
-                      const SizedBox(width: 80, child: Text("Eindigt: ")),
+                      SizedBox(
+                          width: 80,
+                          child: Text(
+                              "${AppLocalizations.of(context)!.eventEnds}: ")),
                       Wrap(children: [
                         SizedBox(
                             width: 260,
@@ -356,7 +471,8 @@ class _EventPageState extends State<EventPage> {
                   // ]),
                   Card(
                       child: ListTile(
-                          title: const Text("Beschrijving"),
+                          title: Text(
+                              AppLocalizations.of(context)!.eventDescription),
                           subtitle: buildDescription(context, event))),
 
                   buildThumbnailCard(context, event),
@@ -375,7 +491,7 @@ class _EventPageState extends State<EventPage> {
               Card(
                   child: ListTile(
                       title: Text(
-                          "Participants (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
+                          "${AppLocalizations.of(context)!.eventParticipants} (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
             ]))),
         SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),

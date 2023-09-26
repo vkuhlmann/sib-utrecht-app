@@ -147,7 +147,7 @@ class _APIDebugPageState extends State<APIDebugPage> {
                 future: response,
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Expanded(child: Text(snapshot.error.toString()));
+                    return Text(snapshot.error.toString());
                   }
 
                   if (snapshot.connectionState == ConnectionState.waiting) {

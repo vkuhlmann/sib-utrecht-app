@@ -26,8 +26,8 @@ class _NewLoginPageState extends State<NewLoginPage> {
       RegExp("^([a-zA-Z0-9]{4} ){5}[a-zA-Z0-9]{4}\$");
 
   final TextEditingController _apiUrlController = TextEditingController();
-  final TextEditingController _authorizationUrlController =
-      TextEditingController();
+  // final TextEditingController _authorizationUrlController =
+  //     TextEditingController();
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _applicationPasswordController =
@@ -42,6 +42,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
   bool _step2IsUsernameNonEmpty = false;
   bool _step2IsPasswordComplete = false;
+  bool _step2ObscurePassword = false;
 
   Future<void>? _step3Substep1;
   Future<void>? _step3Substep2;
@@ -59,17 +60,18 @@ class _NewLoginPageState extends State<NewLoginPage> {
     Uri url;
 
     useRedirect = loginManager.canLoginByRedirect;
+    useRedirect = false;
 
     (disp, url) = loginManager.getAuthorizationUrl(withRedirect: useRedirect);
 
     authorizationUrlDisplay = disp;
     authorizationUrl = url;
 
-    log.info("params are ${jsonEncode(widget.params)}");
+    // log.info("params are ${jsonEncode(widget.params)}");
 
     bool isSuccess = widget.params["success"] != "false" &&
         widget.params["user_login"] != null;
-    log.info("isSuccess: $isSuccess");
+    // log.info("isSuccess: $isSuccess");
 
     _apiUrlController.text = widget.params["api_url"] ?? defaultApiUrl;
 
@@ -77,6 +79,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           step1Done = true;
+          _step2ObscurePassword = true;
         });
 
         _step1Expansion.collapse();
@@ -84,6 +87,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
         _usernameController.text = widget.params["user_login"];
         _applicationPasswordController.text = widget.params["password"];
+        _step2IsUsernameNonEmpty = _usernameController.text.isNotEmpty;
 
         trySubmit();
       });
@@ -101,7 +105,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
   Widget buildStep1(BuildContext context) => Card(
         child: ExpansionTile(
-            title: const Text("Step 1: Create a new application password"),
+            title: Text(AppLocalizations.of(context)!.loginStep1),
             controller: _step1Expansion,
             leading: step1Done ? doneIcon : startIcon,
             initiallyExpanded: !step1Done,
@@ -109,7 +113,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
               Container(
                   margin: const EdgeInsets.all(8),
                   child: Column(children: [
-                    if (advancedMode) ...[
+                    if (advancedMode || _apiUrlController.text != defaultApiUrl) ...[
                       TextField(
                           controller: _apiUrlController,
                           decoration: const InputDecoration(
@@ -275,6 +279,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
     }
 
     setState(() {
+      _step2ObscurePassword = true;
       _step2IsPasswordComplete = true;
     });
 
@@ -331,9 +336,14 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
               Future<void> testConnection() async {
                 // throw Exception("Test aborting");
-                var result = await st.connector.get("events");
-                if (result["data"]?["events"] == null) {
-                  throw Exception("Could not load events");
+                var result = await st.connector.get("/auth");
+                var roles = result["data"]?["roles"];
+                if (roles == null) {
+                  throw Exception("Could not retrieve available roles");
+                }
+
+                if (!(roles as List).contains("account")) {
+                  throw Exception("No 'account' role available");
                 }
               }
 
@@ -387,10 +397,10 @@ class _NewLoginPageState extends State<NewLoginPage> {
           if (!value) {
             return;
           }
-          attemptFillAppPasswordFromClipboard();
+          // attemptFillAppPasswordFromClipboard();
         },
         child: ExpansionTile(
-          title: const Text("Step 2: Enter application password"),
+          title: Text(AppLocalizations.of(context)!.loginStep2),
           controller: _step2Expansion,
           leading: step2Done
               ? doneIcon
@@ -429,6 +439,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
                     },
                   ),
                   const SizedBox(height: 16),
+                  Wrap(children: [
                   TextField(
                     controller: _applicationPasswordController,
                     style: const TextStyle(fontFamily: 'RobotoMono'),
@@ -438,7 +449,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
                     ),
                     keyboardType: TextInputType.visiblePassword,
                     inputFormatters: getWordPressAppPasswordFormatter(),
-                    obscureText: false,
+                    obscureText: _step2ObscurePassword,
                     onChanged: (value) {
                       cancelStep3();
                       setState(() {
@@ -449,6 +460,25 @@ class _NewLoginPageState extends State<NewLoginPage> {
                       trySubmit();
                     },
                   ),
+                  IconButton(
+                      icon: const Icon(Icons.content_copy),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(
+                            text: _applicationPasswordController.value.text));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content: Text(
+                                "Application password copied to clipboard")));
+                      }),
+                  IconButton(
+                      icon: const Icon(Icons.content_paste),
+                      onPressed: attemptFillAppPasswordFromClipboard),
+                  IconButton(icon: _step2ObscurePassword ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _step2ObscurePassword = !_step2ObscurePassword;
+                        });
+                      })
+                  ]),
                   const SizedBox(height: 10),
                   FilledButton(
                       onPressed: (_step2IsPasswordComplete &&
@@ -494,7 +524,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
           future: step3Result,
           builder: (context, snapshot) {
             return ExpansionTile(
-              title: const Text("Step 3: Connection test"),
+              title: Text(AppLocalizations.of(context)!.loginStep3),
               controller: _step3Expansion,
               leading: getStep3Leading(snapshot),
               children: [
@@ -564,6 +594,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
     log.fine("Found application password in clipboard data");
     setState(() {
+      _step2ObscurePassword = true;
       _applicationPasswordController.text = text;
     });
     trySubmit();
@@ -584,10 +615,72 @@ class _NewLoginPageState extends State<NewLoginPage> {
           ])));
 
   Widget buildFocus() => Builder(
-      builder: (context) => ListView(shrinkWrap: true, children: [
+      builder: (context) {
+        bool isDutch = Localizations.localeOf(context).languageCode == "nl";
+        bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+        return ListView(shrinkWrap: true, children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              // radius: 50,
+              backgroundColor: !isDutch ? Theme.of(context).colorScheme.primaryContainer
+              : Colors.transparent, //Theme.of(context).highlightColor,
+              //Theme.of(context).colorScheme.background,
+              // backgroundColor: !isDutch ? Colors.red : null,
+              child: IconButton(
+            onPressed: () {
+            MyApp.setDutch(context, !isDutch);
+          }, icon: const Icon(Icons.language)),
+            ),
+            const SizedBox(width: 10),
+            CircleAvatar(
+              // radius: 50,
+              // backgroundColor: isDark ? Theme.of(context).highlightColor : null,
+              backgroundColor: isDark ? Theme.of(context).colorScheme.primaryContainer
+              : Colors.transparent,
+              child: IconButton(
+            onPressed: () {
+            MyApp.setDark(context, !isDark);
+          }, icon: const Icon(Icons.dark_mode)),
+            ),
+          // BEGIN Source https://stackoverflow.com/questions/52777164/how-to-set-background-color-for-an-icon-button
+          // Answer by https://stackoverflow.com/users/7924072/viren-v-varasadiya
+          // Container(
+          //     color: Colors.green,
+          //     child: new IconButton(
+          //         icon: new Icon(Icons.search,color: Colors.white,),onPressed: null),
+          //   ),
+          // END Source
+
+          // IconButton(
+          //   onPressed: () {
+          //   MyApp.setDutch(context, !isDutch);
+          // }, icon: const Icon(Icons.language)),
+        //   IconButton(onPressed: () {
+        //     MyApp.setDark(context, !isDark);
+        //   }, icon: const Icon(Icons.dark_mode))
+          ],),
+        const SizedBox(height: 8),
+        // Row(
+        //   children: [
+        //   Text(AppLocalizations.of(context)!.darkTheme),
+        //   Switch(value: , onChanged: (val) {
+        //     MyApp.setDark(context, val);
+        //   }),
+        // ]),
+        // const SizedBox(height: 15),
+        // Row(children: [
+        //   const Text("Dutch"),
+        //   Switch(value: , onChanged: (val) {
+        //     MyApp.setDutch(context, val);
+        //   }),
+        // ]),
             buildSteps(context),
             if (completed) buildCompletedPrompt()
-          ]));
+          ]);          
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -604,7 +697,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
               router.go("/login?immediate=false");
             },
           ),
-          const Text('New login')
+          Text(AppLocalizations.of(context)!.pageNewLogin)
         ])),
         body: SafeArea(
             child: Container(

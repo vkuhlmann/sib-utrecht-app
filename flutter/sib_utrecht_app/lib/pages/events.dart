@@ -7,6 +7,18 @@ class EventsPage extends StatefulWidget {
 
   @override
   State<EventsPage> createState() => _EventsPageState();
+
+
+  static Widget buildItem(AnnotatedEvent event) {
+    // if (event.placement == null) {
+    //   return EventOngoing(
+    //       key: ValueKey(("eventsItem", event.eventId)), event: event);
+    // }
+
+    return EventTile(
+        key: ValueKey(("eventsItem", event.eventId, event.placement?.date)),
+        event: event);
+  }
 }
 
 class _EventsPageState extends State<EventsPage> {
@@ -219,25 +231,49 @@ class _EventsPageState extends State<EventsPage> {
     }
   }
 
-  Iterable<AnnotatedEvent> buildEventsItem(Event e) sync* {
-    if (e.end != null && e.end!.difference(e.start).inDays > 10) {
-      yield EventOngoing(
-          key: ValueKey(("eventsItem", e.eventId)),
-          event: e,
-          isParticipating: bookingsProvider.cached?.contains(e.eventId) == true,
-          isDirty: bookingsProvider.cached == null ||
-              _dirtyBookState.contains(e.eventId),
-          setParticipating: (value) =>
-              scheduleEventRegistration(e.eventId, value));
+
+  // Iterable<Widget> buildEventsItem(Event basicEvent) {
+  //   return getPlacedEvents(basicEvent).map((event) {
+  //     if (event.placement == null) {
+  //       return EventOngoing(
+  //           key: ValueKey(("eventsItem", basicEvent.eventId)),
+  //           event: event);
+  //     }
+
+  //     return EventTile(
+  //         key: ValueKey(("eventsItem", event.eventId, event.placement?.date)),
+  //         event: event);
+  //   });
+  // }
+
+  Iterable<AnnotatedEvent> placeEvent(Event event) sync* {
+    var participation = EventParticipation.fromEvent(event,
+        isParticipating:
+            bookingsProvider.cached?.contains(event.eventId) == true,
+        setParticipating: (value) =>
+            scheduleEventRegistration(event.eventId, value),
+        isDirty: bookingsProvider.cached == null ||
+            _dirtyBookState.contains(event.eventId));
+
+    if (event.end != null && event.end!.difference(event.start).inDays > 10) {
+      yield AnnotatedEvent(
+          event: event, participation: participation, placement: null);
+
+      // yield EventOngoing(
+      //     key: ValueKey(("eventsItem", event.eventId)),
+      //     event: event,
+      //     isParticipating: ,
+      //     isDirty: ,
+      //     setParticipating: );
       return;
     }
 
     // var startDay = e.start.subtract(const Duration(hours: 3));
     // startDay = DateTime(startDay.year, startDay.month, startDay.day, 3, 0, 0);
 
-    var startDay = e.start;
+    var startDay = event.start;
     startDay = DateTime(startDay.year, startDay.month, startDay.day, 3, 0, 0);
-    var endDay = e.end ?? e.start;
+    var endDay = event.end ?? event.start;
     if (!startDay.isBefore(endDay)) {
       endDay = startDay.add(const Duration(hours: 1));
     }
@@ -245,16 +281,12 @@ class _EventsPageState extends State<EventsPage> {
     for (var i = startDay;
         i.isBefore(endDay);
         i = i.add(const Duration(days: 1))) {
-      yield EventTile(
-          date: i,
-          key: ValueKey(("eventsItem", e.eventId, i)),
-          event: e,
-          isParticipating: bookingsProvider.cached?.contains(e.eventId) == true,
-          isDirty: bookingsProvider.cached == null ||
-              _dirtyBookState.contains(e.eventId),
-          isConinuation: i != startDay,
-          setParticipating: (value) =>
-              scheduleEventRegistration(e.eventId, value));
+      var placement = EventPlacement(
+          date: i == startDay ? event.start : i, isContinuation: i != startDay);
+      yield AnnotatedEvent(
+          event: event, participation: participation, placement: placement
+          // ValueKey(("eventsItem", event.eventId, i)),
+          );
     }
 
     // EventsItem(
@@ -307,28 +339,34 @@ class _EventsPageState extends State<EventsPage> {
     }),   */
     ];
 
-    /*
-
-    */
-
     var eventsItems = events
-        .map(buildEventsItem)
+        .map(placeEvent)
         .flattened
-        .sortedBy((AnnotatedEvent e) => e.date ?? e.event.end ?? e.event.start)
+        .sortedBy((AnnotatedEvent e) => e.placement?.date ?? e.end ?? e.start)
+        // .map(buildItem)
         .toList();
 
     if (!group) {
-      return eventsItems;
+      return eventsItems.map(EventsPage.buildItem).toList();
     }
 
     return groupBy(
             eventsItems,
             // (Event e) => formatWeekNumber(e.start).substring(0, 7)
-            (AnnotatedEvent e) =>
+            (AnnotatedEvent e) {
                 // formatWeekNumber(e.date ?? DateTime.now().add(const Duration(days: 7)))
-                (e.date ?? DateTime.now().add(const Duration(days: 30)))
-                    .toIso8601String()
-                    .substring(0, 7))
+                var date = e.placement?.date;
+                if (date == null) {
+                  // return "${DateTime.now().add(const Duration(days: 30)).toIso8601String()
+                  //     .substring(0, 7)}+";
+                  return AppLocalizations.of(context)!.eventCategoryOngoing;
+                }
+                return date.toIso8601String().substring(0, 7);
+                  // (e.placement?.date ?? DateTime.now().add(const Duration(days: 30)))
+                  //     .toIso8601String()
+                  //     .substring(0, 7)
+              }
+            )
         .entries
         .sortedBy((element) => element.key)
         // .map((e) => Column(
@@ -393,15 +431,21 @@ class _EventsPageState extends State<EventsPage> {
                               // // color: Theme.of(context).colorScheme.primaryContainer
                               // ),
                               FilledButton(
-                                onPressed: () {
-                                  router.go("/login?immediate=true");
-                                },
-                                child: Padding(padding: const EdgeInsets.all(16),
-                                child: Text("Log in",
-                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                          color: Theme.of(context).colorScheme.onPrimary,
-                                    
-                                ))))]));
+                                  onPressed: () {
+                                    router.go("/login?immediate=true");
+                                  },
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Text("Log in",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineMedium
+                                              ?.copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimary,
+                                              ))))
+                            ]));
                       }
 
                       if (eventsSnapshot.connectionState ==
@@ -420,7 +464,15 @@ class _EventsPageState extends State<EventsPage> {
               }
 
               return Expanded(
-                child: ListView(
+                child: 
+                // RefreshIndicator(
+                //   onRefresh: () async {
+                //     eventsProvider.invalidate();
+                //     bookingsProvider.invalidate();
+                //     await Future.wait([eventsProvider.loading, bookingsProvider.loading]);
+                //   },
+                //   child:
+                ListView(
                     reverse: true, children: buildEvents().reversed.toList()),
               );
             },

@@ -1,0 +1,75 @@
+{
+  "@@locale": "nl",
+  "helloWorld": "Hoi wereld!",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  },
+
+  "events": "activiteiten",
+  "bookings": "bookings",
+  "tabEvents": "Activiteiten",
+  "tabFeed": "Feed",
+  "tabInfo": "Info",
+  "logIn": "Log in",
+  "loginRequired": "Gelieve in te loggen",
+  "committees": "Commissies",
+  "societies": "Genootschappen",
+  "board": "Bestuur <3",
+
+  "confidentialAdvisers": "Vertrouwenspersonen",
+  "aboutSIB": "Over SIB",
+  "aboutApp": "Over deze app",
+  "eventStarts": "Begint",
+  "eventEnds": "Eindigt",
+  "eventDescription": "Beschrijving",
+  "eventImage": "Promo afbeelding",
+  "eventNoImage": "Geen afbeelding",
+  "eventParticipants": "Deelnemers",
+  "eventCategoryOngoing": "Langdurend",
+
+  "darkTheme": "Donker thema",
+  "actionLogout": "Uitloggen",
+  "actionNewLogin": "Account toevoegen",
+  "actionGoToHome": "Naar de homepagina gaan",
+
+  "pageNewLogin": "Account toevoegen",
+
+  "management": "Beheer",
+
+  "loginStep1": "Stap 1: Authorizatie aanmaken",
+  "loginStep2": "Stap 2: Authorizatie invullen",
+  "loginStep3": "Stap 3: Verbindingscheck",
+
+
+  "loadingComponent": "Laden: {componentString}...",
+  "@loadingComponent": {
+    "type": "text",
+    "placeholders": {
+      "componentString": {
+        "type": "String"
+      }
+    },
+    "description": "Message displayed when a component is loading"
+  },
+  "refreshingComponent": "Verversen: {componentString}...",
+  "@refreshingComponent": {
+    "type": "text",
+    "placeholders": {
+      "componentString": {
+        "type": "String"
+      }
+    },
+    "description": "Message displayed when a component is refreshing"
+  },
+  
+  "couldNotLoad": "Kan {componentsString} niet laden:",
+  "@couldNotLoad": {
+    "type": "text",
+    "placeholders": {
+      "componentsString": {
+        "type": "String"
+      }
+    },
+    "description": "Error message when a component fails to load"
+  }
+}

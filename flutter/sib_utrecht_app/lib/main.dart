@@ -1,18 +1,24 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+// import 'dart:html';
 // import 'dart:collection';
 
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+
 // import 'package:flutter/scheduler.dart';
 // import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 // import 'package:tuple/tuple.dart';
+
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
+// import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 // import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
@@ -26,6 +32,9 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
+import 'model/cors_fallback.dart'
+  if (dart.library.html) 'model/cors_web.dart';
+
 
 part 'utils.dart';
 part 'shell.dart';
@@ -37,18 +46,24 @@ part 'pages/info.dart';
 part 'pages/event.dart';
 part 'pages/login.dart';
 part 'pages/new_login.dart';
+part 'pages/new_login2.dart';
 part 'pages/api_debug.dart';
 part 'pages/feed.dart';
+part 'pages/management.dart';
 
 part 'components/event_tile.dart';
 part 'components/event_group.dart';
-part 'components/event_ongoing.dart';
 part 'components/alerts_panel.dart';
+part 'components/weekday_indicator.dart';
+part 'components/signup_indicator.dart';
+part 'components/dialog_page.dart';
 
 part 'view_model/cached_provider.dart';
 part 'view_model/async_patch.dart';
 part 'view_model/locale_date_format.dart';
 part 'view_model/annotated_event.dart';
+part 'view_model/event_participation.dart';
+part 'view_model/event_placement.dart';
 
 part 'model/login_manager.dart';
 part 'model/api_connector.dart';
@@ -57,7 +72,7 @@ part 'model/event.dart';
 
 
 
-late Future<void> dateFormattingInitialization;
+// late Future<void> dateFormattingInitialization;
 // const String wordpressUrl = "http://192.168.50.200/wordpress";
 const String wordpressUrl = "https://sib-utrecht.nl";
 const String defaultApiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
@@ -66,6 +81,7 @@ const String authorizeAppUrl =
 
 final log = Logger("main.dart");
 late LoginManager loginManager;
+late MyApp app;
 
 void main() {
   Logger.root.level = Level.ALL;
@@ -82,16 +98,16 @@ void main() {
   // log.info(formatWeekNumber(DateTime(2024, 12, 30)));
   // log.info(formatWeekNumber(DateTime(2023, 9, 9)));
 
-  dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
-      .then((_) => Future.wait([
-            initializeDateFormatting("nl_NL"),
-            initializeDateFormatting("en_GB")
-          ]));
+  // var dateFormattingInitialization = Future.delayed(const Duration(seconds: 0))
+  //     .then((_) => Future.wait([
+  //           initializeDateFormatting("nl_NL"),
+  //           initializeDateFormatting("en_GB")
+  //         ]));
 
   GoogleFonts.config.allowRuntimeFetching = true;
 
   LicenseRegistry.addLicense(() async* {
-    final license2 = await rootBundle.loadString('LICENSE');
+    final license2 = await rootBundle.loadString('../../LICENSE');
     yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license2);
 
     final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
@@ -102,13 +118,15 @@ void main() {
   });
 
   loginManager = LoginManager();
-  runApp(const MyApp());
+  var a = const MyApp();
+  app = a;
+  runApp(a);
 }
 
 class Preferences extends InheritedWidget {
   const Preferences({super.key, required super.child, required this.locale, required this.debugMode});
 
-  final String locale;
+  final Locale locale;
   final bool debugMode;
 
   static Preferences? maybeOf(BuildContext context) {

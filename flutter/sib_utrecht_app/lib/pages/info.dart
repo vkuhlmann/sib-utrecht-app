@@ -21,9 +21,18 @@ class _InfoPageState extends State<InfoPage> {
         child: CustomScrollView(slivers: [
           SliverList(
               delegate: SliverChildListDelegate([
-            const Card(child: ListTile(title: Text("Bestuur"))),
-            const Card(child: ListTile(title: Text("Commissies"))),
-            const Card(child: ListTile(title: Text("Genootschappen"))),
+            // const Card(child: ListTile(title: Text("Bestuur"))),
+            // const Card(child: ListTile(title: Text("Commissies"))),
+            // const Card(child: ListTile(title: Text("Genootschappen"))),
+            Card(
+                child:
+                    ListTile(title: Text(AppLocalizations.of(context)!.board))),
+            Card(
+                child: ListTile(
+                    title: Text(AppLocalizations.of(context)!.committees))),
+            Card(
+                child: ListTile(
+                    title: Text(AppLocalizations.of(context)!.societies))),
           ])),
           SliverFillRemaining(
               hasScrollBody: false,
@@ -33,10 +42,17 @@ class _InfoPageState extends State<InfoPage> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         const Divider(),
-                        const Card(
-                            child:
-                                ListTile(title: Text("Vertrouwenspersonen"))),
-                        const Card(child: ListTile(title: Text("Over SIB"))),
+                        // const Card(
+                        //     child:
+                        //         ListTile(title: Text("Vertrouwenspersonen"))),
+                        // const Card(child: ListTile(title: Text("Over SIB"))),
+                        Card(
+                            child: ListTile(
+                                title: Text(AppLocalizations.of(context)!
+                                    .confidentialAdvisers))),
+                        Card(child: ListTile(title: Text(
+                            // "Over SIB"
+                            AppLocalizations.of(context)!.aboutSIB))),
                         Card(
                             child: InkWell(
                                 onTap: () {
@@ -45,7 +61,28 @@ class _InfoPageState extends State<InfoPage> {
                                       applicationName: "SIB-Utrecht",
                                       applicationVersion: "0.1.5");
                                 },
-                                child: const ListTile(title: Text("Over app"))))
+                                child: ListTile(title: Text(
+                                    // "Over app"
+                                    AppLocalizations.of(context)!.aboutApp)))),
+                        Card(
+                            child:InkWell(
+                                onTap: () {
+                                  // showMenu(context: context,
+                                  //     position: const RelativeRect.fromLTRB(
+                                  //         32, 32, 32, 32),
+                                  //     items: const [
+                                  //       PopupMenuItem(
+                                  //           child: ListTile(
+                                  //               title: Text("API requests"))),
+                                  //       PopupMenuItem(
+                                  //           child: ListTile(
+                                  //               title: Text("Groups")))
+                                  //     ]);
+                                  router.go("/management");
+                                },
+                                child:  ListTile(
+                                title: Text(AppLocalizations.of(context)!
+                                    .management)))),
                       ])))
         ]));
   }
