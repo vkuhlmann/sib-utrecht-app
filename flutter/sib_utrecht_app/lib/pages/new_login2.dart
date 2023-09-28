@@ -99,6 +99,14 @@ class _NewLogin2PageState extends State<NewLogin2Page> {
 
   Widget buildCorsLogin(BuildContext context, Map data) {
     // return Text('userIdentity: ${jsonEncode(snapshot.data)}');
+    if (data["identity"]["user_login"] == null) {
+      return const SizedBox();
+      return const ListTile(
+        title: Text("Direct login is not available"),
+        subtitle: Text("Not logged in on website"),
+      );
+    }
+
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Text('Continue as '),
       const SizedBox(height: 4),
