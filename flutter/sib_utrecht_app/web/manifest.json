@@ -2,7 +2,6 @@
     "name": "SIB-Utrecht",
     "short_name": "SIB",
     "start_url": ".",
-    "display": "minimal-ui",
     "background_color": "#21526F",
     "theme_color": "#21526F",
     "description": "SIB-Utrecht app for members",

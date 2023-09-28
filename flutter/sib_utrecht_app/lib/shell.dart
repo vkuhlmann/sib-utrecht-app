@@ -135,32 +135,47 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
         Row(children: [
           Text(AppLocalizations.of(context)!.darkTheme),
           const Spacer(),
-          Switch(value: Theme.of(context).brightness == Brightness.dark, onChanged: (val) {
-            MyApp.setDark(context, val);
-          }),
+          Switch(
+              value: Theme.of(context).brightness == Brightness.dark,
+              onChanged: (val) {
+                MyApp.setDark(context, val);
+              }),
         ]),
         const SizedBox(height: 15),
         Row(children: [
           const Text("Dutch"),
           const Spacer(),
-          Switch(value: Localizations.localeOf(context).languageCode == "nl", onChanged: (val) {
-            MyApp.setDutch(context, val);
-          }),
+          Switch(
+              value: Localizations.localeOf(context).languageCode == "nl",
+              onChanged: (val) {
+                MyApp.setDutch(context, val);
+              }),
+        ]),
+        const SizedBox(height: 15),
+        Row(children: [
+          const Text("SIB color in app bar"),
+          const Spacer(),
+          Switch(
+              value: MyApp._getState(context)?.useSibColorInStatusBar == true,
+              onChanged: (val) {
+                MyApp.setUseSibColorInStatusBar(context, val);
+              }),
         ]),
         ...((snapshot.data?.activeProfileName != null)
             ? ([
                 const SizedBox(height: 15),
                 TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    setState(() {
-                      widget.loginController.logout().then((value) {
-                        router.go("/login?immediate=false");
+                    onPressed: () {
+                      Navigator.pop(context);
+                      setState(() {
+                        widget.loginController.logout().then((value) {
+                          router.go("/login?immediate=false");
+                        });
                       });
-                    });
-                  },
-                  child: Text(AppLocalizations.of(context)!.actionLogout)// const Text('Logout'),
-                ),
+                    },
+                    child: Text(AppLocalizations.of(context)!
+                        .actionLogout) // const Text('Logout'),
+                    ),
               ])
             : ([])),
         ...((snapshot.data?.activeProfileName == null)
@@ -285,17 +300,17 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                 title: Row(
                   children: <Widget>[
                     if (backAddress != null || Navigator.of(context).canPop())
-                    BackButton(
-                      onPressed: 
-                      backAddress == null ? null :
-                      () {
-                        // if () {
-                        //   GoRouter.of(context).go("/");
-                        //   return;
-                        // }
-                        router.go(backAddress);
-                      },
-                    ),
+                      BackButton(
+                        onPressed: backAddress == null
+                            ? null
+                            : () {
+                                // if () {
+                                //   GoRouter.of(context).go("/");
+                                //   return;
+                                // }
+                                router.go(backAddress);
+                              },
+                      ),
                     // BackButton(onPressed: () {
                     //   // Navigator.maybePop(context);
                     //   // context.pop();
@@ -351,11 +366,17 @@ const Color sibColor = Color.fromARGB(255, 33, 82, 111);
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  static void setDutch(BuildContext context, bool? val) {
+  static _MyAppState? _getState(BuildContext context) {
     // Source: https://stackoverflow.com/questions/55889889/how-to-change-a-flutter-app-language-without-restarting-the-app
     // answer by https://stackoverflow.com/users/7639019/seddiq-sorush
 
     _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
+    return state;
+  }
+
+  static void setDutch(BuildContext context, bool? val) {
+    var state = _getState(context);
+
     if (state == null) {
       log.severe("Could not find _MyAppState for setDutch");
       return;
@@ -377,6 +398,19 @@ class MyApp extends StatefulWidget {
     state.setDark(val);
   }
 
+  static void setUseSibColorInStatusBar(BuildContext context, bool val) {
+    // Source: https://stackoverflow.com/questions/55889889/how-to-change-a-flutter-app-language-without-restarting-the-app
+    // answer by https://stackoverflow.com/users/7639019/seddiq-sorush
+
+    _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
+    if (state == null) {
+      log.severe("Could not find _MyAppState for setUseSibColorInStatusBar");
+      return;
+    }
+
+    state.setUseSibColorInStatusBar(val);
+  }
+
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -384,56 +418,95 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool? isDutch;
   bool? isDark;
+  bool useSibColorInStatusBar = true;
 
   void setDutch(bool? val) {
     setState(() {
       isDutch = val;
-    });    
+    });
   }
-
 
   void setDark(bool? val) {
     setState(() {
       isDark = val;
-    });    
+    });
+  }
+
+  void setUseSibColorInStatusBar(bool val) {
+    setState(() {
+      useSibColorInStatusBar = val;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    bool? darkTheme = isDark;
+    bool? useDarkTheme = isDark;
+
+    bool effectiveUseSibColorInStatusBar = useSibColorInStatusBar && isDark != false;
+
+    var lightTheme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: sibColor, brightness: Brightness.light,
+        // primary: sibColor,
+        inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
+      ),
+      useMaterial3: true,
+      brightness: Brightness.light,
+      // fontFamily: 'Roboto',
+    );
+
+    var darkTheme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: sibColor, brightness: Brightness.dark,
+        // primary: sibColor,
+        // secondary: sibColor,
+        // onPrimary: sibColor,
+        // tertiary: sibColor,
+        // background: sibColor,
+        // onBackground: sibColor,
+        // onSecondary: sibColor,
+        // onTertiary: sibColor,
+        // primaryContainer: sibColor,
+        // secondaryContainer: sibColor,
+        // tertiaryContainer: sibColor,
+        inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
+        // tertiaryContainer: Colors.red
+        // primary: Colors.grey[800],
+        // inverseSurface: sibColor
+      ),
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      // textTheme: ThemeData.dark().textTheme.copyWith(
+      //   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
+      //     fontFamily: "RobotoMono",
+      //     fontFamilyFallback: ["Roboto", "NotoEmoji", "NotoSans", "RobotoMono"]
+      //   ),
+      // ),
+      // fontFamily: 'Roboto',
+    );
+
+    Color themeColor = sibColor;
+
+    if (!effectiveUseSibColorInStatusBar) {
+      themeColor = useDarkTheme != false
+          ? darkTheme.colorScheme.inversePrimary
+          : lightTheme.colorScheme.inversePrimary;
+    }
+
+    setMetaThemeColor(themeColor);
 
     return Preferences(
         // locale: "nl_NL",
-        locale: isDutch == true ? const Locale("nl", "NL") : const Locale("en", "GB"),
+        locale: isDutch == true
+            ? const Locale("nl", "NL")
+            : const Locale("en", "GB"),
         debugMode: false,
         child: Builder(
             builder: (context) => MaterialApp.router(
                 routerConfig: router,
                 title: 'SIB-Utrecht',
-                theme: ThemeData(
-                  colorScheme: ColorScheme.fromSeed(
-                    seedColor: sibColor, brightness: Brightness.light,
-                    // primary: sibColor,
-                  ),
-                  useMaterial3: true,
-                  brightness: Brightness.light,
-                  // fontFamily: 'Roboto',
-                ),
-                darkTheme: ThemeData(
-                  colorScheme: ColorScheme.fromSeed(
-                    seedColor: sibColor, brightness: Brightness.dark,
-                    // primary: sibColor,
-                  ),
-                  useMaterial3: true,
-                  brightness: Brightness.dark,
-                  // textTheme: ThemeData.dark().textTheme.copyWith(
-                  //   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
-                  //     fontFamily: "RobotoMono",
-                  //     fontFamilyFallback: ["Roboto", "NotoEmoji", "NotoSans", "RobotoMono"]
-                  //   ),
-                  // ),
-                  // fontFamily: 'Roboto',
-                ),
+                theme: lightTheme,
+                darkTheme: darkTheme,
                 localizationsDelegates: const [
                   AppLocalizations.delegate,
                   GlobalMaterialLocalizations.delegate,
@@ -445,12 +518,14 @@ class _MyAppState extends State<MyApp> {
                   Locale('nl', 'NL'),
                 ],
                 // locale: Preferences.of(context).locale,
-                locale: isDutch == true ? const Locale('nl', 'NL') : (
-                  isDutch == false ? const Locale('en', 'GB') : null
-                ),
+                locale: isDutch == true
+                    ? const Locale('nl', 'NL')
+                    : (isDutch == false ? const Locale('en', 'GB') : null),
                 // locale: const Locale('nl', 'NL'),
                 // locale: const Locale('en', 'GB'),
-                themeMode: darkTheme == null ? ThemeMode.system : (darkTheme ? ThemeMode.dark : ThemeMode.light),
+                themeMode: useDarkTheme == null
+                    ? ThemeMode.system
+                    : (useDarkTheme ? ThemeMode.dark : ThemeMode.light),
                 debugShowCheckedModeBanner: true)));
   }
 }

@@ -35,6 +35,9 @@ import 'package:hive/hive.dart';
 import 'model/cors_fallback.dart'
   if (dart.library.html) 'model/cors_web.dart';
 
+import 'theme_fallback.dart'
+  if (dart.library.html) 'theme_web.dart';
+
 
 part 'utils.dart';
 part 'shell.dart';
