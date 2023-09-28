@@ -4,6 +4,7 @@
     "start_url": ".",
     "background_color": "#21526F",
     "theme_color": "#21526F",
+    "display": "fullscreen",
     "description": "SIB-Utrecht app for members",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
