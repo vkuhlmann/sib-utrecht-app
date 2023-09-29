@@ -110,17 +110,17 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: const BorderRadius.all(Radius.circular(8))),
                   child: ListTile(
                       // title: Text(pair.key),
-                      title: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [Text(displayName), const SizedBox(width: 32,), 
-                        InkWell(
-                          child: const Icon(Icons.delete, size: 20),
-                          onTap: () {
-                            loginManager.removeProfile(pair.key);
-                          },
-                        ),]),
-                      // title: Text(displayName),
-                      subtitle: Text(pair.value["user"]),
+                      // title: Row(
+                      //   mainAxisSize: MainAxisSize.min,
+                      //   children: [Text(displayName), const SizedBox(width: 32,), 
+                      //   InkWell(
+                      //     child: const Icon(Icons.delete, size: 20),
+                      //     onTap: () {
+                      //       loginManager.removeProfile(pair.key);
+                      //     },
+                      //   ),]),
+                      title: Text(displayName, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(pair.value["user"], overflow: TextOverflow.ellipsis),
                       leading: const Icon(Icons.person),
                       onTap: () {
                         loginManager.setActiveProfile(pair.key);
@@ -128,13 +128,13 @@ class _LoginPageState extends State<LoginPage> {
                       },
                       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                         // const Text("A")
-                        // IconButton(
-                        //   icon: const Icon(Icons.delete),
-                        //   onPressed: () {
-                        //     loginManager.removeProfile(pair.key);
-                        //   },
-                        // ),
-                        // const SizedBox(width: 16),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            loginManager.removeProfile(pair.key);
+                          },
+                        ),
+                        const SizedBox(width: 16),
                         IconButton(
                           icon: const Icon(Icons.chevron_right),
                           onPressed: () {
