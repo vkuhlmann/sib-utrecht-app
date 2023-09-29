@@ -194,7 +194,10 @@ class _AlertsPanelState extends State<AlertsPanel> {
 
       return Padding(
           padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-          child: Column(children: alerts));
+          child: 
+          Container(constraints: const BoxConstraints(maxWidth: 600)
+          , child: Column(children: alerts))
+      );
     };
 
     for (var a in widget.loadingFutures.reversed) {

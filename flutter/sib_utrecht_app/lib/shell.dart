@@ -167,14 +167,19 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                 TextButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      setState(() {
-                        widget.loginController.logout().then((value) {
-                          router.go("/login?immediate=false");
-                        });
-                      });
+                      // setState(() {
+                      //   widget.loginController.logout().then((value) {
+                      //     router.go("/login?immediate=false");
+                      //   });
+                      // });
+                      router.go("/login");
                     },
+                    // child: Text(AppLocalizations.of(context)!
+                    //     .actionLogout)
+                    // child: const Text("Switch account"),
                     child: Text(AppLocalizations.of(context)!
-                        .actionLogout) // const Text('Logout'),
+                        .gotoSwitchAccountPage)
+                         // const Text('Logout'),
                     ),
               ])
             : ([])),
@@ -186,7 +191,8 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     Navigator.pop(context);
                     router.go("/login?immediate=true");
                   },
-                  child: const Text('Login'),
+                  child: Text(AppLocalizations.of(context)!
+                        .actionLogIn),
                 ),
               ])
             : ([])),
@@ -290,13 +296,14 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
     return Builder(
         builder: (context) => Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             bottomNavigationBar: NavigationBar(
               onDestinationSelected: _onDestinationSelected,
               selectedIndex: selectedIndex,
               destinations: getDestinations(context),
             ),
             appBar: AppBar(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary, 
                 title: Row(
                   children: <Widget>[
                     if (backAddress != null || Navigator.of(context).canPop())
@@ -419,6 +426,16 @@ class _MyAppState extends State<MyApp> {
   bool? isDutch;
   bool? isDark;
   bool useSibColorInStatusBar = true;
+  late ThemeData lightTheme;
+  late ThemeData darkTheme;
+  Color appbarColor = sibColor;
+
+  @override
+  void initState() {
+    super.initState();
+
+    updateTheme();
+  }
 
   void setDutch(bool? val) {
     setState(() {
@@ -438,62 +455,68 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void updateTheme() {
+    bool effectiveUseSibColorInStatusBar =
+        useSibColorInStatusBar && isDark != false;
+
+    setState(() {
+      lightTheme = ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: sibColor, brightness: Brightness.light,
+          // primary: sibColor,
+          inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
+        ),
+        useMaterial3: true,
+        brightness: Brightness.light,
+        // fontFamily: 'Roboto',
+      );
+      darkTheme = ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: sibColor, brightness: Brightness.dark,
+          // primary: sibColor,
+          // secondary: sibColor,
+          // onPrimary: sibColor,
+          // tertiary: sibColor,
+          // background: sibColor,
+          // onBackground: sibColor,
+          // onSecondary: sibColor,
+          // onTertiary: sibColor,
+          // primaryContainer: sibColor,
+          // secondaryContainer: sibColor,
+          // tertiaryContainer: sibColor,
+          inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
+          // tertiaryContainer: Colors.red
+          // primary: Colors.grey[800],
+          // inverseSurface: sibColor
+        ),
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        // textTheme: ThemeData.dark().textTheme.copyWith(
+        //   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
+        //     fontFamily: "RobotoMono",
+        //     fontFamilyFallback: ["Roboto", "NotoEmoji", "NotoSans", "RobotoMono"]
+        //   ),
+        // ),
+        // fontFamily: 'Roboto',
+      );
+
+      Color themeColor = sibColor;
+
+      if (!effectiveUseSibColorInStatusBar) {
+        themeColor = isDark != false
+            ? darkTheme.colorScheme.inversePrimary
+            : lightTheme.colorScheme.inversePrimary;
+      }
+
+      appbarColor = themeColor;
+    });
+
+    setMetaThemeColor(appbarColor);
+  }
+
   @override
   Widget build(BuildContext context) {
     bool? useDarkTheme = isDark;
-
-    bool effectiveUseSibColorInStatusBar = useSibColorInStatusBar && isDark != false;
-
-    var lightTheme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: sibColor, brightness: Brightness.light,
-        // primary: sibColor,
-        inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
-      ),
-      useMaterial3: true,
-      brightness: Brightness.light,
-      // fontFamily: 'Roboto',
-    );
-
-    var darkTheme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: sibColor, brightness: Brightness.dark,
-        // primary: sibColor,
-        // secondary: sibColor,
-        // onPrimary: sibColor,
-        // tertiary: sibColor,
-        // background: sibColor,
-        // onBackground: sibColor,
-        // onSecondary: sibColor,
-        // onTertiary: sibColor,
-        // primaryContainer: sibColor,
-        // secondaryContainer: sibColor,
-        // tertiaryContainer: sibColor,
-        inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
-        // tertiaryContainer: Colors.red
-        // primary: Colors.grey[800],
-        // inverseSurface: sibColor
-      ),
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      // textTheme: ThemeData.dark().textTheme.copyWith(
-      //   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
-      //     fontFamily: "RobotoMono",
-      //     fontFamilyFallback: ["Roboto", "NotoEmoji", "NotoSans", "RobotoMono"]
-      //   ),
-      // ),
-      // fontFamily: 'Roboto',
-    );
-
-    Color themeColor = sibColor;
-
-    if (!effectiveUseSibColorInStatusBar) {
-      themeColor = useDarkTheme != false
-          ? darkTheme.colorScheme.inversePrimary
-          : lightTheme.colorScheme.inversePrimary;
-    }
-
-    setMetaThemeColor(themeColor);
 
     return Preferences(
         // locale: "nl_NL",

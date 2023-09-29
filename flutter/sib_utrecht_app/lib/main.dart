@@ -25,6 +25,7 @@ import 'package:uuid/uuid.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
+import 'package:html_unescape/html_unescape.dart';
 
 // import 'package:flutter_html/flutter_html.dart';
 // import 'package:flutter_html/style.dart';

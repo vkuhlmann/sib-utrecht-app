@@ -27,10 +27,13 @@
 
   "darkTheme": "Dark theme",
 
-  "actionLogout": "Log out",
+  "actionLogOut": "Log out",
+  "actionLogIn": "Log in",
   "actionNewLogin": "New login",
   "pageNewLogin": "New login",
   "actionGoToHome": "Go to home screen",
+
+  "gotoSwitchAccountPage": "Switch account",
 
   "confidentialAdvisers": "Confidential advisers",
   "aboutSIB": "About SIB",

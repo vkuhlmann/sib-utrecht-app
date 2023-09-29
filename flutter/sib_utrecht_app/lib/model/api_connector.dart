@@ -86,7 +86,7 @@ class APIConnector {
     return box.get(url)?["response"];
   }
 
-  Future<Map> get(url) async {
+  Future<Map> get(String url) async {
     log.info("Doing GET on $url");
 
     final Stopwatch stopwatch = Stopwatch()..start();

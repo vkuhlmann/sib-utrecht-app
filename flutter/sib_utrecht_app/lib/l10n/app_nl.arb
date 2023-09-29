@@ -28,9 +28,13 @@
   "eventCategoryOngoing": "Langdurend",
 
   "darkTheme": "Donker thema",
-  "actionLogout": "Uitloggen",
+  "actionLogOut": "Uitloggen",
+  "actionLogIn": "Inloggen",
   "actionNewLogin": "Account toevoegen",
   "actionGoToHome": "Naar de homepagina gaan",
+
+
+  "gotoSwitchAccountPage": "Verander account",
 
   "pageNewLogin": "Account toevoegen",
 
