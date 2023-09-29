@@ -36,6 +36,8 @@ class LoginManager extends ChangeNotifier {
       profiles = jsonDecode(profilesContent);
     }
 
+    log.info("Loaded profiles: ${jsonEncode(profiles)}");
+
     if (!profiles.keys.contains(activeProfileName)) {
       activeProfileName = null;
     }
@@ -127,10 +129,12 @@ class LoginManager extends ChangeNotifier {
   //   });
   // }
 
-  Future<LoginState> _completeLogin(
-      {required String user,
-      required String apiSecret,
-      required String apiAddress}) async {
+  Future<LoginState> _completeLogin({
+    required String user,
+    required String apiSecret,
+    required String apiAddress,
+    bool fillIdentity = true,
+  }) async {
     var prof = (await assureLoginState()).profiles;
 
     String profileName = user;
@@ -150,10 +154,23 @@ class LoginManager extends ChangeNotifier {
       "api": {
         "channel": "latest",
         "url": apiAddress,
-      }
+      },
+      "identity": null,
     };
 
     prof[profileName] = profile;
+
+    if (fillIdentity) {
+      var conn = APIConnector(
+          apiAddress: apiAddress, user: user, apiSecret: apiSecret);
+      var res = await conn.get("/auth");
+      var identity = res["data"]?["identity"];
+      profile["identity"] = identity;
+      if (identity == null) {
+        log.severe("Login returned no identity from API");
+      }
+    }
+
     String a = jsonEncode(prof);
     await storage.write(key: 'profiles', value: a);
     await storage.write(key: 'activeProfileName', value: profileName);
