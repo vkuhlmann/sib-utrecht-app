@@ -177,9 +177,9 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     // child: Text(AppLocalizations.of(context)!
                     //     .actionLogout)
                     // child: const Text("Switch account"),
-                    child: Text(AppLocalizations.of(context)!
-                        .gotoSwitchAccountPage)
-                         // const Text('Logout'),
+                    child: Text(
+                        AppLocalizations.of(context)!.gotoSwitchAccountPage)
+                    // const Text('Logout'),
                     ),
               ])
             : ([])),
@@ -191,8 +191,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     Navigator.pop(context);
                     router.go("/login?immediate=true");
                   },
-                  child: Text(AppLocalizations.of(context)!
-                        .actionLogIn),
+                  child: Text(AppLocalizations.of(context)!.actionLogIn),
                 ),
               ])
             : ([])),
@@ -256,11 +255,14 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
             //   selectedIndex: selectedIndex,
             //   destinations: destinations,
             // ),
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            // backgroundColor: Colors.white,
             appBar: AppBar(
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 title: Row(
                   // crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
+                    buildBackButton(),
                     Image.asset(
                       'assets/sib_logo_64.png',
                       fit: BoxFit.contain,
@@ -274,6 +276,9 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                   ],
                 )),
             body: SafeArea(
+                child: 
+                Container(
+                  color: Theme.of(context).colorScheme.background,
                 child: Row(children: [
               NavigationRail(
                 selectedIndex: selectedIndex,
@@ -288,12 +293,49 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
               ),
               const VerticalDivider(thickness: 1, width: 1),
               Expanded(child: widget.navigationShell)
-            ]))));
+            ])))));
   }
 
-  Widget buildMobile() {
-    String? backAddress = getBackAddress(context);
+  Widget buildBackButton() => Builder(builder: (context) {
+        String? backAddress = getBackAddress(context);
 
+        bool isActive = backAddress != null ||
+            Navigator.of(context).canPop() ||
+            router.canPop();
+        if (!isActive) {
+          return const SizedBox();
+        }
+
+        return BackButton(
+          onPressed: () {
+            if (backAddress != null) {
+              router.go(backAddress);
+              return;
+            }
+
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+              return;
+            }
+
+            if (router.canPop()) {
+              router.pop();
+              return;
+            }
+          },
+          // onPressed: backAddress == null
+          //     ? (Navigator.of(context).canPop() ? )
+          //     : () {
+          //         // if () {
+          //         //   GoRouter.of(context).go("/");
+          //         //   return;
+          //         // }
+          //         router.go(backAddress);
+          //       },
+        );
+      });
+
+  Widget buildMobile() {
     return Builder(
         builder: (context) => Scaffold(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -303,21 +345,10 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
               destinations: getDestinations(context),
             ),
             appBar: AppBar(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary, 
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 title: Row(
                   children: <Widget>[
-                    if (backAddress != null || Navigator.of(context).canPop())
-                      BackButton(
-                        onPressed: backAddress == null
-                            ? null
-                            : () {
-                                // if () {
-                                //   GoRouter.of(context).go("/");
-                                //   return;
-                                // }
-                                router.go(backAddress);
-                              },
-                      ),
+                    buildBackButton(),
                     // BackButton(onPressed: () {
                     //   // Navigator.maybePop(context);
                     //   // context.pop();
@@ -343,7 +374,11 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     buildLoginIcon(context)
                   ],
                 )),
-            body: SafeArea(child: widget.navigationShell)));
+            body: SafeArea(child: 
+            Container(
+              color: Theme.of(context).colorScheme.background,
+              child:
+            widget.navigationShell))));
   }
 
   @override
@@ -464,7 +499,7 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(
           seedColor: sibColor, brightness: Brightness.light,
           // primary: sibColor,
-          inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
+          // inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
         ),
         useMaterial3: true,
         brightness: Brightness.light,
