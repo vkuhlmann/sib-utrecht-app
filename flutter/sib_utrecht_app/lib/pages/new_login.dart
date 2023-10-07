@@ -414,10 +414,10 @@ class _NewLoginPageState extends State<NewLoginPage> {
                     controller: _usernameController,
                     decoration: InputDecoration(
                         border: const OutlineInputBorder(),
-                        labelText: 'E-mail',
+                        labelText: 'Username',
                         errorText: (_step2IsPasswordComplete &&
                                 !_step2IsUsernameNonEmpty)
-                            ? "Your username (e-mail) is required"
+                            ? "Your username (often e-mail) is required"
                             : null),
                     onChanged: (value) {
                       if (value.isNotEmpty != _step2IsUsernameNonEmpty) {

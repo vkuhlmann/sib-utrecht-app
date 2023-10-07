@@ -18,6 +18,81 @@ final GoRouter router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: "/",
   routes: <RouteBase>[
+    // GoRoute(
+    //     path: '/aa',
+    //     builder: (context, state) => Center(
+    //             child: Column(children: [
+    //           Text("AA"),
+    //           BackButton(),
+    //           buildBackButton(),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("/aa"), child: Text("Go to AA")),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("/bb"), child: Text("Go to BB")),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("/cc"), child: Text("Go to CC")),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("/aa/test"),
+    //               child: Text("Go to AA test")),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("test"),
+    //               child: Text("Go to AA test 2")),
+    //         ])),
+    //     routes: [
+    //       GoRoute(
+    //           path: 'test',
+    //           builder: (context, state) => Center(
+    //                   child: Column(children: [
+    //                 Text("AA test"),
+    //                 BackButton(),
+    //                 buildBackButton(),
+    //                 ElevatedButton(
+    //                     onPressed: () => router.go("/aa"),
+    //                     child: Text("Go to AA")),
+    //                 ElevatedButton(
+    //                     onPressed: () => router.go("/bb"),
+    //                     child: Text("Go to BB")),
+    //                 ElevatedButton(
+    //                     onPressed: () => router.go("/cc"),
+    //                     child: Text("Go to CC")),
+    //               ])))
+    //     ]),
+    // GoRoute(
+    //     path: '/bb',
+    //     builder: (context, state) => Center(
+    //           child: Column(children: [
+    //             Text("BB"),
+    //             BackButton(),
+    //             buildBackButton(),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("/aa"), child: Text("Go to AA")),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("/bb"), child: Text("Go to BB")),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("/cc"), child: Text("Go to CC")),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("/aa/test"),
+    //                 child: Text("Go to AA test")),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("test"),
+    //                 child: Text("Go to AA test 2")),
+    //           ]),
+    //         )),
+    // GoRoute(
+    //   path: '/cc',
+    //   builder: (context, state) => Center(
+    //       child: Column(children: [
+    //     Text("CC"),
+    //     BackButton(),
+    //     buildBackButton(),
+    //     ElevatedButton(
+    //         onPressed: () => router.go("/aa"), child: Text("Go to AA")),
+    //     ElevatedButton(
+    //         onPressed: () => router.go("/bb"), child: Text("Go to BB")),
+    //     ElevatedButton(
+    //         onPressed: () => router.go("/cc"), child: Text("Go to CC")),
+    //   ])),
+    // ),
     StatefulShellRoute.indexedStack(
         // builder: (context, state, navigationShell) => Padding(padding: const EdgeInsets.all(64), child: navigationShell),
         // builder: (context, state, navigationShell) =>
@@ -90,14 +165,16 @@ final GoRouter router = GoRouter(
                             GoRoute(
                                 path: '/info',
                                 // parentNavigatorKey: _infoNavigatorKey,
-                                builder: (context, state) => const InfoPage()),
+                                builder: (context, state) => const InfoPage(),
+                            ),
                             GoRoute(
                               path: '/api-debug',
                               builder: (context, state) => const APIDebugPage(),
                             ),
                             GoRoute(
                               path: '/management',
-                              builder: (context, state) => const ManagementPage(),
+                              builder: (context, state) =>
+                                  const ManagementPage(),
                             ),
                           ]),
                       StatefulShellBranch(
@@ -125,8 +202,10 @@ final GoRouter router = GoRouter(
                                         GoRouterState state) {
                                       return DialogPage(
                                           // builder: (_) => AboutDialog()
-                                          builder: (_) => ThumbnailImageDialog(url: state.uri.queryParameters["url"] as String)
-                                          );
+                                          builder: (_) => ThumbnailImageDialog(
+                                              url: state.uri
+                                                      .queryParameters["url"]
+                                                  as String));
                                     },
                                   )
                                 ])
