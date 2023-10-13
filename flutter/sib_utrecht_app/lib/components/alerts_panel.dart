@@ -3,7 +3,7 @@ part of '../main.dart';
 class AlertsPanelStatusMessage {
   final String component;
   final String status;
-  final Object? data;
+  final Map data;
 
   const AlertsPanelStatusMessage(
       {required this.component, required this.status, required this.data});
@@ -22,7 +22,7 @@ class AlertsPanelStatusMessage {
 }
 
 class AlertsPanel extends StatefulWidget {
-  final List<(String, Future, bool isRefreshing)> loadingFutures;
+  final List<(String, Future, Map data)> loadingFutures;
 
   const AlertsPanel({Key? key, required this.loadingFutures}) : super(key: key);
 
@@ -49,7 +49,7 @@ class _AlertsPanelState extends State<AlertsPanel> {
       log.info("Scheduling success dismissal");
 
       var msg = AlertsPanelStatusMessage(
-          component: fut.$1, status: "done", data: null);
+          component: fut.$1, status: "done", data: fut.$3);
 
       fut.$2.then((_) {
         return Future.delayed(const Duration(seconds: 2)).then((_) {
@@ -71,33 +71,70 @@ class _AlertsPanelState extends State<AlertsPanel> {
     scheduleMessageDismissals();
   }
 
-  final Map<String, (Widget, Widget, Widget?) Function(BuildContext, AlertsPanelStatusMessage)>
-      makeStatusCardContent = {
+  static Widget getErrorTitle(AlertsPanelStatusMessage msg) {
+    Function(AlertsPanelStatusMessage)? handler = msg.data["err_msg"];
+    if (handler != null) {
+      return handler(msg);
+    }
+
+    return Builder(
+        builder: (context) =>
+            Text(AppLocalizations.of(context)!.couldNotLoad(msg.component)));
+  }
+
+  static Widget getLoadingTitle(AlertsPanelStatusMessage msg) {
+    Function(AlertsPanelStatusMessage)? handler = msg.data["loading_msg"];
+    if (handler != null) {
+      return handler(msg);
+    }
+
+    return Builder(
+        builder: (context) => msg.data["isRefreshing"] == true
+            ? Text(AppLocalizations.of(context)!
+                .refreshingComponent(msg.component))
+            // Text("Refreshing ${msg.component}...")
+            : Text(
+                AppLocalizations.of(context)!.loadingComponent(msg.component)));
+  }
+
+  static Widget getDoneTitle(AlertsPanelStatusMessage msg) {
+    Function(AlertsPanelStatusMessage)? handler = msg.data["done_msg"];
+    if (handler != null) {
+      return handler(msg);
+    }
+
+    return Builder(
+        builder: (context) =>
+            Text("Loaded ${msg.component}"));
+  }
+
+  final Map<
+      String,
+      (Widget, Widget, Widget?) Function(
+          BuildContext, AlertsPanelStatusMessage)> makeStatusCardContent = {
     "error": (context, msg) => (
           const Icon(Icons.error, color: Colors.red),
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
+          Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
             // Text("Could not load ${msg.component}:"),
-            Text(AppLocalizations.of(context)!.couldNotLoad(msg.component))
+            // Text(AppLocalizations.of(context)!.couldNotLoad(msg.component))
+            getErrorTitle(msg)
             // const SizedBox(width: 8),
             // Padding(padding: const EdgeInsets.all(8), child: formatError(msg.data))
           ]),
-          Padding(padding: const EdgeInsets.all(8), child: formatError(msg.data))
+          Padding(
+              padding: const EdgeInsets.all(8),
+              child: formatError(msg.data["error"]))
         ),
     "loading": (context, msg) => (
           const SizedBox(
               width: 16, height: 16, child: CircularProgressIndicator()),
-          (msg.data as Map)["isRefreshing"] == true
-              ? Text(AppLocalizations.of(context)!.refreshingComponent(msg.component))
-              // Text("Refreshing ${msg.component}...")
-              : Text(AppLocalizations.of(context)!.loadingComponent(msg.component)),
-              // Text("Loading ${msg.component}..."),
+          getLoadingTitle(msg),
+          // Text("Loading ${msg.component}..."),
           null
         ),
     "done": (context, msg) => (
           const Icon(Icons.done, color: Colors.green),
-          Text("Loaded ${msg.component}"),
+          getDoneTitle(msg),
           null
         ),
   };
@@ -114,31 +151,41 @@ class _AlertsPanelState extends State<AlertsPanel> {
     // Widget title;
     final (icon, title, subtitle) = makeFunc(context, msg);
 
-    return Card(child: ListTile(leading: icon, title: title, subtitle: subtitle,));
+    return Card(
+        child: ListTile(
+      leading: icon,
+      title: title,
+      subtitle: subtitle,
+    ));
   }
 
   AlertsPanelStatusMessage getStatusMessageForSnapshot(
-      (String, AsyncSnapshot, bool isRefreshing) snapshot) {
+      (String, AsyncSnapshot, Map) snapshot) {
     if (snapshot.$2.hasError) {
       return AlertsPanelStatusMessage(
-          component: snapshot.$1, status: "error", data: snapshot.$2.error);
+          component: snapshot.$1, status: "error", data: {
+            ...snapshot.$3,
+            "error": snapshot.$2.error,
+           });
     }
     if (snapshot.$2.connectionState == ConnectionState.waiting) {
       return AlertsPanelStatusMessage(
           component: snapshot.$1,
           status: "loading",
-          data: {"isRefreshing": snapshot.$3});
+          // data: {"isRefreshing": snapshot.$3}
+          data: snapshot.$3
+          );
     }
     if (snapshot.$2.connectionState == ConnectionState.done) {
       return AlertsPanelStatusMessage(
-          component: snapshot.$1, status: "done", data: null);
+          component: snapshot.$1, status: "done", data: snapshot.$3);
     }
     return AlertsPanelStatusMessage(
-        component: snapshot.$1, status: "unknown", data: null);
+        component: snapshot.$1, status: "unknown", data: snapshot.$3);
   }
 
   Iterable<Widget> getBuildAlerts(BuildContext context,
-      List<(String, AsyncSnapshot, bool isRefreshing)> snapshots) sync* {
+      List<(String, AsyncSnapshot, Map data)> snapshots) sync* {
     var msgs = snapshots.map(getStatusMessageForSnapshot).toList();
 
     msgs =
@@ -185,7 +232,7 @@ class _AlertsPanelState extends State<AlertsPanel> {
     log.info("Building alerts panel");
 
     Widget Function(
-            BuildContext, List<(String, AsyncSnapshot, bool isRefreshing)>)
+            BuildContext, List<(String, AsyncSnapshot, Map)>)
         innerWidget = (context, snapshots) {
       List<Widget> alerts = getBuildAlerts(context, snapshots).toList();
       if (alerts.isEmpty) {
@@ -194,10 +241,9 @@ class _AlertsPanelState extends State<AlertsPanel> {
 
       return Padding(
           padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-          child: 
-          Container(constraints: const BoxConstraints(maxWidth: 600)
-          , child: Column(children: alerts))
-      );
+          child: Container(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(children: alerts)));
     };
 
     for (var a in widget.loadingFutures.reversed) {

@@ -133,7 +133,9 @@ class _EventTileState extends State<EventTile> {
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.all(10),
                       margin: const EdgeInsets.all(5),
-                      child: Text(widget.event.eventName))),
+                      // child: Text(widget.event.eventName)
+                      child: Text(widget.event.getLocalEventName(context))
+                      )),
               if (placement?.isContinuation != true)
                 SignupIndicator(event: widget.event),
               if (widget.event.start.toIso8601String().substring(0, 10) ==

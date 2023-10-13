@@ -163,9 +163,9 @@ final GoRouter router = GoRouter(
                           // navigatorKey: _infoNavigatorKey,
                           routes: <RouteBase>[
                             GoRoute(
-                                path: '/info',
-                                // parentNavigatorKey: _infoNavigatorKey,
-                                builder: (context, state) => const InfoPage(),
+                              path: '/info',
+                              // parentNavigatorKey: _infoNavigatorKey,
+                              builder: (context, state) => const InfoPage(),
                             ),
                             GoRoute(
                               path: '/api-debug',
@@ -195,6 +195,68 @@ final GoRouter router = GoRouter(
                                       key: ValueKey("event/$eventId"));
                                 },
                                 routes: [
+                                  GoRoute(
+                                      path: 'edit',
+                                      name: "event_edit",
+                                      builder: (context, state) {
+                                        int? eventId;
+                                        // if (state.pathParameters
+                                        //     .containsKey('event_id')) {
+                                        //   eventId = int.tryParse(
+                                        //       state.pathParameters['event_id']!);
+                                        // }
+                                        String? eventIdStr =
+                                            state.pathParameters['event_id'];
+
+                                        if (eventIdStr != "new" &&
+                                            eventIdStr != null) {
+                                          eventId = int.tryParse(eventIdStr);
+                                        }
+
+                                        return EventEditPage(
+                                            eventId: eventId,
+                                            key: ValueKey(
+                                                "event/$eventId/edit"));
+                                      },
+                                      routes: [
+                                        GoRoute(
+                                          path: 'delete',
+                                          name: "event_delete_confirm",
+                                          pageBuilder: (BuildContext context,
+                                              GoRouterState state) {
+                                            return DialogPage(
+                                                // builder: (_) => AboutDialog()
+                                                builder: (_) => AlertDialog(
+                                                      title: const Text(
+                                                          'Event deletion'),
+                                                      content: const Text(
+                                                          'Are you sure you want to delete the event?'),
+                                                      actions: [
+                                                        TextButton(
+                                                            onPressed: () {
+                                                              // Navigator.pop(
+                                                              //         context);
+                                                              router.pop("delete_confirmed");
+                                                            },
+                                                            child: const Text(
+                                                                'Delete')),
+                                                        TextButton(
+                                                            onPressed: () {
+                                                              // Navigator.pop(
+                                                              //         context);
+                                                              router.pop();
+                                                            },
+                                                            child: const Text(
+                                                                'Cancel'))
+                                                      ],
+                                                    ));
+                                            // builder: (_) => ThumbnailImageDialog(
+                                            //     url: state.uri
+                                            //             .queryParameters["url"]
+                                            //         as String));
+                                          },
+                                        )
+                                      ]),
                                   GoRoute(
                                     path: 'image',
                                     name: "event_image_dialog",

@@ -8,7 +8,6 @@ class EventsPage extends StatefulWidget {
   @override
   State<EventsPage> createState() => _EventsPageState();
 
-
   static Widget buildItem(AnnotatedEvent event) {
     // if (event.placement == null) {
     //   return EventOngoing(
@@ -231,7 +230,6 @@ class _EventsPageState extends State<EventsPage> {
     }
   }
 
-
   // Iterable<Widget> buildEventsItem(Event basicEvent) {
   //   return getPlacedEvents(basicEvent).map((event) {
   //     if (event.placement == null) {
@@ -350,23 +348,21 @@ class _EventsPageState extends State<EventsPage> {
       return eventsItems.map(EventsPage.buildItem).toList();
     }
 
-    return groupBy(
-            eventsItems,
+    return groupBy(eventsItems,
             // (Event e) => formatWeekNumber(e.start).substring(0, 7)
             (AnnotatedEvent e) {
-                // formatWeekNumber(e.date ?? DateTime.now().add(const Duration(days: 7)))
-                var date = e.placement?.date;
-                if (date == null) {
-                  // return "${DateTime.now().add(const Duration(days: 30)).toIso8601String()
-                  //     .substring(0, 7)}+";
-                  return AppLocalizations.of(context)!.eventCategoryOngoing;
-                }
-                return date.toIso8601String().substring(0, 7);
-                  // (e.placement?.date ?? DateTime.now().add(const Duration(days: 30)))
-                  //     .toIso8601String()
-                  //     .substring(0, 7)
-              }
-            )
+      // formatWeekNumber(e.date ?? DateTime.now().add(const Duration(days: 7)))
+      var date = e.placement?.date;
+      if (date == null) {
+        // return "${DateTime.now().add(const Duration(days: 30)).toIso8601String()
+        //     .substring(0, 7)}+";
+        return AppLocalizations.of(context)!.eventCategoryOngoing;
+      }
+      return date.toIso8601String().substring(0, 7);
+      // (e.placement?.date ?? DateTime.now().add(const Duration(days: 30)))
+      //     .toIso8601String()
+      //     .substring(0, 7)
+    })
         .entries
         .sortedBy((element) => element.key)
         // .map((e) => Column(
@@ -464,25 +460,30 @@ class _EventsPageState extends State<EventsPage> {
               }
 
               return Expanded(
-                child: 
-                // RefreshIndicator(
-                //   onRefresh: () async {
-                //     eventsProvider.invalidate();
-                //     bookingsProvider.invalidate();
-                //     await Future.wait([eventsProvider.loading, bookingsProvider.loading]);
-                //   },
-                //   child:
-                ListView(
-                    reverse: true, children: buildEvents().reversed.toList()),
+                child:
+                    // RefreshIndicator(
+                    //   onRefresh: () async {
+                    //     eventsProvider.invalidate();
+                    //     bookingsProvider.invalidate();
+                    //     await Future.wait([eventsProvider.loading, bookingsProvider.loading]);
+                    //   },
+                    //   child:
+                    ListView(
+                        reverse: true,
+                        children: buildEvents().reversed.toList()),
               );
             },
           ),
           AlertsPanel(loadingFutures: [
-            ("events", eventsProvider.loading, eventsProvider.cached != null),
+            (
+              "events",
+              eventsProvider.loading,
+              {"isRefreshing": eventsProvider.cached != null}
+            ),
             (
               "bookings",
               bookingsProvider.loading,
-              bookingsProvider.cached != null
+              {"isRefreshing": bookingsProvider.cached != null}
             ),
           ])
         ]));

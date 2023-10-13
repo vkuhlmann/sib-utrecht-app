@@ -4,14 +4,30 @@ class Event {
   final Map<String, dynamic> data;
   final DateTime start;
   final DateTime? end;
+  final String? location;
 
   int get eventId => data["event_id"];
   String get eventName => data["name"];
+  String get eventNameNL => data["nameNL"] ?? data["name"];
   String get eventSlug => data["slug"];
+  
 
   Event({required this.data})
   : start = DateTime.parse('${data["start"]}Z').toLocal(),
-    end = data["end"] != null ? DateTime.parse('${data["end"]}Z').toLocal() : null;
+    end = data["end"] != null ? DateTime.parse('${data["end"]}Z').toLocal() : null,
+    location = data["location"];
+
+  String getLocalEventNameFromLoc(Locale loc) {
+    if (loc.languageCode == "nl") {
+      return eventNameNL;
+    }
+
+    return eventName;
+  }
+
+  String getLocalEventName(BuildContext context) {
+    return getLocalEventNameFromLoc(Localizations.localeOf(context));
+  }
 
   static Event fromJson(Map<String, dynamic> json) {
     var vals = json;
@@ -44,7 +60,7 @@ class Event {
     // }
 
     if (vals["start"] == null) {
-      throw Exception("Event start is null for ${vals["event_id"]}");
+      throw Exception("Event start is null for event ${vals["event_id"]}");
     }
 
     // log.finer("Event is $vals");
