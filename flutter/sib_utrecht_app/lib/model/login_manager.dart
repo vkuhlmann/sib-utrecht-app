@@ -193,7 +193,7 @@ class LoginManager extends ChangeNotifier {
         "https://sib-utrecht.nl/en/authorize-app",
         Uri.parse("https://sib-utrecht.nl/en/authorize-app")
         .replace(queryParameters: {
-          "redirect_url": authRedirectTarget,
+          "redirect_url": getAuthRedirectTarget(),
         })
       );
     }
