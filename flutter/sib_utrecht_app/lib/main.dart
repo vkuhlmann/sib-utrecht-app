@@ -83,7 +83,15 @@ const String wordpressUrl = "https://sib-utrecht.nl";
 const String defaultApiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
 const String authorizeAppUrl =
     "$wordpressUrl/wp-admin/authorize-application.php";
-const String authRedirectTarget = "https://sib-utrecht-editions.vincentk.nl/development/#/new-login";
+// String authRedirectTarget = {
+//   Uri.parse("https://sib-utrecht-editions.vincentk.nl/development"):
+//       Uri.parse("https://sib-utrecht-editions.vincentk.nl/development/#/new-login"),
+// }[Uri.base.replace(fragment: "")];
+// "https://sib-utrecht-editions.vincentk.nl/development/#/new-login";
+
+String getAuthRedirectTarget() {
+  return Uri.base.replace(fragment: "/new-login").toString();
+}
 
 final log = Logger("main.dart");
 late LoginManager loginManager;
