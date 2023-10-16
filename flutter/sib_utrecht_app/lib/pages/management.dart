@@ -19,6 +19,13 @@ class ManagementPage extends StatelessWidget {
             child: const ListTile(
             title: Text("Groups")),
             onTap: null)),
+        Card(
+          child: InkWell(
+            child: const ListTile(
+            title: Text("New event")),
+            onTap: () {
+              router.go("/event/new/edit");
+            })),
       ]
     ));
 

@@ -54,6 +54,7 @@ part 'pages/new_login2.dart';
 part 'pages/api_debug.dart';
 part 'pages/feed.dart';
 part 'pages/management.dart';
+part 'pages/edit_event.dart';
 
 part 'components/event_tile.dart';
 part 'components/event_group.dart';
@@ -82,6 +83,7 @@ const String wordpressUrl = "https://sib-utrecht.nl";
 const String defaultApiUrl = "$wordpressUrl/wp-json/sib-utrecht-wp-plugin/v1";
 const String authorizeAppUrl =
     "$wordpressUrl/wp-admin/authorize-application.php";
+const String authRedirectTarget = "https://sib-utrecht-editions.vincentk.nl/development/#/new-login";
 
 final log = Logger("main.dart");
 late LoginManager loginManager;

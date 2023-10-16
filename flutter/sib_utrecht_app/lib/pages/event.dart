@@ -25,54 +25,55 @@ class ThumbnailImageDialog extends StatelessWidget {
     //           child: Image.network(url),
     //         ));
 
-    return 
-    // Dialog(
-    //     alignment: AlignmentDirectional.center,
-    //     // insetPadding: const EdgeInsets.fromLTRB(
-    //     //     16, 70, 16, 16),
-    //     insetPadding: const EdgeInsets.all(0),
-    //     child:
-            //   Stack(alignment: AlignmentDirectional.center,
-            //   children: [
-            //  Container(
-            //     constraints: const BoxConstraints.expand(),
-            //     child: GestureDetector(
-            //     // padding: const EdgeInsets.fromLTRB(
-            //     //     16, 16, 16, 32),
-            //     // width: 200,
-            //     onTap: () => Navigator.pop(context)
-            //     )),
-            //   Center(child: InteractiveViewer(
-            //       clipBehavior: Clip.none,
-            //         child: GestureDetector(
-            //           child: Image.network(
-            //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
-            //     ))
-            //   ])
-            Center(
-                child: Builder(
-                    builder: (context) => InteractiveViewer(
-                      minScale: 0.1,
-                            // clipBehavior: Clip.none,
-                            child: Stack(
-                          alignment: AlignmentDirectional.center,
-                          children: [
-                            Container(
-                                constraints: const BoxConstraints.expand(),
-                                child: GestureDetector(
-                                    // padding: const EdgeInsets.fromLTRB(
-                                    //     16, 16, 16, 32),
-                                    // width: 200,
-                                    onTap: () => Navigator.pop(context))),
-                                    Container(
-                                constraints: const BoxConstraints.expand(),
-                                child: GestureDetector(
+    return
+        // Dialog(
+        //     alignment: AlignmentDirectional.center,
+        //     // insetPadding: const EdgeInsets.fromLTRB(
+        //     //     16, 70, 16, 16),
+        //     insetPadding: const EdgeInsets.all(0),
+        //     child:
+        //   Stack(alignment: AlignmentDirectional.center,
+        //   children: [
+        //  Container(
+        //     constraints: const BoxConstraints.expand(),
+        //     child: GestureDetector(
+        //     // padding: const EdgeInsets.fromLTRB(
+        //     //     16, 16, 16, 32),
+        //     // width: 200,
+        //     onTap: () => Navigator.pop(context)
+        //     )),
+        //   Center(child: InteractiveViewer(
+        //       clipBehavior: Clip.none,
+        //         child: GestureDetector(
+        //           child: Image.network(
+        //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
+        //     ))
+        //   ])
+        Center(
+            child: Builder(
+                builder: (context) => InteractiveViewer(
+                    minScale: 0.1,
+                    // clipBehavior: Clip.none,
+                    child: Stack(
+                      alignment: AlignmentDirectional.center,
+                      children: [
+                        Container(
+                            constraints: const BoxConstraints.expand(),
+                            child: GestureDetector(
+                                // padding: const EdgeInsets.fromLTRB(
+                                //     16, 16, 16, 32),
+                                // width: 200,
+                                onTap: () => Navigator.pop(context))),
+                        Container(
+                            constraints: const BoxConstraints.expand(),
+                            child: GestureDetector(
                                 onTap: () => Navigator.pop(context),
-                                child: 
-                                Padding(padding: const EdgeInsets.all(32),
-                                child: Image.network(url, fit: BoxFit.contain))))
-                          ],
-                        ))));
+                                child: Padding(
+                                    padding: const EdgeInsets.all(32),
+                                    child: Image.network(url,
+                                        fit: BoxFit.contain))))
+                      ],
+                    ))));
   }
 }
 
@@ -159,7 +160,7 @@ class _EventPageState extends State<EventPage> {
   }
 
   (String?, Map?) extractDescriptionAndThumbnail(Event event) {
-    String description = ((event.data["post_content"] ?? "") as String)
+    String description = ((event.data["post_content"] ?? event.data["description"] ?? "") as String)
         .replaceAll("\r\n\r\n", "<br/><br/>");
     Map? thumbnail = event.data["thumbnail"];
 
@@ -316,9 +317,13 @@ class _EventPageState extends State<EventPage> {
                                   // router.push("/#/event/96#");
 
                                   // router.push("/event/96/image", extra: {"url": thumbnail["url"]});
-                                  router.pushNamed("event_image_dialog", 
-                                  pathParameters: {"event_id": widget.eventId.toString()},
-                                  queryParameters: {"url": thumbnail["url"]});
+                                  router.pushNamed("event_image_dialog",
+                                      pathParameters: {
+                                        "event_id": widget.eventId.toString()
+                                      },
+                                      queryParameters: {
+                                        "url": thumbnail["url"]
+                                      });
                                   return;
 
                                   final CapturedThemes themes =
@@ -376,6 +381,24 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     log.fine("Building event page for event id ${widget.eventId}");
+    bool expectParticipants = false;
+
+    Event? event = _eventProvider.cached;
+
+    if (event != null) {
+      var signupType = event.signupType;
+
+      if (signupType == "api") {
+        expectParticipants = true;
+      }
+    }
+
+    var cachedParticipants = _participantsProvider.cached;
+
+    if (cachedParticipants != null && cachedParticipants.isNotEmpty) {
+      expectParticipants = true;
+    }
+
     return Column(children: [
       Expanded(
           child: SelectionArea(
@@ -411,9 +434,27 @@ class _EventPageState extends State<EventPage> {
                   return [];
                 }
                 var eventEnd = event.end;
+                var location = event.location;
 
                 return [
-                  Card(child: ListTile(title: Text(event.eventName))),
+                  Row(children: [
+                    // Expanded(
+                    //     child: Card(
+                    //         child: ListTile(title: Text(event.eventName)))),
+                    Expanded(
+                        child: Card(
+                            child: ListTile(title: Text(event.getLocalEventName(context))))),
+                    // SignupIndicator(event: event),
+                    IconButton(
+                        onPressed: () {
+                          router.goNamed("event_edit", pathParameters: {
+                            "event_id": widget.eventId.toString()
+                          });
+                        },
+                        icon: const Icon(Icons.edit))
+                  ]),
+                  if (location != null)
+                    Card(child: ListTile(title: Text("Location: $location"))),
                   // Card(child: ListTile(title: Text("your (student) room. \ud83e\ude84\ud83c\udfa8\r\n\r\nWe will"))),
                   Card(
                       child: ListTile(
@@ -488,11 +529,13 @@ class _EventPageState extends State<EventPage> {
                 ];
               }()),
               const SizedBox(height: 32),
+              if (expectParticipants)
               Card(
                   child: ListTile(
                       title: Text(
                           "${AppLocalizations.of(context)!.eventParticipants} (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
             ]))),
+        if (expectParticipants)
         SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             sliver: SliverList(
@@ -520,11 +563,16 @@ class _EventPageState extends State<EventPage> {
             ])))
       ]))),
       AlertsPanel(loadingFutures: [
-        ("details", _eventProvider.loading, _eventProvider.cached != null),
+        (
+          "details",
+          _eventProvider.loading,
+          {"isRefreshing": _eventProvider.cached != null}
+        ),
+        if (expectParticipants)
         (
           "participants",
           _participantsProvider.loading,
-          _participantsProvider.cached != null
+          {"isRefreshing": _participantsProvider.cached != null}
         )
       ])
     ]);

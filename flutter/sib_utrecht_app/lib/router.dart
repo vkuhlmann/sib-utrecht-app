@@ -18,6 +18,81 @@ final GoRouter router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: "/",
   routes: <RouteBase>[
+    // GoRoute(
+    //     path: '/aa',
+    //     builder: (context, state) => Center(
+    //             child: Column(children: [
+    //           Text("AA"),
+    //           BackButton(),
+    //           buildBackButton(),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("/aa"), child: Text("Go to AA")),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("/bb"), child: Text("Go to BB")),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("/cc"), child: Text("Go to CC")),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("/aa/test"),
+    //               child: Text("Go to AA test")),
+    //           ElevatedButton(
+    //               onPressed: () => router.go("test"),
+    //               child: Text("Go to AA test 2")),
+    //         ])),
+    //     routes: [
+    //       GoRoute(
+    //           path: 'test',
+    //           builder: (context, state) => Center(
+    //                   child: Column(children: [
+    //                 Text("AA test"),
+    //                 BackButton(),
+    //                 buildBackButton(),
+    //                 ElevatedButton(
+    //                     onPressed: () => router.go("/aa"),
+    //                     child: Text("Go to AA")),
+    //                 ElevatedButton(
+    //                     onPressed: () => router.go("/bb"),
+    //                     child: Text("Go to BB")),
+    //                 ElevatedButton(
+    //                     onPressed: () => router.go("/cc"),
+    //                     child: Text("Go to CC")),
+    //               ])))
+    //     ]),
+    // GoRoute(
+    //     path: '/bb',
+    //     builder: (context, state) => Center(
+    //           child: Column(children: [
+    //             Text("BB"),
+    //             BackButton(),
+    //             buildBackButton(),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("/aa"), child: Text("Go to AA")),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("/bb"), child: Text("Go to BB")),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("/cc"), child: Text("Go to CC")),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("/aa/test"),
+    //                 child: Text("Go to AA test")),
+    //             ElevatedButton(
+    //                 onPressed: () => router.go("test"),
+    //                 child: Text("Go to AA test 2")),
+    //           ]),
+    //         )),
+    // GoRoute(
+    //   path: '/cc',
+    //   builder: (context, state) => Center(
+    //       child: Column(children: [
+    //     Text("CC"),
+    //     BackButton(),
+    //     buildBackButton(),
+    //     ElevatedButton(
+    //         onPressed: () => router.go("/aa"), child: Text("Go to AA")),
+    //     ElevatedButton(
+    //         onPressed: () => router.go("/bb"), child: Text("Go to BB")),
+    //     ElevatedButton(
+    //         onPressed: () => router.go("/cc"), child: Text("Go to CC")),
+    //   ])),
+    // ),
     StatefulShellRoute.indexedStack(
         // builder: (context, state, navigationShell) => Padding(padding: const EdgeInsets.all(64), child: navigationShell),
         // builder: (context, state, navigationShell) =>
@@ -65,7 +140,7 @@ final GoRouter router = GoRouter(
                           loginController: loginManager,
                           navigationShell,
                           currentPage: state.matchedLocation,
-                          title: "SIB-Utrecht");
+                          title: "SIB-Utrecht (Bèta)");
                     },
                     branches: [
                       StatefulShellBranch(
@@ -88,16 +163,18 @@ final GoRouter router = GoRouter(
                           // navigatorKey: _infoNavigatorKey,
                           routes: <RouteBase>[
                             GoRoute(
-                                path: '/info',
-                                // parentNavigatorKey: _infoNavigatorKey,
-                                builder: (context, state) => const InfoPage()),
+                              path: '/info',
+                              // parentNavigatorKey: _infoNavigatorKey,
+                              builder: (context, state) => const InfoPage(),
+                            ),
                             GoRoute(
                               path: '/api-debug',
                               builder: (context, state) => const APIDebugPage(),
                             ),
                             GoRoute(
                               path: '/management',
-                              builder: (context, state) => const ManagementPage(),
+                              builder: (context, state) =>
+                                  const ManagementPage(),
                             ),
                           ]),
                       StatefulShellBranch(
@@ -119,14 +196,78 @@ final GoRouter router = GoRouter(
                                 },
                                 routes: [
                                   GoRoute(
+                                      path: 'edit',
+                                      name: "event_edit",
+                                      builder: (context, state) {
+                                        int? eventId;
+                                        // if (state.pathParameters
+                                        //     .containsKey('event_id')) {
+                                        //   eventId = int.tryParse(
+                                        //       state.pathParameters['event_id']!);
+                                        // }
+                                        String? eventIdStr =
+                                            state.pathParameters['event_id'];
+
+                                        if (eventIdStr != "new" &&
+                                            eventIdStr != null) {
+                                          eventId = int.tryParse(eventIdStr);
+                                        }
+
+                                        return EventEditPage(
+                                            eventId: eventId,
+                                            key: ValueKey(
+                                                "event/$eventId/edit"));
+                                      },
+                                      routes: [
+                                        GoRoute(
+                                          path: 'delete',
+                                          name: "event_delete_confirm",
+                                          pageBuilder: (BuildContext context,
+                                              GoRouterState state) {
+                                            return DialogPage(
+                                                // builder: (_) => AboutDialog()
+                                                builder: (_) => AlertDialog(
+                                                      title: const Text(
+                                                          'Event deletion'),
+                                                      content: const Text(
+                                                          'Are you sure you want to delete the event?'),
+                                                      actions: [
+                                                        TextButton(
+                                                            onPressed: () {
+                                                              // Navigator.pop(
+                                                              //         context);
+                                                              router.pop("delete_confirmed");
+                                                            },
+                                                            child: const Text(
+                                                                'Delete')),
+                                                        TextButton(
+                                                            onPressed: () {
+                                                              // Navigator.pop(
+                                                              //         context);
+                                                              router.pop();
+                                                            },
+                                                            child: const Text(
+                                                                'Cancel'))
+                                                      ],
+                                                    ));
+                                            // builder: (_) => ThumbnailImageDialog(
+                                            //     url: state.uri
+                                            //             .queryParameters["url"]
+                                            //         as String));
+                                          },
+                                        )
+                                      ]),
+                                  GoRoute(
                                     path: 'image',
                                     name: "event_image_dialog",
                                     pageBuilder: (BuildContext context,
                                         GoRouterState state) {
                                       return DialogPage(
                                           // builder: (_) => AboutDialog()
-                                          builder: (_) => ThumbnailImageDialog(url: state.uri.queryParameters["url"] as String)
-                                          );
+                                          builder: (_) => ThumbnailImageDialog(
+                                              url: state.uri
+                                                      .queryParameters["url"]
+                                                  as String));
                                     },
                                   )
                                 ])

@@ -36,7 +36,7 @@ class LoginManager extends ChangeNotifier {
       profiles = jsonDecode(profilesContent);
     }
 
-    log.info("Loaded profiles: ${jsonEncode(profiles)}");
+    // log.info("Loaded profiles: ${jsonEncode(profiles)}");
 
     if (!profiles.keys.contains(activeProfileName)) {
       activeProfileName = null;
@@ -192,6 +192,9 @@ class LoginManager extends ChangeNotifier {
       return (
         "https://sib-utrecht.nl/en/authorize-app",
         Uri.parse("https://sib-utrecht.nl/en/authorize-app")
+        .replace(queryParameters: {
+          "redirect_url": authRedirectTarget,
+        })
       );
     }
 

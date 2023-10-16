@@ -15,16 +15,7 @@ class _SignupIndicatorState extends State<SignupIndicator> {
       SizedBox(width: 40, height: 40, child: Center(child: buildInner(context)));
 
   Widget buildInner(BuildContext context) {
-    var signupType = widget.event.data["signup"]?["type"];
-    if (signupType == null && widget.event.data["signup"]?["url"] != null) {
-      signupType = "url";
-    }
-
-    if (widget.event.data["event_rsvp"] == 0) {
-      signupType = "none";
-    }
-
-    signupType = signupType ?? "api";
+    var signupType = widget.event.signupType;
 
     if (signupType == "none") {
       return const SizedBox();

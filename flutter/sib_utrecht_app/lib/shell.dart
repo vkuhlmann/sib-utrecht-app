@@ -23,6 +23,87 @@ class ScaffoldWithNavbar extends StatefulWidget {
   State<ScaffoldWithNavbar> createState() => _ScaffoldWithNavbarState();
 }
 
+String? getBackAddress(BuildContext context) {
+  GoRouterState routerState = GoRouterState.of(context);
+
+  // String matchedLocation = routerState.matchedLocation;
+
+  // String? path = routerState.path;
+  // log.info("[getBackAddress] path: $path");
+  // log.info("[getBackAddress] fullPath: ${routerState.fullPath}");
+  // log.info("[getBackAddress] matchedLocation: $matchedLocation");
+
+  String? backAddress = {
+    "/event/:event_id": "/",
+    "/management": "/info",
+    "/api-debug": "/management",
+    "/info": "/",
+    "/feed": "/",
+    "/": null
+  }[routerState.fullPath];
+
+  return backAddress;
+
+  // if (matchedLocation.startsWith("/event/")) {
+  //   return "/";
+  // }
+  // if (matchedLocation == "/management") {
+  //   return "/info";
+  // }
+
+  // return null;
+}
+
+Widget buildBackButton() => Builder(builder: (context) {
+      String? backAddress = getBackAddress(context);
+
+      bool isActive = backAddress != null ||
+          Navigator.of(context).canPop() ||
+          router.canPop();
+      // if (!isActive) {
+      //   return const SizedBox();
+      // }
+
+      return BackButton(
+        onPressed: () {
+          log.info("Back button pressed");
+          log.info("backAddress: $backAddress");
+          log.info("Navigator canPop: ${Navigator.of(context).canPop()}");
+          log.info("router canPop: ${router.canPop()}");
+          log.info("GoRouter canPop: ${GoRouter.of(context).canPop()}");
+
+          if (backAddress != null) {
+            router.go(backAddress);
+            return;
+          }
+
+          if (router.canPop()) {
+            router.pop();
+            return;
+          }
+
+          if (GoRouter.of(context).canPop()) {
+            GoRouter.of(context).pop();
+            return;
+          }
+
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+            return;
+          }
+        },
+        // onPressed: backAddress == null
+        //     ? (Navigator.of(context).canPop() ? )
+        //     : () {
+        //         // if () {
+        //         //   GoRouter.of(context).go("/");
+        //         //   return;
+        //         // }
+        //         router.go(backAddress);
+        //       },
+      );
+    });
+
 class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
   // _ScaffoldWithNavbarState({super.key});
 
@@ -239,14 +320,6 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
         });
   }
 
-  String? getBackAddress(BuildContext context) {
-    if (GoRouterState.of(context).matchedLocation.startsWith("/event/")) {
-      return "/";
-    }
-
-    return null;
-  }
-
   Widget buildWide() {
     return Builder(
         builder: (context) => Scaffold(
@@ -259,10 +332,11 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
             // backgroundColor: Colors.white,
             appBar: AppBar(
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                leading: buildBackButton(),
                 title: Row(
                   // crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    buildBackButton(),
+                    // buildBackButton(),
                     Image.asset(
                       'assets/sib_logo_64.png',
                       fit: BoxFit.contain,
@@ -271,69 +345,32 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     ),
                     const SizedBox(width: 16),
                     Text(widget.title),
-                    const Spacer(),
-                    buildLoginIcon(context)
+                    // const Spacer(),
                   ],
-                )),
+                ),
+                actions: [
+                    buildLoginIcon(context)
+                ]
+                ),
             body: SafeArea(
-                child: 
-                Container(
-                  color: Theme.of(context).colorScheme.background,
-                child: Row(children: [
-              NavigationRail(
-                selectedIndex: selectedIndex,
-                onDestinationSelected: _onDestinationSelected,
-                labelType: NavigationRailLabelType.all,
-                destinations: getDestinations(context)
-                    .map((e) => NavigationRailDestination(
-                        icon: e.icon,
-                        label: Text(e.label),
-                        selectedIcon: e.selectedIcon))
-                    .toList(),
-              ),
-              const VerticalDivider(thickness: 1, width: 1),
-              Expanded(child: widget.navigationShell)
-            ])))));
+                child: Container(
+                    color: Theme.of(context).colorScheme.background,
+                    child: Row(children: [
+                      NavigationRail(
+                        selectedIndex: selectedIndex,
+                        onDestinationSelected: _onDestinationSelected,
+                        labelType: NavigationRailLabelType.all,
+                        destinations: getDestinations(context)
+                            .map((e) => NavigationRailDestination(
+                                icon: e.icon,
+                                label: Text(e.label),
+                                selectedIcon: e.selectedIcon))
+                            .toList(),
+                      ),
+                      const VerticalDivider(thickness: 1, width: 1),
+                      Expanded(child: widget.navigationShell)
+                    ])))));
   }
-
-  Widget buildBackButton() => Builder(builder: (context) {
-        String? backAddress = getBackAddress(context);
-
-        bool isActive = backAddress != null ||
-            Navigator.of(context).canPop() ||
-            router.canPop();
-        if (!isActive) {
-          return const SizedBox();
-        }
-
-        return BackButton(
-          onPressed: () {
-            if (backAddress != null) {
-              router.go(backAddress);
-              return;
-            }
-
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-              return;
-            }
-
-            if (router.canPop()) {
-              router.pop();
-              return;
-            }
-          },
-          // onPressed: backAddress == null
-          //     ? (Navigator.of(context).canPop() ? )
-          //     : () {
-          //         // if () {
-          //         //   GoRouter.of(context).go("/");
-          //         //   return;
-          //         // }
-          //         router.go(backAddress);
-          //       },
-        );
-      });
 
   Widget buildMobile() {
     return Builder(
@@ -346,9 +383,13 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
             ),
             appBar: AppBar(
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                title: Row(
+                leading: buildBackButton(),
+                title:
+                // Text("AA"),
+                 Row(
                   children: <Widget>[
-                    buildBackButton(),
+                    // BackButton(),
+                    // buildBackButton(),
                     // BackButton(onPressed: () {
                     //   // Navigator.maybePop(context);
                     //   // context.pop();
@@ -370,15 +411,18 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     ),
                     const SizedBox(width: 16),
                     Text(widget.title),
-                    const Spacer(),
-                    buildLoginIcon(context)
+                    // const Spacer(),
+                    // buildLoginIcon(context)
                   ],
-                )),
-            body: SafeArea(child: 
-            Container(
-              color: Theme.of(context).colorScheme.background,
-              child:
-            widget.navigationShell))));
+                ),
+                actions: [
+                  buildLoginIcon(context)
+                ],
+                ),
+            body: SafeArea(
+                child: Container(
+                    color: Theme.of(context).colorScheme.background,
+                    child: widget.navigationShell))));
   }
 
   @override
@@ -562,7 +606,7 @@ class _MyAppState extends State<MyApp> {
         child: Builder(
             builder: (context) => MaterialApp.router(
                 routerConfig: router,
-                title: 'SIB-Utrecht',
+                title: 'SIB-Utrecht (Bèta)',
                 theme: lightTheme,
                 darkTheme: darkTheme,
                 localizationsDelegates: const [

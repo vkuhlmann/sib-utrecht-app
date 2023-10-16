@@ -1,7 +1,10 @@
 part of '../main.dart';
 
 class EventsGroup extends StatelessWidget {
+  final bool initiallyExpanded;
+
   const EventsGroup({Key? key, required this.children, required this.title,
+    required this.initiallyExpanded,
     // required this.start, required this.end
   })
       : super(key: key);
@@ -18,7 +21,45 @@ class EventsGroup extends StatelessWidget {
     
     // division.entries.sorted((a, b) => a.key.compareTo(b.key)).map((e) => )
 
+    String currentWeek = formatWeekNumber(DateTime.now());
+    String upcomingWeek = formatWeekNumber(DateTime.now().add(const Duration(days: 3)));
+
     for (var entry in division) {
+      String weekNumber = entry.key;
+
+      if (weekNumber == upcomingWeek) {
+        String text = (weekNumber == currentWeek) ? "This week" : "Upcoming week";
+        yield const SizedBox(height: 64);
+
+        // BEGIN Based on: https://stackoverflow.com/questions/54058228/horizontal-divider-with-text-in-the-middle-in-flutter
+        // answer by https://stackoverflow.com/users/10826159/jerome-escalante
+        yield Builder(builder: (context) =>
+        Row(
+            children: <Widget>[
+                Expanded(
+                    child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
+                ),
+                const SizedBox(width: 16,),
+                Text(text, style: Theme.of(context).textTheme.headlineSmall),
+                const SizedBox(width: 16,),
+                Expanded(
+                    child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
+                ),
+            ]
+        ));
+        // END Based on
+
+
+        // yield Divider(color: Colors.red[700], thickness: 3);
+        // if (weekNumber == currentWeek) {
+        //   yield Builder(builder: (context) => 
+        //   ListTile(title: Text("This week", style: Theme.of(context).textTheme.headlineSmall?.copyWith())));
+        //   yield const SizedBox(height: 16);  
+        // } else {
+        //   yield const ListTile(title: Text("Upcoming week"));
+        // }
+      }
+
       for (var v in entry.value.sortedBy((element) => element.placement?.date ?? element.start)) {
         // if (v.participation == null) {
         //   yield EventOngoing(event: v, );
@@ -30,7 +71,9 @@ class EventsGroup extends StatelessWidget {
       }
 
       if (entry.key != division.last.key) {
+        yield const SizedBox(height: 8);
         yield Divider(key: ValueKey(("divider", entry.key)));
+        yield const SizedBox(height: 8);
       }
     }
   }
@@ -54,7 +97,8 @@ class EventsGroup extends StatelessWidget {
 
     return ExpansionTile(
       key: ValueKey((key, title)),
-      initiallyExpanded: true,
+      // initiallyExpanded: true,
+      initiallyExpanded: initiallyExpanded,
       title: Text(title),
       // children: children
       children: [
