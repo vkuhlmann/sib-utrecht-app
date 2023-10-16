@@ -381,6 +381,24 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     log.fine("Building event page for event id ${widget.eventId}");
+    bool expectParticipants = false;
+
+    Event? event = _eventProvider.cached;
+
+    if (event != null) {
+      var signupType = event.signupType;
+
+      if (signupType == "api") {
+        expectParticipants = true;
+      }
+    }
+
+    var cachedParticipants = _participantsProvider.cached;
+
+    if (cachedParticipants != null && cachedParticipants.isNotEmpty) {
+      expectParticipants = true;
+    }
+
     return Column(children: [
       Expanded(
           child: SelectionArea(
@@ -426,6 +444,7 @@ class _EventPageState extends State<EventPage> {
                     Expanded(
                         child: Card(
                             child: ListTile(title: Text(event.getLocalEventName(context))))),
+                    // SignupIndicator(event: event),
                     IconButton(
                         onPressed: () {
                           router.goNamed("event_edit", pathParameters: {
@@ -510,11 +529,13 @@ class _EventPageState extends State<EventPage> {
                 ];
               }()),
               const SizedBox(height: 32),
+              if (expectParticipants)
               Card(
                   child: ListTile(
                       title: Text(
                           "${AppLocalizations.of(context)!.eventParticipants} (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
             ]))),
+        if (expectParticipants)
         SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             sliver: SliverList(
@@ -547,6 +568,7 @@ class _EventPageState extends State<EventPage> {
           _eventProvider.loading,
           {"isRefreshing": _eventProvider.cached != null}
         ),
+        if (expectParticipants)
         (
           "participants",
           _participantsProvider.loading,

@@ -10,8 +10,22 @@ class Event {
   String get eventName => data["name"];
   String get eventNameNL => data["nameNL"] ?? data["name"];
   String get eventSlug => data["slug"];
-  
 
+  String get signupType {
+    var signupType = data["signup"]?["type"];
+    if (signupType == null && data["signup"]?["url"] != null) {
+      signupType = "url";
+    }
+
+    if (data["event_rsvp"] == 0) {
+      signupType = "none";
+    }
+
+    signupType = signupType ?? "api";
+
+    return signupType;
+  }
+  
   Event({required this.data})
   : start = DateTime.parse('${data["start"]}Z').toLocal(),
     end = data["end"] != null ? DateTime.parse('${data["end"]}Z').toLocal() : null,

@@ -348,6 +348,26 @@ class _EventsPageState extends State<EventsPage> {
       return eventsItems.map(EventsPage.buildItem).toList();
     }
 
+    String keyToTitle(String key){
+      if (key == "ongoing") {
+        return AppLocalizations.of(context)!.eventCategoryOngoing;
+      }
+
+      DateTime d;
+      try{
+        d = DateFormat("y-M").parse(key);
+      } on FormatException catch (_) {
+        return key;
+      }
+
+      return DateFormat("yMMMM", Localizations.localeOf(context).toString()).format(d);
+
+      // if (key == AppLocalizations.of(context)!.eventCategoryOngoing) {
+      //   return AppLocalizations.of(context)!.eventCategoryOngoing;
+      // }
+      // return formatWeekNumber(DateTime.parse(key));
+    }
+
     return groupBy(eventsItems,
             // (Event e) => formatWeekNumber(e.start).substring(0, 7)
             (AnnotatedEvent e) {
@@ -356,7 +376,8 @@ class _EventsPageState extends State<EventsPage> {
       if (date == null) {
         // return "${DateTime.now().add(const Duration(days: 30)).toIso8601String()
         //     .substring(0, 7)}+";
-        return AppLocalizations.of(context)!.eventCategoryOngoing;
+        // return AppLocalizations.of(context)!.eventCategoryOngoing;
+        return "ongoing";
       }
       return date.toIso8601String().substring(0, 7);
       // (e.placement?.date ?? DateTime.now().add(const Duration(days: 30)))
@@ -379,7 +400,9 @@ class _EventsPageState extends State<EventsPage> {
         //     ))
         .map((e) => EventsGroup(
             key: ValueKey(("EventsGroup", e.key)),
-            title: e.key,
+            // title: e.key,
+            title: keyToTitle(e.key),
+            initiallyExpanded: e.key != "ongoing",
             // children: e.value.map<EventsItem>(buildEventsItem).toList(),
             children: e.value))
         .toList();

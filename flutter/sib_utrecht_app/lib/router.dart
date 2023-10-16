@@ -140,7 +140,7 @@ final GoRouter router = GoRouter(
                           loginController: loginManager,
                           navigationShell,
                           currentPage: state.matchedLocation,
-                          title: "SIB-Utrecht");
+                          title: "SIB-Utrecht (Bèta)");
                     },
                     branches: [
                       StatefulShellBranch(

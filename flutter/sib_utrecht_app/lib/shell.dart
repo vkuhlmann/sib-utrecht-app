@@ -332,10 +332,11 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
             // backgroundColor: Colors.white,
             appBar: AppBar(
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                leading: buildBackButton(),
                 title: Row(
                   // crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    buildBackButton(),
+                    // buildBackButton(),
                     Image.asset(
                       'assets/sib_logo_64.png',
                       fit: BoxFit.contain,
@@ -344,10 +345,13 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     ),
                     const SizedBox(width: 16),
                     Text(widget.title),
-                    const Spacer(),
-                    buildLoginIcon(context)
+                    // const Spacer(),
                   ],
-                )),
+                ),
+                actions: [
+                    buildLoginIcon(context)
+                ]
+                ),
             body: SafeArea(
                 child: Container(
                     color: Theme.of(context).colorScheme.background,
@@ -379,9 +383,13 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
             ),
             appBar: AppBar(
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                title: Row(
+                leading: buildBackButton(),
+                title:
+                // Text("AA"),
+                 Row(
                   children: <Widget>[
-                    buildBackButton(),
+                    // BackButton(),
+                    // buildBackButton(),
                     // BackButton(onPressed: () {
                     //   // Navigator.maybePop(context);
                     //   // context.pop();
@@ -403,10 +411,14 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                     ),
                     const SizedBox(width: 16),
                     Text(widget.title),
-                    const Spacer(),
-                    buildLoginIcon(context)
+                    // const Spacer(),
+                    // buildLoginIcon(context)
                   ],
-                )),
+                ),
+                actions: [
+                  buildLoginIcon(context)
+                ],
+                ),
             body: SafeArea(
                 child: Container(
                     color: Theme.of(context).colorScheme.background,
@@ -594,7 +606,7 @@ class _MyAppState extends State<MyApp> {
         child: Builder(
             builder: (context) => MaterialApp.router(
                 routerConfig: router,
-                title: 'SIB-Utrecht',
+                title: 'SIB-Utrecht (Bèta)',
                 theme: lightTheme,
                 darkTheme: darkTheme,
                 localizationsDelegates: const [

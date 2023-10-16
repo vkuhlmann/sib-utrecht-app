@@ -9,7 +9,7 @@ class WeekdayIndicator extends StatelessWidget {
 
   static final List<Color> weekDayColors = [
     Colors.pink, // Monday
-    Colors.blueAccent, // Tuesday
+    Colors.blue, // Tuesday
     Colors.pink, // Wednesday
     Colors.green, // Thursday
     Colors.pink, // Friday
@@ -24,28 +24,30 @@ class WeekdayIndicator extends StatelessWidget {
 
   (Color, Color?) getColor(BuildContext context) {
     var date = event.placement?.date;
-    Color color = date == null ? otherColor : WeekdayIndicator
-        .weekDayColors[date.weekday - 1];
+    HSLColor color = HSLColor.fromColor(date == null
+        ? otherColor
+        : WeekdayIndicator.weekDayColors[date.weekday - 1]);
+
+    color = color.withLightness(0.47);
 
     var placement = event.placement;
     if (placement != null && placement.isContinuation == true) {
       color =
-          HSLColor.fromColor(Colors.orangeAccent).withLightness(0.4).toColor();
+          HSLColor.fromColor(Colors.orangeAccent).withLightness(0.4);
     }
 
-    Color activeColor = HSLColor.fromColor(color).withLightness(0.7).toColor();
+    HSLColor activeColor = color.withLightness(0.7);
 
     if (Theme.of(context).brightness == Brightness.light) {
-      color = HSLColor.fromColor(color).withLightness(0.8).toColor();
-      activeColor =
-          HSLColor.fromColor(activeColor).withLightness(0.6).toColor();
+      color = color.withLightness(0.8);
+      activeColor = activeColor.withLightness(0.6);
     }
 
     // if (event.participation?.isActive == true) {
     //   return activeColor;
     // }
 
-    return (color, event.participation?.isActive == true ? activeColor : null);
+    return (color.toColor(), event.participation?.isActive == true ? activeColor.toColor() : null);
   }
 
   @override
