@@ -1,4 +1,11 @@
-part of '../main.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+
+import '../log.dart';
+import '../model/api_connector.dart';
+import '../model/api_access.dart';
+
 
 class APIDebugPage extends StatefulWidget {
   const APIDebugPage({Key? key}) : super(key: key);
@@ -95,18 +102,12 @@ class _APIDebugPageState extends State<APIDebugPage> {
                   value: method,
                 ),
                 const SizedBox(width: 16),
-                // TextField(
-                //   controller: _urlController,
-                //   decoration: const InputDecoration(
-                //       border: OutlineInputBorder(),
-                //       labelText: 'URL'),
-                //       expands: true, maxLines: null,)
                 Expanded(
                     child: TextField(
                   controller: _urlController,
                   decoration: const InputDecoration(
                       border: OutlineInputBorder(), labelText: 'URL'),
-                  // minLines: 1, maxLines: 1,
+                  // expands: true, maxLines: null,
                   onSubmitted: (value) {
                     submit();
                   },
@@ -155,8 +156,6 @@ class _APIDebugPageState extends State<APIDebugPage> {
                   }
 
                   if (snapshot.hasData) {
-                    // return Expanded(
-                    //     child: SelectableText(snapshot.data.toString()));
                       return SelectableText(snapshot.data.toString());
                   }
 
@@ -164,43 +163,6 @@ class _APIDebugPageState extends State<APIDebugPage> {
                 },
               ),
               const SizedBox(height: 16)
-              // Expanded(child: Text(),)
-              //
             ]));
-    //  FutureBuilder<APIResponse>(
-    //   future: connector,
-    //   builder: (context, snapshot) {
-    //     if (snapshot.hasData) {
-    //       return ListView(
-    //         children: [
-    //           ListTile(
-    //             title: const Text("Response"),
-    //             subtitle: Text(snapshot.data!.body),
-    //           ),
-    //           ListTile(
-    //             title: const Text("Status"),
-    //             subtitle: Text(snapshot.data!.status.toString()),
-    //           ),
-    //           ListTile(
-    //             title: const Text("Headers"),
-    //             subtitle: Text(snapshot.data!.headers.toString()),
-    //           ),
-    //         ],
-    //       );
-    //     } else if (snapshot.hasError) {
-    //       return ListView(
-    //         children: [
-    //           ListTile(
-    //             title: const Text("Error"),
-    //             subtitle: Text(snapshot.error.toString()),
-    //           ),
-    //         ],
-    //       );
-    //     } else {
-    //       return const Center(child: CircularProgressIndicator());
-    //     }
-    //   },
-    // ),
-    // );
   }
 }

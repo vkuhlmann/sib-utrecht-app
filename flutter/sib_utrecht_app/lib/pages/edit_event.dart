@@ -1,4 +1,16 @@
-part of '../main.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../utils.dart';
+import '../globals.dart';
+import '../model/api_connector.dart';
+import '../model/event.dart';
+import '../model/api_access.dart';
+import '../view_model/async_patch.dart';
+import '../components/alerts_panel.dart';
 
 class EventEditPage extends StatefulWidget {
   final int? eventId;

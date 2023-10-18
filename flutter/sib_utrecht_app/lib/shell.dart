@@ -1,4 +1,18 @@
-part of 'main.dart';
+
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'globals.dart';
+import 'model/login_manager.dart';
+import 'model/api_access.dart';
+
+import 'main.dart';
+
+import 'theme_fallback.dart'
+  if (dart.library.html) 'theme_web.dart';
+
 
 // Navigation bar code based on https://api.flutter.dev/flutter/material/NavigationBar-class.html
 
@@ -92,38 +106,16 @@ Widget buildBackButton() => Builder(builder: (context) {
             return;
           }
         },
-        // onPressed: backAddress == null
-        //     ? (Navigator.of(context).canPop() ? )
-        //     : () {
-        //         // if () {
-        //         //   GoRouter.of(context).go("/");
-        //         //   return;
-        //         // }
-        //         router.go(backAddress);
-        //       },
       );
     });
 
 class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
-  // _ScaffoldWithNavbarState({super.key});
-
-  // int currentPageIndex = 0;
-  // late LoginManager loginManager;
-  // bool canPop = false;
 
   // List<Key> pageKeys = [
   //   const PageStorageKey('ActivitiesPage'),
   //   const PageStorageKey('InfoPage'),
   //   const PageStorageKey('DebugPage'),
   // ];
-
-  // final Map<int, Widget> pages = [
-  //   // const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
-  //   const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
-  //   const Placeholder(),
-  //   const InfoPage(key: PageStorageKey('InfoPage')),
-  //   // const DebugPage(key: PageStorageKey('DebugPage')),
-  // ].asMap();
 
   late Future<LoginState> loginState;
   late void Function() listenerFunc;

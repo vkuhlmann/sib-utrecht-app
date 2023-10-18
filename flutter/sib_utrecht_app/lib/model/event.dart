@@ -1,4 +1,4 @@
-part of '../../main.dart';
+import 'package:flutter/material.dart';
 
 class Event {
   final Map<String, dynamic> data;
@@ -52,16 +52,11 @@ class Event {
     vals["publish_date"] = vals["publish_date"] ?? vals["post_date_gmt"];
     vals["modified"] = vals["modified"] ?? vals["post_modified_gmt"];
 
-    // if (vals["details"] is String) {
-    //   vals["details"] = jsonDecode(vals["details"]);
-    // }
-
     if (vals["details"] != null) {
       for (var entry in (vals["details"] as Map).entries) {
         if ((vals[entry.key] ?? entry.value) != entry.value) {
           throw Exception("Event details mismatch");
         }
-        // vals[entry.key] = entry.value;
       }
 
       vals.addAll(
@@ -69,15 +64,9 @@ class Event {
         => MapEntry(key as String, value))
       );
     }
-    // if (vals["event_id"] is String) {
-    //   vals["event_id"] = int.parse(vals["event_id"]);
-    // }
-
     if (vals["start"] == null) {
       throw Exception("Event start is null for event ${vals["event_id"]}");
     }
-
-    // log.finer("Event is $vals");
 
     return Event(data: json);
   }

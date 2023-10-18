@@ -1,4 +1,18 @@
-part of '../main.dart';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import 'package:flutter/services.dart';
+
+import '../utils.dart';
+import '../globals.dart';
+import '../constants.dart';
+import '../model/api_access.dart';
+import '../view_model/async_patch.dart';
+
+import '../shell.dart';
+import '../main.dart';
 
 class NewLoginPage extends StatefulWidget {
   final Map<String, dynamic> params;
@@ -26,8 +40,6 @@ class _NewLoginPageState extends State<NewLoginPage> {
       RegExp("^([a-zA-Z0-9]{4} ){5}[a-zA-Z0-9]{4}\$");
 
   final TextEditingController _apiUrlController = TextEditingController();
-  // final TextEditingController _authorizationUrlController =
-  //     TextEditingController();
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _applicationPasswordController =
@@ -113,7 +125,8 @@ class _NewLoginPageState extends State<NewLoginPage> {
               Container(
                   margin: const EdgeInsets.all(8),
                   child: Column(children: [
-                    if (advancedMode || _apiUrlController.text != defaultApiUrl) ...[
+                    if (advancedMode ||
+                        _apiUrlController.text != defaultApiUrl) ...[
                       TextField(
                           controller: _apiUrlController,
                           decoration: const InputDecoration(
@@ -320,7 +333,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
                 throw Exception("Login attempt has been cancelled");
               }
 
-              Future<LoginState> stFut = loginManager._completeLogin(
+              Future<LoginState> stFut = loginManager.completeLogin(
                   user: username,
                   apiSecret: applicationPassword,
                   apiAddress: apiUrl);
@@ -440,44 +453,47 @@ class _NewLoginPageState extends State<NewLoginPage> {
                   ),
                   const SizedBox(height: 16),
                   Wrap(children: [
-                  TextField(
-                    controller: _applicationPasswordController,
-                    style: const TextStyle(fontFamily: 'RobotoMono'),
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Application password',
-                    ),
-                    keyboardType: TextInputType.visiblePassword,
-                    inputFormatters: getWordPressAppPasswordFormatter(),
-                    obscureText: _step2ObscurePassword,
-                    onChanged: (value) {
-                      cancelStep3();
-                      setState(() {
-                        step2Done = false;
-                        _step2IsPasswordComplete = false;
-                      });
-
-                      trySubmit();
-                    },
-                  ),
-                  IconButton(
-                      icon: const Icon(Icons.content_copy),
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(
-                            text: _applicationPasswordController.value.text));
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                            content: Text(
-                                "Application password copied to clipboard")));
-                      }),
-                  IconButton(
-                      icon: const Icon(Icons.content_paste),
-                      onPressed: attemptFillAppPasswordFromClipboard),
-                  IconButton(icon: _step2ObscurePassword ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
-                      onPressed: () {
+                    TextField(
+                      controller: _applicationPasswordController,
+                      style: const TextStyle(fontFamily: 'RobotoMono'),
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Application password',
+                      ),
+                      keyboardType: TextInputType.visiblePassword,
+                      inputFormatters: getWordPressAppPasswordFormatter(),
+                      obscureText: _step2ObscurePassword,
+                      onChanged: (value) {
+                        cancelStep3();
                         setState(() {
-                          _step2ObscurePassword = !_step2ObscurePassword;
+                          step2Done = false;
+                          _step2IsPasswordComplete = false;
                         });
-                      })
+
+                        trySubmit();
+                      },
+                    ),
+                    IconButton(
+                        icon: const Icon(Icons.content_copy),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(
+                              text: _applicationPasswordController.value.text));
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              content: Text(
+                                  "Application password copied to clipboard")));
+                        }),
+                    IconButton(
+                        icon: const Icon(Icons.content_paste),
+                        onPressed: attemptFillAppPasswordFromClipboard),
+                    IconButton(
+                        icon: _step2ObscurePassword
+                            ? const Icon(Icons.visibility)
+                            : const Icon(Icons.visibility_off),
+                        onPressed: () {
+                          setState(() {
+                            _step2ObscurePassword = !_step2ObscurePassword;
+                          });
+                        })
                   ]),
                   const SizedBox(height: 10),
                   FilledButton(
@@ -614,78 +630,83 @@ class _NewLoginPageState extends State<NewLoginPage> {
                     child: const Text("Go to home screen")))
           ])));
 
-  Widget buildFocus() => Builder(
-      builder: (context) {
+  Widget buildFocus() => Builder(builder: (context) {
         bool isDutch = Localizations.localeOf(context).languageCode == "nl";
         bool isDark = Theme.of(context).brightness == Brightness.dark;
 
         return ListView(shrinkWrap: true, children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              // radius: 50,
-              backgroundColor: !isDutch ? Theme.of(context).colorScheme.primaryContainer
-              : Colors.transparent, //Theme.of(context).highlightColor,
-              //Theme.of(context).colorScheme.background,
-              // backgroundColor: !isDutch ? Colors.red : null,
-              child: IconButton(
-            onPressed: () {
-            MyApp.setDutch(context, !isDutch);
-          }, icon: const Icon(Icons.language)),
-            ),
-            const SizedBox(width: 10),
-            CircleAvatar(
-              // radius: 50,
-              // backgroundColor: isDark ? Theme.of(context).highlightColor : null,
-              backgroundColor: isDark ? Theme.of(context).colorScheme.primaryContainer
-              : Colors.transparent,
-              child: IconButton(
-            onPressed: () {
-            MyApp.setDark(context, !isDark);
-          }, icon: const Icon(Icons.dark_mode)),
-            ),
-          // BEGIN Source https://stackoverflow.com/questions/52777164/how-to-set-background-color-for-an-icon-button
-          // Answer by https://stackoverflow.com/users/7924072/viren-v-varasadiya
-          // Container(
-          //     color: Colors.green,
-          //     child: new IconButton(
-          //         icon: new Icon(Icons.search,color: Colors.white,),onPressed: null),
-          //   ),
-          // END Source
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                // radius: 50,
+                backgroundColor: !isDutch
+                    ? Theme.of(context).colorScheme.primaryContainer
+                    : Colors.transparent, //Theme.of(context).highlightColor,
+                //Theme.of(context).colorScheme.background,
+                // backgroundColor: !isDutch ? Colors.red : null,
+                child: IconButton(
+                    onPressed: () {
+                      MyApp.setDutch(context, !isDutch);
+                    },
+                    icon: const Icon(Icons.language)),
+              ),
+              const SizedBox(width: 10),
+              CircleAvatar(
+                // radius: 50,
+                // backgroundColor: isDark ? Theme.of(context).highlightColor : null,
+                backgroundColor: isDark
+                    ? Theme.of(context).colorScheme.primaryContainer
+                    : Colors.transparent,
+                child: IconButton(
+                    onPressed: () {
+                      MyApp.setDark(context, !isDark);
+                    },
+                    icon: const Icon(Icons.dark_mode)),
+              ),
+              // BEGIN Source https://stackoverflow.com/questions/52777164/how-to-set-background-color-for-an-icon-button
+              // Answer by https://stackoverflow.com/users/7924072/viren-v-varasadiya
+              // Container(
+              //     color: Colors.green,
+              //     child: new IconButton(
+              //         icon: new Icon(Icons.search,color: Colors.white,),onPressed: null),
+              //   ),
+              // END Source
 
-          // IconButton(
-          //   onPressed: () {
-          //   MyApp.setDutch(context, !isDutch);
-          // }, icon: const Icon(Icons.language)),
-        //   IconButton(onPressed: () {
-        //     MyApp.setDark(context, !isDark);
-        //   }, icon: const Icon(Icons.dark_mode))
-          ],),
-        const SizedBox(height: 8),
-        // Row(
-        //   children: [
-        //   Text(AppLocalizations.of(context)!.darkTheme),
-        //   Switch(value: , onChanged: (val) {
-        //     MyApp.setDark(context, val);
-        //   }),
-        // ]),
-        // const SizedBox(height: 15),
-        // Row(children: [
-        //   const Text("Dutch"),
-        //   Switch(value: , onChanged: (val) {
-        //     MyApp.setDutch(context, val);
-        //   }),
-        // ]),
-            buildSteps(context),
-            if (completed) buildCompletedPrompt()
-          ]);          
+              // IconButton(
+              //   onPressed: () {
+              //   MyApp.setDutch(context, !isDutch);
+              // }, icon: const Icon(Icons.language)),
+              //   IconButton(onPressed: () {
+              //     MyApp.setDark(context, !isDark);
+              //   }, icon: const Icon(Icons.dark_mode))
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Row(
+          //   children: [
+          //   Text(AppLocalizations.of(context)!.darkTheme),
+          //   Switch(value: , onChanged: (val) {
+          //     MyApp.setDark(context, val);
+          //   }),
+          // ]),
+          // const SizedBox(height: 15),
+          // Row(children: [
+          //   const Text("Dutch"),
+          //   Switch(value: , onChanged: (val) {
+          //     MyApp.setDutch(context, val);
+          //   }),
+          // ]),
+          buildSteps(context),
+          if (completed) buildCompletedPrompt()
+        ]);
       });
 
   @override
   Widget build(BuildContext context) {
-    if (Preferences.of(context).debugMode || widget.params["debug"] == ""
-    || widget.params["debug"] == "true") {
+    if (Preferences.of(context).debugMode ||
+        widget.params["debug"] == "" ||
+        widget.params["debug"] == "true") {
       advancedMode = true;
     }
 

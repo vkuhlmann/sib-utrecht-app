@@ -4,7 +4,8 @@
 //
 // Modified by Vincent Kuhlmann
 
-part of '../main.dart';
+// part of '../main.dart';
+import 'package:flutter/material.dart';
 
 /// A widget that builds itself based on the latest snapshot of interaction with
 /// a [Future].

@@ -1,4 +1,5 @@
-part of '../main.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class LocaleDateFormat extends StatelessWidget {
   const LocaleDateFormat({Key? key, required this.date, this.format = "yMMMMEEEEd"})

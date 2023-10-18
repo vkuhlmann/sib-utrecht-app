@@ -1,6 +1,20 @@
-part of 'main.dart';
 
-// Go router code based on https://medium.com/@antonio.tioypedro1234/flutter-go-router-the-essential-guide-349ef39ec5b3
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import 'shell.dart';
+import 'globals.dart';
+import 'components/dialog_page.dart';
+import 'pages/events.dart';
+import 'pages/info.dart';
+import 'pages/event.dart';
+import 'pages/login.dart';
+import 'pages/new_login.dart';
+import 'pages/api_debug.dart';
+import 'pages/management.dart';
+import 'pages/edit_event.dart';
+
+/// Go router code based on https://medium.com/@antonio.tioypedro1234/flutter-go-router-the-essential-guide-349ef39ec5b3
 // and https://pub.dev/packages/go_router/example
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -9,8 +23,8 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 // final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
 // final GlobalKey<NavigatorState> _authScreensNav = GlobalKey<NavigatorState>();
-final GlobalKey<_EventsPageState> _eventsPageKey =
-    GlobalKey<_EventsPageState>();
+// final GlobalKey<_EventsPageState> _eventsPageKey =
+//     GlobalKey<_EventsPageState>();
 // final GlobalKey<NavigatorState> _infoNavigatorKey = GlobalKey<NavigatorState>();
 // final GlobalKey<NavigatorState> _mainScreensNav = GlobalKey<NavigatorState>();
 
@@ -125,11 +139,6 @@ final GoRouter router = GoRouter(
                   builder: (context, state) =>
                       NewLoginPage(params: state.uri.queryParameters),
                 ),
-                GoRoute(
-                  path: '/new-login2',
-                  builder: (context, state) =>
-                      NewLogin2Page(params: state.uri.queryParameters),
-                ),
               ]),
           StatefulShellBranch(
               // navigatorKey: _mainScreensNav,
@@ -150,7 +159,7 @@ final GoRouter router = GoRouter(
                             GoRoute(
                               path: '/',
                               builder: (context, state) =>
-                                  EventsPage(key: _eventsPageKey),
+                                  const EventsPage(),
                             ),
                           ]),
                       StatefulShellBranch(routes: <RouteBase>[

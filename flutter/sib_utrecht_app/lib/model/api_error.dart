@@ -1,4 +1,4 @@
-part of '../main.dart';
+import 'api_connector.dart';
 
 class APIError implements Exception {
   final String message;

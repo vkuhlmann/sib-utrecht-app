@@ -1,4 +1,7 @@
-part of '../main.dart';
+import 'package:flutter/material.dart';
+
+import '../view_model/annotated_event.dart';
+import '../view_model/locale_date_format.dart';
 
 class WeekdayIndicator extends StatelessWidget {
   final AnnotatedEvent event;

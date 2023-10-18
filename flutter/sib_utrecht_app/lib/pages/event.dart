@@ -1,4 +1,19 @@
-part of '../main.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../globals.dart';
+import '../constants.dart';
+import '../utils.dart';
+import '../model/event.dart';
+import '../model/api_connector.dart';
+import '../view_model/cached_provider.dart';
+import '../view_model/async_patch.dart';
+import '../view_model/locale_date_format.dart';
+import '../components/alerts_panel.dart';
+
+import '../model/api_access.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({Key? key, required this.eventId}) : super(key: key);

@@ -1,4 +1,11 @@
-part of '../main.dart';
+import 'package:flutter/material.dart';
+import 'package:html_unescape/html_unescape.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../utils.dart';
+import '../globals.dart';
+import '../model/api_access.dart';
+import '../components/cors_login.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key, required this.params}) : super(key: key);

@@ -1,4 +1,7 @@
-part of 'main.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'model/api_error.dart';
+import 'package:go_router/go_router.dart';
 
 String formatErrorMsg(String? error) {
   if (error == null) {
@@ -26,7 +29,7 @@ Widget formatError(Object? error) {
       Builder(builder: (context) =>
       FilledButton(
           onPressed: () {
-            router.go("/login?immediate=true");
+            GoRouter.of(context).go("/login?immediate=true");
           },
           child: Text(AppLocalizations.of(context)?.loginRequired ?? "Please log in")
           )
