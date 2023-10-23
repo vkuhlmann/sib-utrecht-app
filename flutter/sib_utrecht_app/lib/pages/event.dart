@@ -95,6 +95,7 @@ class _EventPageState extends State<EventPage> {
 
   late CachedProvider<Event, Map> _eventProvider;
   late CachedProvider<List<String>, Map> _participantsProvider;
+  final AlertsPanelController _alertsPanelController = AlertsPanelController();
 
   late void Function() listener;
   @override
@@ -173,7 +174,9 @@ class _EventPageState extends State<EventPage> {
   }
 
   (String?, Map?) extractDescriptionAndThumbnail(Event event) {
-    String description = ((event.data["post_content"] ?? event.data["description"] ?? "") as String)
+    String description = ((event.data["post_content"] ??
+            event.data["description"] ??
+            "") as String)
         .replaceAll("\r\n\r\n", "<br/><br/>");
     Map? thumbnail = event.data["thumbnail"];
 
@@ -447,7 +450,9 @@ class _EventPageState extends State<EventPage> {
                     //         child: ListTile(title: Text(event.eventName)))),
                     Expanded(
                         child: Card(
-                            child: ListTile(title: Text(event.getLocalEventName(Localizations.localeOf(context)))))),
+                            child: ListTile(
+                                title: Text(event.getLocalEventName(
+                                    Localizations.localeOf(context)))))),
                     // SignupIndicator(event: event),
                     IconButton(
                         onPressed: () {
@@ -470,10 +475,13 @@ class _EventPageState extends State<EventPage> {
                     Wrap(children: [
                       SizedBox(
                           width: 260,
-                          child: 
-                          Text(DateFormat.yMMMMEEEEd(Localizations.localeOf(context).toString()).format(event.start))),
+                          child: Text(DateFormat.yMMMMEEEEd(
+                                  Localizations.localeOf(context).toString())
+                              .format(event.start))),
                       // const SizedBox(width: 20),
-                      Text(DateFormat.Hm(Localizations.localeOf(context).toString()).format(event.start))
+                      Text(DateFormat.Hm(
+                              Localizations.localeOf(context).toString())
+                          .format(event.start))
                     ])
                   ]))),
                   if (eventEnd != null)
@@ -487,9 +495,13 @@ class _EventPageState extends State<EventPage> {
                       Wrap(children: [
                         SizedBox(
                             width: 260,
-                            child: Text(DateFormat.yMMMMEEEEd(Localizations.localeOf(context).toString()).format(eventEnd))),
-                      // const SizedBox(width: 20),
-                      Text(DateFormat.Hm(Localizations.localeOf(context).toString()).format(eventEnd))
+                            child: Text(DateFormat.yMMMMEEEEd(
+                                    Localizations.localeOf(context).toString())
+                                .format(eventEnd))),
+                        // const SizedBox(width: 20),
+                        Text(DateFormat.Hm(
+                                Localizations.localeOf(context).toString())
+                            .format(eventEnd))
                       ])
                     ]))),
                   // Table(columnWidths: const {
@@ -533,50 +545,51 @@ class _EventPageState extends State<EventPage> {
               }()),
               const SizedBox(height: 32),
               if (expectParticipants)
-              Card(
-                  child: ListTile(
-                      title: Text(
-                          "${AppLocalizations.of(context)!.eventParticipants} (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
+                Card(
+                    child: ListTile(
+                        title: Text(
+                            "${AppLocalizations.of(context)!.eventParticipants} (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
             ]))),
         if (expectParticipants)
-        SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            sliver: SliverList(
-                delegate: SliverChildListDelegate([
-              if (_participantsProvider.cached == null)
-                FutureBuilderPatched(
-                    future: _participantsProvider.loading,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Center(child: formatError(snapshot.error)));
-                      }
+          SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                if (_participantsProvider.cached == null)
+                  FutureBuilderPatched(
+                      future: _participantsProvider.loading,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Padding(
+                              padding: const EdgeInsets.all(16),
+                              child:
+                                  Center(child: formatError(snapshot.error)));
+                        }
 
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      return const SizedBox();
-                    }),
-              ...(_participantsProvider.cached ?? []).map<Widget>((e) =>
-                  Padding(
-                      padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
-                      child: Card(child: ListTile(title: Text(e))))),
-              const SizedBox(height: 32),
-            ])))
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        return const SizedBox();
+                      }),
+                ...(_participantsProvider.cached ?? []).map<Widget>((e) =>
+                    Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
+                        child: Card(child: ListTile(title: Text(e))))),
+                const SizedBox(height: 32),
+              ])))
       ]))),
-      AlertsPanel(loadingFutures: [
+      AlertsPanel(controller: _alertsPanelController, loadingFutures: [
         AlertsFutureStatus(
-          component: "details",
-          future: _eventProvider.loading,
-          data: {"isRefreshing": _eventProvider.cached != null}
-        ),
+            component: "details",
+            future: _eventProvider.loading,
+            data: {"isRefreshing": _eventProvider.cached != null}),
         if (expectParticipants)
-        AlertsFutureStatus(
-          component: "participants",
-          future: _participantsProvider.loading,
-          data: {"isRefreshing": _participantsProvider.cached != null}
-        )
+          AlertsFutureStatus(
+              component: "participants",
+              future: _participantsProvider.loading,
+              data: {"isRefreshing": _participantsProvider.cached != null})
       ])
     ]);
   }

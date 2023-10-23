@@ -19,13 +19,14 @@ class AlertsPanelStatusMessage {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is AlertsPanelStatusMessage &&
-          runtimeType == other.runtimeType &&
+          // runtimeType == other.runtimeType &&
           component == other.component &&
-          status == other.status &&
-          data == other.data;
+          status == other.status;
+          //  &&
+          // data == other.data;
 
   @override
-  int get hashCode => component.hashCode ^ status.hashCode ^ data.hashCode;
+  int get hashCode => component.hashCode ^ status.hashCode;// ^ data.hashCode;
 }
 
 class AlertsFutureStatus {
@@ -37,10 +38,16 @@ class AlertsFutureStatus {
       {required this.component, required this.future, required this.data});
 }
 
+class AlertsPanelController {
+  Set<AlertsPanelStatusMessage> dismissedMessages = {};
+}
+
 class AlertsPanel extends StatefulWidget {
   final List<AlertsFutureStatus> loadingFutures;
+  final AlertsPanelController controller;
 
-  const AlertsPanel({Key? key, required this.loadingFutures}) : super(key: key);
+  const AlertsPanel({Key? key, required this.loadingFutures,
+  required this.controller}) : super(key: key);
 
   @override
   State<AlertsPanel> createState() => _AlertsPanelState();
@@ -48,9 +55,7 @@ class AlertsPanel extends StatefulWidget {
 
 class _AlertsPanelState extends State<AlertsPanel> {
   final log = Logger("AlertsPanel");
-
-  Set<AlertsPanelStatusMessage> dismissedMessages = {};
-
+  
   @override
   void initState() {
     super.initState();
@@ -70,9 +75,9 @@ class _AlertsPanelState extends State<AlertsPanel> {
       fut.future.then((_) {
         return Future.delayed(const Duration(seconds: 2)).then((_) {
           log.info("Adding dismissed message");
-          setState(() => dismissedMessages.add(msg));
+          setState(() => widget.controller.dismissedMessages.add(msg));
 
-          log.info("Dismissed messages: $dismissedMessages");
+          log.info("Dismissed messages: ${widget.controller.dismissedMessages}");
         });
       });
     }
@@ -205,7 +210,7 @@ class _AlertsPanelState extends State<AlertsPanel> {
     var msgs = snapshots.map(getStatusMessageForSnapshot).toList();
 
     msgs =
-        msgs.where((element) => !dismissedMessages.contains(element)).toList();
+        msgs.where((element) => !widget.controller.dismissedMessages.contains(element)).toList();
 
     var errorMsgs = msgs
         .where((msg) => msg.status == "error")

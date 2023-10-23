@@ -11,6 +11,7 @@ import '../model/event.dart';
 import '../view_model/cached_provider.dart';
 import '../view_model/event_participation.dart';
 import '../view_model/event_placement.dart';
+import '../log.dart';
 
 import 'annotated_event.dart';
 
@@ -141,6 +142,7 @@ class EventsCalendarList with ChangeNotifier {
   }
 
   void _reprocessCached() {
+    log.fine("Reassembling data for events calendar list");
     if (_bookingsProvider.cachedId > _dirtyStateSequence) {
       _dirtyStateSequence = _bookingsProvider.cachedId;
       _dirtyBookState = {};
@@ -178,10 +180,6 @@ class EventsCalendarList with ChangeNotifier {
   }
 
   Future<void> _doLoad(Future<APIConnector> conn) async {
-    // _apiConnector = conn;
-    // APIConnector conn = await apiConnector;
-    // _apiConnector = Future.value(conn);
-
     await _eventsProvider.setConnector(conn);
     await _bookingsProvider.setConnector(conn);
 
@@ -189,27 +187,27 @@ class EventsCalendarList with ChangeNotifier {
       _eventsProvider.loading,
       _bookingsProvider.loading
     ]);
+  }
 
-    // var a = _eventsProvider.setConnector(conn).then(
-    //   (value) {
-    //     _eventsProvider.loading
-    //         .then((_) => Future.delayed(const Duration(seconds: 3)))
-    //         .then((_) {
-    //       setState(() {
-    //         forceShowEventsStatus = false;
-    //       });
-    //     });
-    //   },
-    // );
-    // var b = _bookingsProvider.setConnector(conn).then((value) {
-    //   bookingsProvider.loading
-    //       .then((_) => Future.delayed(const Duration(seconds: 3)))
-    //       .then((_) {
-    //     setState(() {
-    //       forceShowBookingsStatus = false;
-    //     });
-    //   });
-    // });
+  void refresh() {
+    // var conn = _apiConnector;
+    // if (conn != null) {
+    //   loading = _doLoad(conn);
+    // }
+
+    log.info("Refreshing calendar");
+    _eventsProvider.invalidate(doRefresh: true);
+    _bookingsProvider.invalidate(doRefresh: true);
+
+    loading = Future.wait([
+      _eventsProvider.loading,
+      _bookingsProvider.loading
+    ]);
+    loading = Future.delayed(const Duration(milliseconds: 1500)).then((value) {
+      throw Exception("Dit is een test");
+    });
+    log.fine("Events calendar loading is now $loading");
+    notifyListeners();
   }
 
   void loadEarlier() {}

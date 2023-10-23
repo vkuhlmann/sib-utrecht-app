@@ -5,6 +5,7 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/sib_appbar.dart';
 import 'package:sib_utrecht_app/view_model/events_calendar_list.dart';
 
 import '../globals.dart';
@@ -19,7 +20,7 @@ import '../view_model/event_placement.dart';
 import '../components/event_group.dart';
 import '../components/alerts_panel.dart';
 import '../components/event_tile.dart';
-
+import '../components/action_refresh.dart';
 
 // Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
 
@@ -43,6 +44,7 @@ class EventsPage extends StatefulWidget {
 
 class _EventsPageState extends State<EventsPage> {
   Future<APIConnector>? apiConnector;
+  final AlertsPanelController alertsPanelController = AlertsPanelController();
 
   // final CachedProvider<List<Event>, Map> eventsProvider = CachedProvider<
   //         List<Event>, Map>(
@@ -87,6 +89,13 @@ class _EventsPageState extends State<EventsPage> {
   void initState() {
     super.initState();
 
+    alertsPanelController.dismissedMessages.add(
+      const AlertsPanelStatusMessage(component: "calendar", status: "loading", data: {})
+    );
+    alertsPanelController.dismissedMessages.add(
+      const AlertsPanelStatusMessage(component: "calendar", status: "done", data: {})
+    );
+
     apiConnector = null;
     calendar = EventsCalendarList(setEventReg: _setEventRegistration);
     // calendar.addListener(() {
@@ -111,7 +120,6 @@ class _EventsPageState extends State<EventsPage> {
   void dispose() {
     // eventsProvider.removeListener(listener);
     // bookingsProvider.removeListener(listener);
-
 
     super.dispose();
   }
@@ -271,7 +279,6 @@ class _EventsPageState extends State<EventsPage> {
   //   });
   // }
 
-
   List<Widget> buildEvents(EventsCalendarList list, {group = true}) {
     // var events = eventsProvider.cached;
     // if (events == null) {
@@ -323,19 +330,20 @@ class _EventsPageState extends State<EventsPage> {
       return eventsItems.map(EventsPage.buildItem).toList();
     }
 
-    String keyToTitle(String key){
+    String keyToTitle(String key) {
       if (key == "ongoing") {
         return AppLocalizations.of(context)!.eventCategoryOngoing;
       }
 
       DateTime d;
-      try{
+      try {
         d = DateFormat("y-M").parse(key);
       } on FormatException catch (_) {
         return key;
       }
 
-      return DateFormat("yMMMM", Localizations.localeOf(context).toString()).format(d);
+      return DateFormat("yMMMM", Localizations.localeOf(context).toString())
+          .format(d);
 
       // if (key == AppLocalizations.of(context)!.eventCategoryOngoing) {
       //   return AppLocalizations.of(context)!.eventCategoryOngoing;
@@ -384,61 +392,62 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   Widget buildInProgress(
-    BuildContext context, AsyncSnapshot<void> calendarLoadSnapshot) =>
-  FutureBuilderPatched(
-                  future: apiConnector,
-                  builder: (context, snapshot) {
-                      var data = snapshot.data;
+          BuildContext context, AsyncSnapshot<void> calendarLoadSnapshot) =>
+      FutureBuilderPatched(
+          future: apiConnector,
+          builder: (context, snapshot) {
+            var data = snapshot.data;
 
-                      if (data != null && data.user == null) {
-                        return Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Column(children: [
-                              // IconButton(
-                              //   onPressed: () {
-                              //   router.go("/login?immediate=true");
-                              // }, icon: Icon(Icons.login, size: 64,
-                              // color: Theme.of(context).colorScheme.primary,),
-                              // // color: Theme.of(context).colorScheme.primaryContainer
-                              // ),
-                              FilledButton(
-                                  onPressed: () {
-                                    router.go("/login?immediate=true");
-                                  },
-                                  style: (Theme.of(context).filledButtonTheme
-                                  .style ?? FilledButton.styleFrom())
-                                  .copyWith(shape: MaterialStateProperty.all(
-                                      RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(4)))),
-                                  //  FilledButton.styleFrom(
-                                  //     primary: Theme.of(context)
-                                  //         .colorScheme
-                                  //         .primaryContainer),
-                                  child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Text("Log in",
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headlineMedium
-                                              ?.copyWith(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary,
-                                              ))))
-                            ]));
-                      }
+            if (data != null && data.user == null) {
+              return Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(children: [
+                    // IconButton(
+                    //   onPressed: () {
+                    //   router.go("/login?immediate=true");
+                    // }, icon: Icon(Icons.login, size: 64,
+                    // color: Theme.of(context).colorScheme.primary,),
+                    // // color: Theme.of(context).colorScheme.primaryContainer
+                    // ),
+                    FilledButton(
+                        onPressed: () {
+                          router.go("/login?immediate=true");
+                        },
+                        style: (Theme.of(context).filledButtonTheme.style ??
+                                FilledButton.styleFrom())
+                            .copyWith(
+                                shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(4)))),
+                        //  FilledButton.styleFrom(
+                        //     primary: Theme.of(context)
+                        //         .colorScheme
+                        //         .primaryContainer),
+                        child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text("Log in",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                    ))))
+                  ]));
+            }
 
-                      if (calendarLoadSnapshot.connectionState ==
-                              ConnectionState.waiting) {
-                        return const Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(child: CircularProgressIndicator()));
-                      }
+            if (calendarLoadSnapshot.connectionState ==
+                ConnectionState.waiting) {
+              return const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()));
+            }
 
-                      return const SizedBox();
-                      // return const Center(child: Text("No events"));
-                    }
-                  );
+            return const SizedBox();
+            // return const Center(child: Text("No events"));
+          });
 
   @override
   Widget build(BuildContext context) {
@@ -452,45 +461,64 @@ class _EventsPageState extends State<EventsPage> {
 
     log.fine("Doing events page build");
 
-    var loading = calendar.loading;
+    return ListenableBuilder(
+        listenable: calendar,
+        builder: (context, child) {
+          var loading = calendar.loading;
+          return WithSIBAppBar(
+              actions: [
+                ActionRefreshButton(
+                  refreshFuture: loading?.then((_) => DateTime.now()),
+                  triggerRefresh: () {
+                    calendar.refresh();
+                  },
+                )
+              ],
+              child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        //   if (eventsProvider.cached != null || eventsSnapshot.connectionState == ConnectionState.waiting)
+                        // Expanded(
+                        //     child: ListView(reverse: true, children: [
+                        FutureBuilderPatched(
+                          future: calendar.loading,
+                          builder: (calendarLoadContext, calendarLoadSnapshot) {
+                            if (calendar.events.isEmpty) {
+                              return buildInProgress(
+                                  calendarLoadContext, calendarLoadSnapshot);
+                            }
 
-    return
-    ListenableBuilder(listenable: calendar, builder: (context, child) =>
-     Padding(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          //   if (eventsProvider.cached != null || eventsSnapshot.connectionState == ConnectionState.waiting)
-          // Expanded(
-          //     child: ListView(reverse: true, children: [
-          FutureBuilderPatched(
-            future: calendar.loading,
-            builder: (calendarLoadContext, calendarLoadSnapshot) {
-
-              if (calendar.events.isEmpty) {
-                return buildInProgress(calendarLoadContext, calendarLoadSnapshot);
-              }
-
-              return Expanded(
-                child:
-                    // RefreshIndicator(
-                    //   onRefresh: () async {
-                    //     eventsProvider.invalidate();
-                    //     bookingsProvider.invalidate();
-                    //     await Future.wait([eventsProvider.loading, bookingsProvider.loading]);
-                    //   },
-                    //   child:
-                    ListView(
-                        reverse: true,
-                        children: buildEvents(calendar).reversed.toList()),
-              );
-            },
-          ),
-          AlertsPanel(loadingFutures: [
-            if (loading != null)
-            AlertsFutureStatus(component: "calendar", future: loading, data: {
-              "isRefreshing": calendar.events.isNotEmpty
-            })
-          ])
-        ])));
+                            return Expanded(
+                              child:
+                                  // RefreshIndicator(
+                                  //   onRefresh: () async {
+                                  //     eventsProvider.invalidate();
+                                  //     bookingsProvider.invalidate();
+                                  //     await Future.wait([eventsProvider.loading, bookingsProvider.loading]);
+                                  //   },
+                                  //   child:
+                                  ListView(
+                                      reverse: true,
+                                      children: buildEvents(calendar)
+                                          .reversed
+                                          .toList()),
+                            );
+                          },
+                        ),
+                        AlertsPanel(
+                            controller: alertsPanelController,
+                            loadingFutures: [
+                              if (loading != null)
+                                AlertsFutureStatus(
+                                    component: "calendar",
+                                    future: loading,
+                                    data: {
+                                      "isRefreshing": calendar.events.isNotEmpty
+                                    })
+                            ])
+                      ])));
+        });
   }
 }

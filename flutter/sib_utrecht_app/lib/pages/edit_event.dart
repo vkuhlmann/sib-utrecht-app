@@ -38,6 +38,8 @@ class _EventEditPageState extends State<EventEditPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _signupLinkController = TextEditingController();
 
+  final AlertsPanelController _alertsPanelController = AlertsPanelController();
+
   bool acceptBeta = true;
 
   // final TextEditingController _signupLinkController = TextEditingController();
@@ -524,7 +526,9 @@ class _EventEditPageState extends State<EventEditPage> {
               // }()),
             ]))),
       ]))),
-      AlertsPanel(loadingFutures: [
+      AlertsPanel(
+        controller: _alertsPanelController,
+        loadingFutures: [
         if (subm != null)
           AlertsFutureStatus(
             component: "submission",
