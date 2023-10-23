@@ -1,14 +1,14 @@
-import 'api_connector.dart';
 
+import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
 
 import '../log.dart';
 import '../constants.dart';
+import '../model/login_state.dart';
+import 'api_connector.dart';
 
-import 'api_access.dart';
 
 class LoginManager extends ChangeNotifier {
   late FlutterSecureStorage storage;

@@ -28,8 +28,17 @@ class AlertsPanelStatusMessage {
   int get hashCode => component.hashCode ^ status.hashCode ^ data.hashCode;
 }
 
+class AlertsFutureStatus {
+  final String component;
+  final Future future;
+  final Map data;  
+
+  const AlertsFutureStatus(
+      {required this.component, required this.future, required this.data});
+}
+
 class AlertsPanel extends StatefulWidget {
-  final List<(String, Future, Map data)> loadingFutures;
+  final List<AlertsFutureStatus> loadingFutures;
 
   const AlertsPanel({Key? key, required this.loadingFutures}) : super(key: key);
 
@@ -56,9 +65,9 @@ class _AlertsPanelState extends State<AlertsPanel> {
       log.info("Scheduling success dismissal");
 
       var msg = AlertsPanelStatusMessage(
-          component: fut.$1, status: "done", data: fut.$3);
+          component: fut.component, status: "done", data: fut.data);
 
-      fut.$2.then((_) {
+      fut.future.then((_) {
         return Future.delayed(const Duration(seconds: 2)).then((_) {
           log.info("Adding dismissed message");
           setState(() => dismissedMessages.add(msg));
@@ -256,9 +265,10 @@ class _AlertsPanelState extends State<AlertsPanel> {
     for (var a in widget.loadingFutures.reversed) {
       var capturedInnerWidg = innerWidget;
       innerWidget = (context, snapshots) => FutureBuilderPatched(
-          future: a.$2,
+          future: a.future,
           builder: (context, snapshot) =>
-              capturedInnerWidg(context, snapshots + [(a.$1, snapshot, a.$3)]));
+              capturedInnerWidg(context, snapshots +
+              [(a.component, snapshot, a.data)]));
     }
 
     return innerWidget(context, []);

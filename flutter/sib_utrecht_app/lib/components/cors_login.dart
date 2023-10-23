@@ -4,7 +4,7 @@ import 'dart:convert';
 
 import '../utils.dart';
 import '../globals.dart';
-import '../model/api_access.dart';
+import '../model/login_state.dart';
 
 import '../model/cors_fallback.dart'
   if (dart.library.html) '../model/cors_web.dart';

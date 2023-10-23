@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import '../utils.dart';
 import '../globals.dart';
 import '../constants.dart';
-import '../model/api_access.dart';
+import '../model/login_state.dart';
 import '../view_model/async_patch.dart';
 
 import '../shell.dart';

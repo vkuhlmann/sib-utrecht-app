@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../log.dart';
 import '../model/api_connector.dart';
-import '../model/api_access.dart';
+import '../components/api_access.dart';
 
 
 class APIDebugPage extends StatefulWidget {

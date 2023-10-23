@@ -163,7 +163,7 @@ class _EventTileState extends State<EventTile> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                        Text(widget.event.getLocalEventName(context)),
+                        Text(widget.event.getLocalEventName(Localizations.localeOf(context))),
                         if (infoLine.isNotEmpty)
                           Text(infoLine, style: const TextStyle(color: Colors.grey, fontSize: 12))
                         // Row(mainAxisSize: MainAxisSize.min, children: [

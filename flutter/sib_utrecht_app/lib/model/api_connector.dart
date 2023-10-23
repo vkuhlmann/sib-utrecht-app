@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-
-import 'api_error.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
+
+import 'api_error.dart';
 import '../log.dart';
 
 // For authorization:

@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../utils.dart';
 import '../globals.dart';
-import '../model/api_access.dart';
+import '../model/login_state.dart';
 import '../components/cors_login.dart';
 
 class LoginPage extends StatefulWidget {

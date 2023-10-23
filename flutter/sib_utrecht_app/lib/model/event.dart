@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class Event {
   final Map<String, dynamic> data;
@@ -31,7 +31,7 @@ class Event {
     end = data["end"] != null ? DateTime.parse('${data["end"]}Z').toLocal() : null,
     location = data["location"];
 
-  String getLocalEventNameFromLoc(Locale loc) {
+  String getLocalEventName(Locale loc) {
     if (loc.languageCode == "nl") {
       return eventNameNL;
     }
@@ -39,9 +39,9 @@ class Event {
     return eventName;
   }
 
-  String getLocalEventName(BuildContext context) {
-    return getLocalEventNameFromLoc(Localizations.localeOf(context));
-  }
+  // String getLocalEventName(BuildContext context) {
+  //   return getLocalEventNameFromLoc(Localizations.localeOf(context));
+  // }
 
   static Event fromJson(Map<String, dynamic> json) {
     var vals = json;

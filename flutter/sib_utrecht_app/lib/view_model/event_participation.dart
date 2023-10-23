@@ -31,7 +31,7 @@ class EventParticipation {
       isParticipating: isParticipating,
       setParticipating: setParticipating,
       isDirty: isDirty,
-      isActive: e.data["tickets"] != null && e.data["tickets"].length > 0,
+      isActive: e.data["tickets"] != null && e.data["tickets"].isNotEmpty,
     );
   }
 }

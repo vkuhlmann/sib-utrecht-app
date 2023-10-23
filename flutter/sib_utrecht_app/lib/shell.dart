@@ -6,7 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'globals.dart';
 import 'model/login_manager.dart';
-import 'model/api_access.dart';
+import 'model/login_state.dart';
+import 'components/api_access.dart';
 
 import 'main.dart';
 

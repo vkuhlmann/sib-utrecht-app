@@ -1,20 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'api_connector.dart';
-
-class LoginState {
-  final APIConnector connector;
-  final Map<String, Map<String, dynamic>> profiles;
-
-  final String? activeProfileName;
-  final Map<String, dynamic>? activeProfile;
-
-  const LoginState(
-      {required this.connector,
-      required this.profiles,
-      required this.activeProfileName,
-      required this.activeProfile});
-}
+import '../model/login_state.dart';
 
 class APIAccess extends InheritedWidget {
   const APIAccess({super.key, required super.child, required this.state});
