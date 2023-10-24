@@ -19,9 +19,20 @@ import '/shell.dart';
 class WithSIBAppBar extends StatelessWidget {
   final List<Widget> actions;
   final Widget child;
+  final bool showBackButton;
 
-  const WithSIBAppBar({Key? key, required this.actions, required this.child})
+  const WithSIBAppBar({Key? key, required this.actions, required this.child,
+    this.showBackButton = true})
       : super(key: key);
+
+  static bool isBackActionAvailable(BuildContext context) {
+    String? backAddress = getBackAddress(context);
+
+    bool isActive = backAddress != null ||
+        Navigator.of(context).canPop() ||
+        router.canPop();
+    return isActive;
+  }
 
   Widget buildLoginMenu(
       BuildContext context, AsyncSnapshot<LoginState> snapshot) {
@@ -121,7 +132,7 @@ class WithSIBAppBar extends StatelessWidget {
     ]);
   }
 
-  String? getBackAddress(BuildContext context) {
+  static String? getBackAddress(BuildContext context) {
     GoRouterState routerState = GoRouterState.of(context);
 
     // String matchedLocation = routerState.matchedLocation;
@@ -235,7 +246,7 @@ class WithSIBAppBar extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          leading: buildBackButton(),
+          leading: showBackButton ? buildBackButton() : null,
           title: Row(
             // crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[

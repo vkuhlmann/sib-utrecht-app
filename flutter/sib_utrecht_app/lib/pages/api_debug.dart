@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/sib_appbar.dart';
 
 import '../log.dart';
 import '../model/api_connector.dart';
 import '../components/api_access.dart';
+import '../components/sib_appbar.dart';
 
 
 class APIDebugPage extends StatefulWidget {
@@ -82,6 +84,7 @@ class _APIDebugPageState extends State<APIDebugPage> {
         //     title: const Text("API Debug"),
         //   ),
         //   body:
+        WithSIBAppBar(actions: const [], child: 
         Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
             child: ListView(children: [
@@ -163,6 +166,6 @@ class _APIDebugPageState extends State<APIDebugPage> {
                 },
               ),
               const SizedBox(height: 16)
-            ]));
+            ])));
   }
 }

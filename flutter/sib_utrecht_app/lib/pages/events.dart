@@ -466,6 +466,7 @@ class _EventsPageState extends State<EventsPage> {
         builder: (context, child) {
           var loading = calendar.loading;
           return WithSIBAppBar(
+              showBackButton: false,
               actions: [
                 ActionRefreshButton(
                   refreshFuture: loading?.then((_) => DateTime.now()),
@@ -486,8 +487,8 @@ class _EventsPageState extends State<EventsPage> {
                           future: calendar.loading,
                           builder: (calendarLoadContext, calendarLoadSnapshot) {
                             if (calendar.events.isEmpty) {
-                              return buildInProgress(
-                                  calendarLoadContext, calendarLoadSnapshot);
+                              return Center(child: buildInProgress(
+                                  calendarLoadContext, calendarLoadSnapshot));
                             }
 
                             return Expanded(

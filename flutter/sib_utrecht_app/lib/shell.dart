@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -335,12 +336,22 @@ class _MyAppState extends State<MyApp> {
           // secondaryContainer: sibColor,
           // tertiaryContainer: sibColor,
           inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
+          // surface: Colors.green,
+          // surface: Colors.black
+          // surfaceTint: Colors.greenAccent,
+          // surfaceVariant: Colors.lightGreen
           // tertiaryContainer: Colors.red
           // primary: Colors.grey[800],
           // inverseSurface: sibColor
-        ),
+        ).copyWith(),
         useMaterial3: true,
         brightness: Brightness.dark,
+        filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom()
+                            .copyWith(
+                                shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(6)))))
         // textTheme: ThemeData.dark().textTheme.copyWith(
         //   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
         //     fontFamily: "RobotoMono",
@@ -362,6 +373,16 @@ class _MyAppState extends State<MyApp> {
     });
 
     setMetaThemeColor(appbarColor);
+    // if (isDark != false) {
+    //   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    //     statusBarColor: appbarColor,
+    //     statusBarIconBrightness: Brightness.light,
+    //     statusBarBrightness: Brightness.dark,
+    //     systemNavigationBarColor: Colors.black,
+    //     systemNavigationBarDividerColor: Colors.black,
+    //     systemNavigationBarIconBrightness: Brightness.light,
+    //   ));
+    // }
   }
 
   @override

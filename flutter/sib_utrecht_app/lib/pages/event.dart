@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/sib_appbar.dart';
 
 import '../globals.dart';
 import '../constants.dart';
@@ -12,6 +13,7 @@ import '../view_model/cached_provider.dart';
 import '../view_model/async_patch.dart';
 import '../components/alerts_panel.dart';
 import '../components/api_access.dart';
+import '../components/action_refresh.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({Key? key, required this.eventId}) : super(key: key);
@@ -101,6 +103,19 @@ class _EventPageState extends State<EventPage> {
   @override
   void initState() {
     super.initState();
+
+    _alertsPanelController.dismissedMessages.add(
+      const AlertsPanelStatusMessage(component: "details", status: "loading", data: {})
+    );
+    _alertsPanelController.dismissedMessages.add(
+      const AlertsPanelStatusMessage(component: "details", status: "done", data: {})
+    );
+    _alertsPanelController.dismissedMessages.add(
+      const AlertsPanelStatusMessage(component: "participants", status: "loading", data: {})
+    );
+    _alertsPanelController.dismissedMessages.add(
+      const AlertsPanelStatusMessage(component: "participants", status: "done", data: {})
+    );
 
     _eventProvider = CachedProvider<Event, Map>(
         getCached: (c) => c.then((conn) =>
@@ -406,7 +421,21 @@ class _EventPageState extends State<EventPage> {
       expectParticipants = true;
     }
 
-    return Column(children: [
+    return
+    WithSIBAppBar(actions: [
+      ActionRefreshButton(
+                  refreshFuture: Future.wait([_eventProvider.loading, 
+                  if (expectParticipants)
+                  _participantsProvider.loading])
+                  .then((_) => DateTime.now()),
+                  triggerRefresh: () {
+                    // calendar.refresh();
+                    _eventProvider.invalidate();
+                    _participantsProvider.invalidate();
+                  },
+                )
+    ], child:
+     Column(children: [
       Expanded(
           child: SelectionArea(
               child: CustomScrollView(slivers: [
@@ -591,6 +620,6 @@ class _EventPageState extends State<EventPage> {
               future: _participantsProvider.loading,
               data: {"isRefreshing": _participantsProvider.cached != null})
       ])
-    ]);
+    ]));
   }
 }

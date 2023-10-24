@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/sib_appbar.dart';
 
 import '../globals.dart';
 
@@ -7,7 +8,8 @@ class ManagementPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return WithSIBAppBar(actions: const [], child:
+    Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(children: [
           Card(
@@ -27,6 +29,6 @@ class ManagementPage extends StatelessWidget {
                   onTap: () {
                     router.go("/event/new/edit");
                   })),
-        ]));
+        ])));
   }
 }

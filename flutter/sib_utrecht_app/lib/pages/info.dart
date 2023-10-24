@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../globals.dart';
+import '../components/sib_appbar.dart';
 
 class InfoPage extends StatefulWidget {
   const InfoPage({Key? key}) : super(key: key);
@@ -18,7 +19,8 @@ class _InfoPageState extends State<InfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return WithSIBAppBar(actions: const [], child:
+     Container(
         alignment: Alignment.topCenter,
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
         child: CustomScrollView(slivers: [
@@ -87,6 +89,6 @@ class _InfoPageState extends State<InfoPage> {
                                 title: Text(AppLocalizations.of(context)!
                                     .management)))),
                       ])))
-        ]));
+        ])));
   }
 }

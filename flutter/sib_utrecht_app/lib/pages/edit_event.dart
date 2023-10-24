@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/sib_appbar.dart';
 
 import '../utils.dart';
 import '../globals.dart';
@@ -432,7 +433,9 @@ class _EventEditPageState extends State<EventEditPage> {
     var subm = _submission;
     var deleteAction = _deletion;
 
-    return Column(children: [
+    return
+      WithSIBAppBar(actions: const [], child: 
+     Column(children: [
       Expanded(
           child: SelectionArea(
               child: CustomScrollView(slivers: [
@@ -556,6 +559,6 @@ class _EventEditPageState extends State<EventEditPage> {
         //   _participantsProvider.cached != null
         // )
       ])
-    ]);
+    ]));
   }
 }
