@@ -1,4 +1,4 @@
-part of '../../main.dart';
+import 'dart:ui';
 
 class Event {
   final Map<String, dynamic> data;
@@ -31,7 +31,7 @@ class Event {
     end = data["end"] != null ? DateTime.parse('${data["end"]}Z').toLocal() : null,
     location = data["location"];
 
-  String getLocalEventNameFromLoc(Locale loc) {
+  String getLocalEventName(Locale loc) {
     if (loc.languageCode == "nl") {
       return eventNameNL;
     }
@@ -39,9 +39,9 @@ class Event {
     return eventName;
   }
 
-  String getLocalEventName(BuildContext context) {
-    return getLocalEventNameFromLoc(Localizations.localeOf(context));
-  }
+  // String getLocalEventName(BuildContext context) {
+  //   return getLocalEventNameFromLoc(Localizations.localeOf(context));
+  // }
 
   static Event fromJson(Map<String, dynamic> json) {
     var vals = json;
@@ -52,16 +52,11 @@ class Event {
     vals["publish_date"] = vals["publish_date"] ?? vals["post_date_gmt"];
     vals["modified"] = vals["modified"] ?? vals["post_modified_gmt"];
 
-    // if (vals["details"] is String) {
-    //   vals["details"] = jsonDecode(vals["details"]);
-    // }
-
     if (vals["details"] != null) {
       for (var entry in (vals["details"] as Map).entries) {
         if ((vals[entry.key] ?? entry.value) != entry.value) {
           throw Exception("Event details mismatch");
         }
-        // vals[entry.key] = entry.value;
       }
 
       vals.addAll(
@@ -69,15 +64,9 @@ class Event {
         => MapEntry(key as String, value))
       );
     }
-    // if (vals["event_id"] is String) {
-    //   vals["event_id"] = int.parse(vals["event_id"]);
-    // }
-
     if (vals["start"] == null) {
       throw Exception("Event start is null for event ${vals["event_id"]}");
     }
-
-    // log.finer("Event is $vals");
 
     return Event(data: json);
   }

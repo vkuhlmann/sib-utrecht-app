@@ -1,4 +1,3 @@
-part of '../main.dart';
 
 class EventPlacement {
   final DateTime date;

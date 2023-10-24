@@ -1,18 +1,14 @@
-part of '../main.dart';
 
-class LoginState {
-  final APIConnector connector;
-  final Map<String, Map<String, dynamic>> profiles;
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
+import 'package:flutter/material.dart';
 
-  final String? activeProfileName;
-  final Map<String, dynamic>? activeProfile;
+import '../log.dart';
+import '../constants.dart';
+import '../model/login_state.dart';
+import 'api_connector.dart';
 
-  const LoginState(
-      {required this.connector,
-      required this.profiles,
-      required this.activeProfileName,
-      required this.activeProfile});
-}
 
 class LoginManager extends ChangeNotifier {
   late FlutterSecureStorage storage;
@@ -35,8 +31,6 @@ class LoginManager extends ChangeNotifier {
     if (profilesContent != null) {
       profiles = jsonDecode(profilesContent);
     }
-
-    // log.info("Loaded profiles: ${jsonEncode(profiles)}");
 
     if (!profiles.keys.contains(activeProfileName)) {
       activeProfileName = null;
@@ -121,15 +115,7 @@ class LoginManager extends ChangeNotifier {
     return b;
   }
 
-  // void scheduleLogin() {
-  //   setActiveProfile(null);
-  //   initiatedLogin = _initiateLogin();
-  //   initiatedLogin.catchError((e) {
-  //     log.warning("Error logging in: $e");
-  //   });
-  // }
-
-  Future<LoginState> _completeLogin({
+  Future<LoginState> completeLogin({
     required String user,
     required String apiSecret,
     required String apiAddress,
@@ -178,12 +164,11 @@ class LoginManager extends ChangeNotifier {
     return refreshLoginState();
   }
 
-  (String, Uri) getAuthorizationUrl({required bool withRedirect}) {
-    // return (
-    //   "https://sib-utrecht.nl/en/authorize-app",
-    //   Uri.parse("https://sib-utrecht.nl/en/authorize-app")
-    // );
+  String getAuthRedirectTarget() {
+    return Uri.base.replace(fragment: "/new-login").toString();
+  }
 
+  (String, Uri) getAuthorizationUrl({required bool withRedirect}) {
     if (!withRedirect || !canLoginByRedirect) {
       // return (
       //   "https://sib-utrecht.nl/app",
@@ -192,7 +177,7 @@ class LoginManager extends ChangeNotifier {
       return (
         "https://sib-utrecht.nl/en/authorize-app",
         Uri.parse("https://sib-utrecht.nl/en/authorize-app")
-        .replace(queryParameters: {
+            .replace(queryParameters: {
           "redirect_url": getAuthRedirectTarget(),
         })
       );
@@ -258,23 +243,4 @@ class LoginManager extends ChangeNotifier {
   Future<LoginState> logout() {
     return setActiveProfile(null);
   }
-}
-
-class APIAccess extends InheritedWidget {
-  const APIAccess({super.key, required super.child, required this.state});
-
-  final Future<LoginState> state;
-
-  static APIAccess? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<APIAccess>();
-  }
-
-  static APIAccess of(BuildContext context) {
-    final APIAccess? result = maybeOf(context);
-    assert(result != null, 'No APIAccess found in context');
-    return result!;
-  }
-
-  @override
-  bool updateShouldNotify(APIAccess oldWidget) => state != oldWidget.state;
 }

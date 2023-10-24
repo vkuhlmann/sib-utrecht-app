@@ -1,18 +1,33 @@
-part of 'main.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:sib_utrecht_app/components/sib_appbar.dart';
+
+import 'globals.dart';
+import 'model/login_manager.dart';
+import 'model/login_state.dart';
+import 'components/api_access.dart';
+import 'components/sib_appbar.dart';
+
+import 'main.dart';
+
+import 'theme_fallback.dart' if (dart.library.html) 'theme_web.dart';
 
 // Navigation bar code based on https://api.flutter.dev/flutter/material/NavigationBar-class.html
 
 class ScaffoldWithNavbar extends StatefulWidget {
   const ScaffoldWithNavbar(this.navigationShell,
       {Key? key,
-      required this.title,
+      // required this.title,
       required this.currentPage,
       required this.loginController})
       : super(key: key);
 
   /// The navigation shell and container for the branch Navigators.
   final StatefulNavigationShell navigationShell;
-  final String title;
+  // final String title;
   final String currentPage;
 
   final LoginManager loginController;
@@ -23,107 +38,12 @@ class ScaffoldWithNavbar extends StatefulWidget {
   State<ScaffoldWithNavbar> createState() => _ScaffoldWithNavbarState();
 }
 
-String? getBackAddress(BuildContext context) {
-  GoRouterState routerState = GoRouterState.of(context);
-
-  // String matchedLocation = routerState.matchedLocation;
-
-  // String? path = routerState.path;
-  // log.info("[getBackAddress] path: $path");
-  // log.info("[getBackAddress] fullPath: ${routerState.fullPath}");
-  // log.info("[getBackAddress] matchedLocation: $matchedLocation");
-
-  String? backAddress = {
-    "/event/:event_id": "/",
-    "/management": "/info",
-    "/api-debug": "/management",
-    "/info": "/",
-    "/feed": "/",
-    "/": null
-  }[routerState.fullPath];
-
-  return backAddress;
-
-  // if (matchedLocation.startsWith("/event/")) {
-  //   return "/";
-  // }
-  // if (matchedLocation == "/management") {
-  //   return "/info";
-  // }
-
-  // return null;
-}
-
-Widget buildBackButton() => Builder(builder: (context) {
-      String? backAddress = getBackAddress(context);
-
-      bool isActive = backAddress != null ||
-          Navigator.of(context).canPop() ||
-          router.canPop();
-      // if (!isActive) {
-      //   return const SizedBox();
-      // }
-
-      return BackButton(
-        onPressed: () {
-          log.info("Back button pressed");
-          log.info("backAddress: $backAddress");
-          log.info("Navigator canPop: ${Navigator.of(context).canPop()}");
-          log.info("router canPop: ${router.canPop()}");
-          log.info("GoRouter canPop: ${GoRouter.of(context).canPop()}");
-
-          if (backAddress != null) {
-            router.go(backAddress);
-            return;
-          }
-
-          if (router.canPop()) {
-            router.pop();
-            return;
-          }
-
-          if (GoRouter.of(context).canPop()) {
-            GoRouter.of(context).pop();
-            return;
-          }
-
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-            return;
-          }
-        },
-        // onPressed: backAddress == null
-        //     ? (Navigator.of(context).canPop() ? )
-        //     : () {
-        //         // if () {
-        //         //   GoRouter.of(context).go("/");
-        //         //   return;
-        //         // }
-        //         router.go(backAddress);
-        //       },
-      );
-    });
-
 class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
-  // _ScaffoldWithNavbarState({super.key});
-
-  // int currentPageIndex = 0;
-  // late LoginManager loginManager;
-  // bool canPop = false;
-
   // List<Key> pageKeys = [
   //   const PageStorageKey('ActivitiesPage'),
   //   const PageStorageKey('InfoPage'),
   //   const PageStorageKey('DebugPage'),
   // ];
-
-  // final Map<int, Widget> pages = [
-  //   // const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
-  //   const ActivitiesPage(key: PageStorageKey('ActivitiesPage')),
-  //   const Placeholder(),
-  //   const InfoPage(key: PageStorageKey('InfoPage')),
-  //   // const DebugPage(key: PageStorageKey('DebugPage')),
-  // ].asMap();
 
   late Future<LoginState> loginState;
   late void Function() listenerFunc;
@@ -185,141 +105,6 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
     // }
   }
 
-  Widget buildLoginMenu(
-      BuildContext context, AsyncSnapshot<LoginState> snapshot) {
-    return CustomScrollView(shrinkWrap: true, slivers: <Widget>[
-      SliverList(
-          delegate: SliverChildListDelegate(<Widget>[
-        Row(
-          children: [
-            if (snapshot.data?.activeProfileName != null)
-              Expanded(
-                  child: Row(children: [
-                Flexible(
-                    child: Text("Hoi ${snapshot.data?.activeProfile?['user']}",
-                        overflow: TextOverflow.ellipsis)),
-                const Text("!")
-              ]))
-            else
-              const Expanded(child: Text("Not logged in!")),
-            const SizedBox(
-              width: 16,
-            ),
-            // const CircleAvatar(backgroundColor: Colors.blue)
-            Icon(Icons.favorite,
-                color: Theme.of(context).colorScheme.primary, size: 40)
-          ],
-        ),
-        // const SizedBox(height: 15),
-        // const Text("test"),
-        const SizedBox(height: 15),
-        Row(children: [
-          Text(AppLocalizations.of(context)!.darkTheme),
-          const Spacer(),
-          Switch(
-              value: Theme.of(context).brightness == Brightness.dark,
-              onChanged: (val) {
-                MyApp.setDark(context, val);
-              }),
-        ]),
-        const SizedBox(height: 15),
-        Row(children: [
-          const Text("Dutch"),
-          const Spacer(),
-          Switch(
-              value: Localizations.localeOf(context).languageCode == "nl",
-              onChanged: (val) {
-                MyApp.setDutch(context, val);
-              }),
-        ]),
-        const SizedBox(height: 15),
-        Row(children: [
-          const Text("SIB color in app bar"),
-          const Spacer(),
-          Switch(
-              value: MyApp._getState(context)?.useSibColorInStatusBar == true,
-              onChanged: (val) {
-                MyApp.setUseSibColorInStatusBar(context, val);
-              }),
-        ]),
-        ...((snapshot.data?.activeProfileName != null)
-            ? ([
-                const SizedBox(height: 15),
-                TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      // setState(() {
-                      //   widget.loginController.logout().then((value) {
-                      //     router.go("/login?immediate=false");
-                      //   });
-                      // });
-                      router.go("/login");
-                    },
-                    // child: Text(AppLocalizations.of(context)!
-                    //     .actionLogout)
-                    // child: const Text("Switch account"),
-                    child: Text(
-                        AppLocalizations.of(context)!.gotoSwitchAccountPage)
-                    // const Text('Logout'),
-                    ),
-              ])
-            : ([])),
-        ...((snapshot.data?.activeProfileName == null)
-            ? ([
-                const SizedBox(height: 15),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    router.go("/login?immediate=true");
-                  },
-                  child: Text(AppLocalizations.of(context)!.actionLogIn),
-                ),
-              ])
-            : ([])),
-        ...((snapshot.hasError)
-            ? ([const SizedBox(height: 15), Text("Error: ${snapshot.error}")])
-            : ([])),
-      ]))
-    ]);
-  }
-
-  Widget buildLoginIcon(BuildContext context) {
-    return FutureBuilder(
-        future: loginState,
-        builder: (context, snapshot) {
-          Color backgroundColor = Colors.grey;
-          if (snapshot.hasData) {
-            backgroundColor = Colors.white;
-            if (snapshot.data?.activeProfileName != null) {
-              backgroundColor = Theme.of(context).colorScheme.primary;
-            }
-          }
-
-          if (snapshot.hasError) {
-            backgroundColor = Colors.red;
-          }
-
-          return IconButton(
-              // icon: CircleAvatar(backgroundColor: backgroundColor),
-              icon: Icon(Icons.favorite, color: backgroundColor, size: 40),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return Dialog(
-                          alignment: AlignmentDirectional.topEnd,
-                          insetPadding:
-                              const EdgeInsets.fromLTRB(16, 70, 16, 16),
-                          child: Container(
-                              padding:
-                                  const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                              width: 200,
-                              child: buildLoginMenu(context, snapshot)));
-                    });
-              });
-        });
-  }
-
   Widget buildWide() {
     return Builder(
         builder: (context) => Scaffold(
@@ -330,28 +115,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
             // ),
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             // backgroundColor: Colors.white,
-            appBar: AppBar(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                leading: buildBackButton(),
-                title: Row(
-                  // crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    // buildBackButton(),
-                    Image.asset(
-                      'assets/sib_logo_64.png',
-                      fit: BoxFit.contain,
-                      height: 40,
-                      filterQuality: FilterQuality.medium,
-                    ),
-                    const SizedBox(width: 16),
-                    Text(widget.title),
-                    // const Spacer(),
-                  ],
-                ),
-                actions: [
-                    buildLoginIcon(context)
-                ]
-                ),
+            // appBar: SIBAppBar(actions: []),
             body: SafeArea(
                 child: Container(
                     color: Theme.of(context).colorScheme.background,
@@ -381,44 +145,44 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
               selectedIndex: selectedIndex,
               destinations: getDestinations(context),
             ),
-            appBar: AppBar(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                leading: buildBackButton(),
-                title:
-                // Text("AA"),
-                 Row(
-                  children: <Widget>[
-                    // BackButton(),
-                    // buildBackButton(),
-                    // BackButton(onPressed: () {
-                    //   // Navigator.maybePop(context);
-                    //   // context.pop();
-                    //   if (GoRouterState.of(context)
-                    //       .matchedLocation
-                    //       .startsWith("/event/")) {
-                    //     // context.go("/");
-                    //     // _router.go("/");
-                    //     // _router.go("/feed");
-                    //     GoRouter.of(context).go("/");
-                    //     // _sectionNavigatorKey.currentContext!.go("/");
-                    //     return;
-                    //   }
-                    Image.asset(
-                      'assets/sib_logo_64.png',
-                      fit: BoxFit.contain,
-                      height: 40,
-                      filterQuality: FilterQuality.medium,
-                    ),
-                    const SizedBox(width: 16),
-                    Text(widget.title),
-                    // const Spacer(),
-                    // buildLoginIcon(context)
-                  ],
-                ),
-                actions: [
-                  buildLoginIcon(context)
-                ],
-                ),
+            // appBar: AppBar(
+            //     backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            //     leading: buildBackButton(),
+            //     title:
+            //     // Text("AA"),
+            //      Row(
+            //       children: <Widget>[
+            //         // BackButton(),
+            //         // buildBackButton(),
+            //         // BackButton(onPressed: () {
+            //         //   // Navigator.maybePop(context);
+            //         //   // context.pop();
+            //         //   if (GoRouterState.of(context)
+            //         //       .matchedLocation
+            //         //       .startsWith("/event/")) {
+            //         //     // context.go("/");
+            //         //     // _router.go("/");
+            //         //     // _router.go("/feed");
+            //         //     GoRouter.of(context).go("/");
+            //         //     // _sectionNavigatorKey.currentContext!.go("/");
+            //         //     return;
+            //         //   }
+            //         Image.asset(
+            //           'assets/sib_logo_64.png',
+            //           fit: BoxFit.contain,
+            //           height: 40,
+            //           filterQuality: FilterQuality.medium,
+            //         ),
+            //         const SizedBox(width: 16),
+            //         Text(widget.title),
+            //         // const Spacer(),
+            //         // buildLoginIcon(context)
+            //       ],
+            //     ),
+            //     actions: [
+            //       buildLoginIcon(context)
+            //     ],
+            //     ),
             body: SafeArea(
                 child: Container(
                     color: Theme.of(context).colorScheme.background,
@@ -430,9 +194,17 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
     return APIAccess(
         state: loginState,
         // child: buildMobile()
+        // child: WithSIBAppBar(
+        //     actions: [
+        //       IconButton(onPressed: () {
+
+        //       }, icon: const Icon(Icons.refresh))
+        //     ],
         child: MediaQuery.of(context).size.width > 800
             ? buildWide()
-            : buildMobile());
+            : buildMobile()
+        // )
+        );
   }
 
   void _onDestinationSelected(index) {
@@ -564,12 +336,22 @@ class _MyAppState extends State<MyApp> {
           // secondaryContainer: sibColor,
           // tertiaryContainer: sibColor,
           inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
+          // surface: Colors.green,
+          // surface: Colors.black
+          // surfaceTint: Colors.greenAccent,
+          // surfaceVariant: Colors.lightGreen
           // tertiaryContainer: Colors.red
           // primary: Colors.grey[800],
           // inverseSurface: sibColor
-        ),
+        ).copyWith(),
         useMaterial3: true,
         brightness: Brightness.dark,
+        filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom()
+                            .copyWith(
+                                shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(6)))))
         // textTheme: ThemeData.dark().textTheme.copyWith(
         //   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
         //     fontFamily: "RobotoMono",
@@ -591,6 +373,16 @@ class _MyAppState extends State<MyApp> {
     });
 
     setMetaThemeColor(appbarColor);
+    // if (isDark != false) {
+    //   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    //     statusBarColor: appbarColor,
+    //     statusBarIconBrightness: Brightness.light,
+    //     statusBarBrightness: Brightness.dark,
+    //     systemNavigationBarColor: Colors.black,
+    //     systemNavigationBarDividerColor: Colors.black,
+    //     systemNavigationBarIconBrightness: Brightness.light,
+    //   ));
+    // }
   }
 
   @override

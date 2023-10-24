@@ -1,4 +1,11 @@
-part of '../main.dart';
+import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
+
+import "package:collection/collection.dart";
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../utils.dart';
+import '../view_model/async_patch.dart';
 
 class AlertsPanelStatusMessage {
   final String component;
@@ -12,19 +19,35 @@ class AlertsPanelStatusMessage {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is AlertsPanelStatusMessage &&
-          runtimeType == other.runtimeType &&
+          // runtimeType == other.runtimeType &&
           component == other.component &&
-          status == other.status &&
-          data == other.data;
+          status == other.status;
+          //  &&
+          // data == other.data;
 
   @override
-  int get hashCode => component.hashCode ^ status.hashCode ^ data.hashCode;
+  int get hashCode => component.hashCode ^ status.hashCode;// ^ data.hashCode;
+}
+
+class AlertsFutureStatus {
+  final String component;
+  final Future future;
+  final Map data;  
+
+  const AlertsFutureStatus(
+      {required this.component, required this.future, required this.data});
+}
+
+class AlertsPanelController {
+  Set<AlertsPanelStatusMessage> dismissedMessages = {};
 }
 
 class AlertsPanel extends StatefulWidget {
-  final List<(String, Future, Map data)> loadingFutures;
+  final List<AlertsFutureStatus> loadingFutures;
+  final AlertsPanelController controller;
 
-  const AlertsPanel({Key? key, required this.loadingFutures}) : super(key: key);
+  const AlertsPanel({Key? key, required this.loadingFutures,
+  required this.controller}) : super(key: key);
 
   @override
   State<AlertsPanel> createState() => _AlertsPanelState();
@@ -32,9 +55,7 @@ class AlertsPanel extends StatefulWidget {
 
 class _AlertsPanelState extends State<AlertsPanel> {
   final log = Logger("AlertsPanel");
-
-  Set<AlertsPanelStatusMessage> dismissedMessages = {};
-
+  
   @override
   void initState() {
     super.initState();
@@ -49,14 +70,14 @@ class _AlertsPanelState extends State<AlertsPanel> {
       log.info("Scheduling success dismissal");
 
       var msg = AlertsPanelStatusMessage(
-          component: fut.$1, status: "done", data: fut.$3);
+          component: fut.component, status: "done", data: fut.data);
 
-      fut.$2.then((_) {
+      fut.future.then((_) {
         return Future.delayed(const Duration(seconds: 2)).then((_) {
           log.info("Adding dismissed message");
-          setState(() => dismissedMessages.add(msg));
+          setState(() => widget.controller.dismissedMessages.add(msg));
 
-          log.info("Dismissed messages: $dismissedMessages");
+          log.info("Dismissed messages: ${widget.controller.dismissedMessages}");
         });
       });
     }
@@ -189,7 +210,7 @@ class _AlertsPanelState extends State<AlertsPanel> {
     var msgs = snapshots.map(getStatusMessageForSnapshot).toList();
 
     msgs =
-        msgs.where((element) => !dismissedMessages.contains(element)).toList();
+        msgs.where((element) => !widget.controller.dismissedMessages.contains(element)).toList();
 
     var errorMsgs = msgs
         .where((msg) => msg.status == "error")
@@ -249,9 +270,10 @@ class _AlertsPanelState extends State<AlertsPanel> {
     for (var a in widget.loadingFutures.reversed) {
       var capturedInnerWidg = innerWidget;
       innerWidget = (context, snapshots) => FutureBuilderPatched(
-          future: a.$2,
+          future: a.future,
           builder: (context, snapshot) =>
-              capturedInnerWidg(context, snapshots + [(a.$1, snapshot, a.$3)]));
+              capturedInnerWidg(context, snapshots +
+              [(a.component, snapshot, a.data)]));
     }
 
     return innerWidget(context, []);

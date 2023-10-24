@@ -1,4 +1,11 @@
-part of '../main.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
+
+import '../view_model/annotated_event.dart';
+
+import 'weekday_indicator.dart';
+import 'signup_indicator.dart';
 
 class EventTile extends StatefulWidget {
   // final DateTime date;
@@ -156,7 +163,7 @@ class _EventTileState extends State<EventTile> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                        Text(widget.event.getLocalEventName(context)),
+                        Text(widget.event.getLocalEventName(Localizations.localeOf(context))),
                         if (infoLine.isNotEmpty)
                           Text(infoLine, style: const TextStyle(color: Colors.grey, fontSize: 12))
                         // Row(mainAxisSize: MainAxisSize.min, children: [

@@ -1,4 +1,8 @@
-part of '../main.dart';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+
+import '../model/event.dart';
 
 class EventParticipation {
   // final Event event;
@@ -27,7 +31,7 @@ class EventParticipation {
       isParticipating: isParticipating,
       setParticipating: setParticipating,
       isDirty: isDirty,
-      isActive: e.data["tickets"] != null && e.data["tickets"].length > 0,
+      isActive: e.data["tickets"] != null && e.data["tickets"].isNotEmpty,
     );
   }
 }

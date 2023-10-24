@@ -1,4 +1,10 @@
-part of '../main.dart';
+import 'dart:async';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+
+import '../model/api_connector.dart';
+import '../log.dart';
 
 class CachedProvider<T, U> extends ChangeNotifier {
   Future<APIConnector>? connector;

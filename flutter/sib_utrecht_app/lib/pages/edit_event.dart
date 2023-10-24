@@ -1,4 +1,17 @@
-part of '../main.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/sib_appbar.dart';
+
+import '../utils.dart';
+import '../globals.dart';
+import '../model/api_connector.dart';
+import '../model/event.dart';
+import '../view_model/async_patch.dart';
+import '../components/alerts_panel.dart';
+import '../components/api_access.dart';
 
 class EventEditPage extends StatefulWidget {
   final int? eventId;
@@ -25,6 +38,8 @@ class _EventEditPageState extends State<EventEditPage> {
   final TextEditingController _endController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _signupLinkController = TextEditingController();
+
+  final AlertsPanelController _alertsPanelController = AlertsPanelController();
 
   bool acceptBeta = true;
 
@@ -418,7 +433,9 @@ class _EventEditPageState extends State<EventEditPage> {
     var subm = _submission;
     var deleteAction = _deletion;
 
-    return Column(children: [
+    return
+      WithSIBAppBar(actions: const [], child: 
+     Column(children: [
       Expanded(
           child: SelectionArea(
               child: CustomScrollView(slivers: [
@@ -512,22 +529,24 @@ class _EventEditPageState extends State<EventEditPage> {
               // }()),
             ]))),
       ]))),
-      AlertsPanel(loadingFutures: [
+      AlertsPanel(
+        controller: _alertsPanelController,
+        loadingFutures: [
         if (subm != null)
-          (
-            "submission",
-            subm,
-            {
+          AlertsFutureStatus(
+            component: "submission",
+            future: subm,
+            data: {
               "err_msg": (msg) => const Text("Could not submit changes:"),
               "loading_msg": (msg) => const Text("Submitting changes..."),
               "done_msg": (msg) => const Text("Submitted changes"),
             }
           ),
         if (deleteAction != null)
-          (
-            "deletion",
-            deleteAction,
-            {
+          AlertsFutureStatus(
+            component: "deletion",
+            future: deleteAction,
+            data: {
               "err_msg": (msg) => const Text("Could not delete event:"),
               "loading_msg": (msg) => const Text("Deleting event..."),
               "done_msg": (msg) => const Text("Deleted event"),
@@ -540,6 +559,6 @@ class _EventEditPageState extends State<EventEditPage> {
         //   _participantsProvider.cached != null
         // )
       ])
-    ]);
+    ]));
   }
 }

@@ -1,13 +1,13 @@
-part of '../main.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class NewLogin2Page extends StatefulWidget {
-  final Map<String, dynamic> params;
+import '../utils.dart';
+import '../globals.dart';
+import '../model/login_state.dart';
 
-  const NewLogin2Page({Key? key, required this.params}) : super(key: key);
-
-  @override
-  State<NewLogin2Page> createState() => _NewLogin2PageState();
-}
+import '../model/cors_fallback.dart'
+  if (dart.library.html) '../model/cors_web.dart';
 
 Future<Map?> getUserIdentity(
     {required bool doAuthorize, String? userLogin}) async {
@@ -118,7 +118,7 @@ Widget buildCorsLogin(BuildContext context, Map data) {
             throw Exception("Failed to authorize");
           }
 
-          LoginState stFut = await loginManager._completeLogin(
+          LoginState stFut = await loginManager.completeLogin(
             user: auth["user_login"],
             apiSecret: auth["password"],
             apiAddress: auth["api_url"],
@@ -161,90 +161,4 @@ Future<Widget?> getCorsLoginPrompt({bool Function(String)? predicate}) async {
 
   var a = userIdentity;
   return Builder(builder: (context) => buildCorsLogin(context, a));
-}
-
-class _NewLogin2PageState extends State<NewLogin2Page> {
-  late Future<Map?> userIdentity;
-  // Future<Map?>? authorizingUserIdentity;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // userIdentity = http.get(Uri.parse("https://sib-utrecht.nl/cors-authorize-app"), );
-
-    // http.Client client = http.Client();
-    // client.send(http.BaseRequest())
-
-    // HttpRequest.request();
-
-    // userIdentity = Future.value(
-    //     Future.value(
-
-    // );
-    userIdentity = getUserIdentity(doAuthorize: false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-          child: Center(
-              child: Container(
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // const Text('NewLogin2Page'),
-                        const SizedBox(height: 20),
-                        FutureBuilder(
-                            future: userIdentity,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasError) {
-                                return ListTile(
-                                    leading: const Icon(Icons.error),
-                                    title: const Text(
-                                        "Direct login is not available"),
-                                    subtitle: formatError(snapshot.error));
-                              }
-
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              }
-
-                              var data = snapshot.data;
-
-                              if (data == null) {
-                                return const SizedBox();
-                                // return const ListTile(
-                                //   title: const Text("Login via website unavailable"),
-                                //   // subtitle: const Text("Failed to load user identity")
-                                // );
-                              }
-
-                              return buildCorsLogin(context, data);
-                            }),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            final (_, url) = loginManager.getAuthorizationUrl(
-                                withRedirect: false);
-
-                            launchUrl(url).then((v) {
-                              if (!v) {
-                                throw Exception("Failed to launch url");
-                              }
-                            }).catchError((err) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: formatError(err)));
-                            });
-                          },
-                          child: const Text("Log in via browser redirect"),
-                        )
-                        // Text('userIdentity: ${jsonEncode(userIdentity)}'),
-                      ])))),
-    );
-  }
 }
