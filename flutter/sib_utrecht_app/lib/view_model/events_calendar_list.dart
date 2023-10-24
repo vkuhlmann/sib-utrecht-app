@@ -203,9 +203,9 @@ class EventsCalendarList with ChangeNotifier {
       _eventsProvider.loading,
       _bookingsProvider.loading
     ]);
-    loading = Future.delayed(const Duration(milliseconds: 1500)).then((value) {
-      throw Exception("Dit is een test");
-    });
+    // loading = Future.delayed(const Duration(milliseconds: 1500)).then((value) {
+    //   throw Exception("Dit is een test");
+    // });
     log.fine("Events calendar loading is now $loading");
     notifyListeners();
   }
