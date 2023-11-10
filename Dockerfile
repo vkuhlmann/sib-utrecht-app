@@ -46,6 +46,7 @@ RUN mkdir -p $ANDROID_SDK_ROOT \
   && mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/tools \
   && mv $ANDROID_SDK_ROOT/cmdline-tools/bin $ANDROID_SDK_ROOT/cmdline-tools/tools \
   && mv $ANDROID_SDK_ROOT/cmdline-tools/lib $ANDROID_SDK_ROOT/cmdline-tools/tools \
+  && sdkmanager --install "cmdline-tools;latest" \
   && yes "y" | sdkmanager "build-tools;$ANDROID_BUILD_TOOLS_VERSION" \
   && yes "y" | sdkmanager "platforms;android-$ANDROID_VERSION" \
   && yes "y" | sdkmanager "platform-tools" \
@@ -59,6 +60,7 @@ RUN curl -o flutter.tar.xz $FLUTTER_URL \
   && rm flutter.tar.xz \
   && flutter config --no-analytics \
   && flutter precache \
+  && sdkmanager --install "cmdline-tools;latest" \
   && yes "y" | flutter doctor --android-licenses \
   && flutter doctor \
   && flutter emulators --create \
