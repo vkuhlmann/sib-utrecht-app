@@ -22,6 +22,8 @@ import '../components/action_refresh.dart';
 
 // Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
 
+// Bidirectional scroll code based on https://api.flutter.dev/flutter/rendering/RenderViewport-class.html
+
 class EventsPage extends StatefulWidget {
   const EventsPage({Key? key}) : super(key: key);
 
@@ -43,6 +45,10 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> {
   Future<APIConnector>? apiConnector;
   final AlertsPanelController alertsPanelController = AlertsPanelController();
+
+  // Used by CustomScrollView to position upcoming events at the top
+  final UniqueKey _center = UniqueKey();
+
 
   // final CachedProvider<List<Event>, Map> eventsProvider = CachedProvider<
   //         List<Event>, Map>(
@@ -277,7 +283,7 @@ class _EventsPageState extends State<EventsPage> {
   //   });
   // }
 
-  List<Widget> buildEvents(EventsCalendarList list, {group = true}) {
+  List<Widget> buildEventsOrig(EventsCalendarList list, {group = true}) {
     var eventsItems = list.events;
 
     if (!group) {
@@ -291,13 +297,8 @@ class _EventsPageState extends State<EventsPage> {
 
     String pastWeek = formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
     String nextWeek = formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
-    // String future = formatWeekNumber(upcomingAnchor.add(const Duration(days: 14)));
 
     String keyToTitle(String key) {
-      // if (key == "ongoing") {
-      //   return AppLocalizations.of(context)!.eventCategoryOngoing;
-      // }
-
       var weekIdMap = {
         "6_ongoing": AppLocalizations.of(context)!.eventCategoryOngoing,
         "1_past": "Past",
@@ -365,12 +366,88 @@ class _EventsPageState extends State<EventsPage> {
         .sortedBy((element) => element.key)
         .map((e) => EventsGroup(
             key: ValueKey(("EventsGroup", e.key)),
-            // title: e.key,
             title: keyToTitle(e.key),
-            initiallyExpanded: e.key != "ongoing",
+            initiallyExpanded: e.key != "6_ongoing",
+            isMajor: e.key == "3_upcomingWeek",
             // children: e.value.map<EventsItem>(buildEventsItem).toList(),
             children: e.value))
         .toList();
+  }
+
+  Map<String, EventsGroup> buildEvents(EventsCalendarList list, {group = true}) {
+    var eventsItems = list.events;
+
+    // if (!group) {
+    //   return eventsItems.map(EventsPage.buildItem).toList();
+    // }
+
+    DateTime upcomingAnchor = DateTime.now().add(const Duration(days: 2));
+
+    String currentWeek = formatWeekNumber(DateTime.now());
+    String upcomingWeek = formatWeekNumber(upcomingAnchor);
+
+    String pastWeek = formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
+    String nextWeek = formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
+
+    String keyToTitle(String key) {
+      var weekIdMap = {
+        "6_ongoing": AppLocalizations.of(context)!.eventCategoryOngoing,
+        "1_past": "Past",
+        "2_pastWeek": "Last week",
+        "3_upcomingWeek":
+          (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
+        "4_nextWeek": "Next week",
+        "5_future": "Future"
+      };
+
+      var a = weekIdMap[key];
+      if (a != null) {
+        return a;
+      }
+
+      return key;
+    }
+
+    return groupBy(eventsItems,
+            // (Event e) => formatWeekNumber(e.start).substring(0, 7)
+            (AnnotatedEvent e) {
+      var date = e.placement?.date;
+      if (date == null) {
+        return "6_ongoing";
+      }
+
+      String weekId = formatWeekNumber(date);
+
+      if (weekId.compareTo(pastWeek) < 0) {
+        return "1_past";
+      }
+      if (weekId == pastWeek) {
+        return "2_pastWeek";
+      }
+      if (weekId == upcomingWeek) {
+        return "3_upcomingWeek";
+      }
+      if (weekId == nextWeek) {
+        return "4_nextWeek";
+      }
+      if (weekId.compareTo(nextWeek) > 0) {
+        return "5_future";
+      }
+
+      return "5_future";
+
+      // return date.toIso8601String().substring(0, 7);
+    })
+        // .entries
+        // .sortedBy((element) => element.key)
+        .map((k, v) => MapEntry(k, EventsGroup(
+            key: ValueKey(("EventsGroup", k)),
+            title: keyToTitle(k),
+            isMajor: k == "3_upcomingWeek",
+            initiallyExpanded: k != "6_ongoing" && k != "5_future",
+            // children: e.value.map<EventsItem>(buildEventsItem).toList(),
+            children: v)));
+        // .toList();
   }
 
   Widget buildInProgress(
@@ -473,6 +550,8 @@ class _EventsPageState extends State<EventsPage> {
                                   calendarLoadContext, calendarLoadSnapshot));
                             }
 
+                            var events = buildEvents(calendar);
+
                             return Expanded(
                               child:
                                   // RefreshIndicator(
@@ -482,11 +561,64 @@ class _EventsPageState extends State<EventsPage> {
                                   //     await Future.wait([eventsProvider.loading, bookingsProvider.loading]);
                                   //   },
                                   //   child:
-                                  ListView(
-                                      reverse: true,
-                                      children: buildEvents(calendar)
-                                          .reversed
-                                          .toList()),
+                                  // ListView(
+                                  //     reverse: true,
+                                  //     children: buildEvents(calendar)
+                                  //         .reversed
+                                  //         .toList()),
+
+                                  CustomScrollView(
+                                      anchor: 0.1,
+                                      center: _center,
+                                      // center: const ValueKey(("EventsGroup", "3_upcomingWeek")),
+                                      slivers: [
+                                        SliverList.list(
+                                          children: [
+                                            events["2_pastWeek"] ?? const SizedBox(),
+                                            events["1_past"] ?? const SizedBox(),
+                                            // "6_ongoing": AppLocalizations.of(context)!.eventCategoryOngoing,
+                                            // "1_past": "Past",
+                                            // "2_pastWeek": "Last week",
+                                            // "3_upcomingWeek":
+                                            //   (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
+                                            // "4_nextWeek": "Next week",
+                                            // "5_future": "Future"
+                                          ],
+                                        ),
+                                         SliverToBoxAdapter(
+                                            key: _center,
+                                            child: events["3_upcomingWeek"] ?? const SizedBox()
+                                         ),
+                                        SliverList.list(
+                                          children: [
+                                            events["4_nextWeek"] ?? const SizedBox(),
+                                            events["5_future"] ?? const SizedBox(),
+                                            events["6_ongoing"] ?? const SizedBox(),
+                                          ],
+                                        )
+                                        // SliverList.list(
+                                        //   children: 
+                                        //   buildEvents(calendar)
+                                        //     .toList()
+                                        // ),
+
+                                        // SliverList.list(
+                                        //   children: [
+                                        //   Container(color: Colors.amber[900], height: 400,
+                                        //   width: 30)
+                                        // ]),
+                                        // SliverToBoxAdapter(
+                                        //     key: _center,
+                                        //     child: Container(
+                                        //         height: 70,
+                                        //         color: Colors.red)),
+                                        // SliverList.list(
+                                        //     children: [
+                                        //       Container(
+                                        //         color: Colors.yellow, height: 700)
+                                        //     ],
+                                        // )
+                                      ]),
                             );
                           },
                         ),

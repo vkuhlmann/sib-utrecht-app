@@ -8,9 +8,11 @@ import '../pages/events.dart';
 
 class EventsGroup extends StatelessWidget {
   final bool initiallyExpanded;
+  final bool isMajor;
 
   const EventsGroup({Key? key, required this.children, required this.title,
     required this.initiallyExpanded,
+    required this.isMajor
     // required this.start, required this.end
   })
       : super(key: key);
@@ -33,38 +35,38 @@ class EventsGroup extends StatelessWidget {
     for (var entry in division) {
       String weekNumber = entry.key;
 
-      if (weekNumber == upcomingWeek) {
-        String text = (weekNumber == currentWeek) ? "This week" : "Upcoming week";
-        yield const SizedBox(height: 32);
+      // if (weekNumber == upcomingWeek) {
+      //   String text = (weekNumber == currentWeek) ? "This week" : "Upcoming week";
+      //   yield const SizedBox(height: 32);
 
-        // // BEGIN Based on: https://stackoverflow.com/questions/54058228/horizontal-divider-with-text-in-the-middle-in-flutter
-        // // answer by https://stackoverflow.com/users/10826159/jerome-escalante
-        // yield Builder(builder: (context) =>
-        // Row(
-        //     children: <Widget>[
-        //         Expanded(
-        //             child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
-        //         ),
-        //         const SizedBox(width: 16,),
-        //         Text(text, style: Theme.of(context).textTheme.headlineSmall),
-        //         const SizedBox(width: 16,),
-        //         Expanded(
-        //             child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
-        //         ),
-        //     ]
-        // ));
-        // // END Based on
+      //   // BEGIN Based on: https://stackoverflow.com/questions/54058228/horizontal-divider-with-text-in-the-middle-in-flutter
+      //   // answer by https://stackoverflow.com/users/10826159/jerome-escalante
+      //   yield Builder(builder: (context) =>
+      //   Row(
+      //       children: <Widget>[
+      //           Expanded(
+      //               child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
+      //           ),
+      //           const SizedBox(width: 16,),
+      //           Text(text, style: Theme.of(context).textTheme.headlineSmall),
+      //           const SizedBox(width: 16,),
+      //           Expanded(
+      //               child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
+      //           ),
+      //       ]
+      //   ));
+      //   // END Based on
 
 
-        // yield Divider(color: Colors.red[700], thickness: 3);
-        // if (weekNumber == currentWeek) {
-        //   yield Builder(builder: (context) => 
-        //   ListTile(title: Text("This week", style: Theme.of(context).textTheme.headlineSmall?.copyWith())));
-        //   yield const SizedBox(height: 16);  
-        // } else {
-        //   yield const ListTile(title: Text("Upcoming week"));
-        // }
-      }
+      //   // yield Divider(color: Colors.red[700], thickness: 3);
+      //   // if (weekNumber == currentWeek) {
+      //   //   yield Builder(builder: (context) => 
+      //   //   ListTile(title: Text("This week", style: Theme.of(context).textTheme.headlineSmall?.copyWith())));
+      //   //   yield const SizedBox(height: 16);  
+      //   // } else {
+      //   //   yield const ListTile(title: Text("Upcoming week"));
+      //   // }
+      // }
 
       for (var v in entry.value.sortedBy((element) => element.placement?.date ?? element.start)) {
         // if (v.participation == null) {
@@ -105,17 +107,69 @@ class EventsGroup extends StatelessWidget {
     //   ...getChildrenWeekDivided().toList()
     //   ]);
 
-    return ExpansionTile(
+    // Color dividerColor = Theme.of(context).colorScheme.secondary;
+    Color? headlineColor;
+    Color dividerColor = Theme.of(context).colorScheme.primary;
+
+    dividerColor = Theme.of(context).textTheme.headlineSmall?.color
+    ?? dividerColor;
+
+    if (!isMajor) {
+      headlineColor = Theme.of(context).colorScheme.secondary;
+      dividerColor = headlineColor.withOpacity(0.5);
+
+      // dividerColor = Theme.of(context).colorScheme.secondaryContainer;
+      // dividerColor = Theme.of(context).colorScheme.secondary;
+      // headlineColor = dividerColor
+      // dividerColor = dividerColor.withOpacity(0.9);
+    }
+
+    return Column(
       key: ValueKey((key, title)),
-      // initiallyExpanded: true,
-      initiallyExpanded: initiallyExpanded,
-      title: Text(title),
-      // children: children
       children: [
-        ...getChildrenWeekDivided().toList(),
-        const SizedBox(height: 16)
-      ]
-    );
+        const SizedBox(height: 32),
+
+        // BEGIN Based on: https://stackoverflow.com/questions/54058228/horizontal-divider-with-text-in-the-middle-in-flutter
+        // answer by https://stackoverflow.com/users/10826159/jerome-escalante
+        Row(
+            children: <Widget>[
+                const SizedBox(width: 8),
+                Expanded(
+                    child: Divider(color: dividerColor, thickness: isMajor ? 2 : 1.5)
+                ),
+                const SizedBox(width: 16,),
+                Text(title, style: 
+                // isMajor ?
+                Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  // color: isMajor ? null : dividerColor
+                  // color: dividerColor
+                  color: headlineColor
+                )
+                // :
+                // Theme.of(context).textTheme.titleSmall
+                ),
+                const SizedBox(width: 16,),
+                Expanded(
+                    child: Divider(color: dividerColor, thickness: isMajor ? 2 : 1.5)
+                ),
+                const SizedBox(width: 8)
+            ]
+        ),
+      ...getChildrenWeekDivided().toList(),
+      const SizedBox(height: 16)
+    ]);
+
+    // return ExpansionTile(
+    //   key: ValueKey((key, title)),
+    //   // initiallyExpanded: true,
+    //   initiallyExpanded: initiallyExpanded,
+    //   title: Text(title),
+    //   // children: children
+    //   children: [
+    //     ...getChildrenWeekDivided().toList(),
+    //     const SizedBox(height: 16)
+    //   ]
+    // );
 
     // return ExpansionTile(
     //     initiallyExpanded: true,
