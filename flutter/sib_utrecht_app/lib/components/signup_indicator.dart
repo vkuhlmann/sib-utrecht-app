@@ -14,14 +14,20 @@ class SignupIndicator extends StatefulWidget {
 
 class _SignupIndicatorState extends State<SignupIndicator> {
   @override
-  Widget build(BuildContext context) =>
-      SizedBox(width: 40, height: 40, child: Center(child: buildInner(context)));
+  Widget build(BuildContext context) {
+    var inner = buildInner(context);
+    if (inner == null) {
+      return const SizedBox();
+    }
 
-  Widget buildInner(BuildContext context) {
+    return SizedBox(width: 40, height: 40, child: Center(child: buildInner(context)));
+  }
+
+  Widget? buildInner(BuildContext context) {
     var signupType = widget.event.signupType;
 
     if (signupType == "none") {
-      return const SizedBox();
+      return null;
     }
 
     if (signupType == "api") {

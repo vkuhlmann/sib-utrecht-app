@@ -73,7 +73,7 @@ class _EventEditPageState extends State<EventEditPage> {
       if (eventId != null) {
         setState(() {
           var evFuture = connector.then((c) => c
-                  .get("/events/$eventId?include_image=true")
+                  .post("/events/$eventId/edit")
                   .then((value) {
                 setState(() {
                   payload = Future.value(
@@ -159,6 +159,8 @@ class _EventEditPageState extends State<EventEditPage> {
 
     var submission =
         await conn.then((c) => c.put("/events/$eventId", body: payload));
+
+    return submission;
 
     // conn.then((c) => c.put("/events/$eventId", body: payload));
 
