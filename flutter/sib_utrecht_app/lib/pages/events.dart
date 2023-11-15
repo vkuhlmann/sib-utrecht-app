@@ -9,14 +9,12 @@ import 'package:sib_utrecht_app/components/sib_appbar.dart';
 import 'package:sib_utrecht_app/view_model/events_calendar_list.dart';
 
 import '../globals.dart';
+
+import '../utils.dart';
 import '../model/api_connector.dart';
 import '../components/api_access.dart';
-import '../model/event.dart';
 import '../view_model/annotated_event.dart';
-import '../view_model/cached_provider.dart';
-import '../view_model/event_participation.dart';
 import '../view_model/async_patch.dart';
-import '../view_model/event_placement.dart';
 import '../components/event_group.dart';
 import '../components/alerts_panel.dart';
 import '../components/event_tile.dart';
@@ -280,70 +278,52 @@ class _EventsPageState extends State<EventsPage> {
   // }
 
   List<Widget> buildEvents(EventsCalendarList list, {group = true}) {
-    // var events = eventsProvider.cached;
-    // if (events == null) {
-    //   return [];
-    // }
-
-    // events = [
-    //   ...events,
-    //   /*Event(data: {
-    //   "name": "Septemberkamp",
-    //   "start": "2023-09-21 22:00:00",
-    //   "end": "2023-09-24 21:59:59",
-    //   "event_all_day": "1",
-    //   "event_id": 5001,
-    //   "signup": {
-    //     "url": "https://forms.gle/bnzubocmcC91yY4R6"
-    //   }
-    // }),
-    // Event(data: {
-    //   "name": "Meet the Sibbers drink",
-    //   "start": "2023-09-12 18:00:00",
-    //   "end": "2023-09-12 21:59:59",
-    //   "event_id": 5002,
-    //   "signup": {
-    //     "type": "none"
-    //   }
-    // }),
-    // Event(data: {
-    //   "name": "Talk on Cold War Espionage",
-    //   "start": "2023-09-19 18:00:00",
-    //   "end": "2023-09-19 21:59:59",
-    //   "event_id": 5003,
-    //   "signup": {
-    //     "type": "none"
-    //   }
-    // }),   */
-    // ];
-
-    // var eventsItems = events
-    //     .map(placeEvent)
-    //     .flattened
-    //     .sortedBy((AnnotatedEvent e) => e.placement?.date ?? e.end ?? e.start)
-    //     // .map(buildItem)
-    //     .toList();
-
     var eventsItems = list.events;
 
     if (!group) {
       return eventsItems.map(EventsPage.buildItem).toList();
     }
 
+    DateTime upcomingAnchor = DateTime.now().add(const Duration(days: 2));
+
+    String currentWeek = formatWeekNumber(DateTime.now());
+    String upcomingWeek = formatWeekNumber(upcomingAnchor);
+
+    String pastWeek = formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
+    String nextWeek = formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
+    // String future = formatWeekNumber(upcomingAnchor.add(const Duration(days: 14)));
+
     String keyToTitle(String key) {
-      if (key == "ongoing") {
-        return AppLocalizations.of(context)!.eventCategoryOngoing;
+      // if (key == "ongoing") {
+      //   return AppLocalizations.of(context)!.eventCategoryOngoing;
+      // }
+
+      var weekIdMap = {
+        "6_ongoing": AppLocalizations.of(context)!.eventCategoryOngoing,
+        "1_past": "Past",
+        "2_pastWeek": "Last week",
+        "3_upcomingWeek":
+          (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
+        "4_nextWeek": "Next week",
+        "5_future": "Future"
+      };
+
+      var a = weekIdMap[key];
+      if (a != null) {
+        return a;
       }
 
-      DateTime d;
-      try {
-        d = DateFormat("y-M").parse(key);
-      } on FormatException catch (_) {
-        return key;
-      }
+      return key;
 
-      return DateFormat("yMMMM", Localizations.localeOf(context).toString())
-          .format(d);
+      // DateTime d;
+      // try {
+      //   d = DateFormat("y-M").parse(key);
+      // } on FormatException catch (_) {
+      //   return key;
+      // }
+
+      // return DateFormat("yMMMM", Localizations.localeOf(context).toString())
+      //     .format(d);
 
       // if (key == AppLocalizations.of(context)!.eventCategoryOngoing) {
       //   return AppLocalizations.of(context)!.eventCategoryOngoing;
@@ -354,33 +334,35 @@ class _EventsPageState extends State<EventsPage> {
     return groupBy(eventsItems,
             // (Event e) => formatWeekNumber(e.start).substring(0, 7)
             (AnnotatedEvent e) {
-      // formatWeekNumber(e.date ?? DateTime.now().add(const Duration(days: 7)))
       var date = e.placement?.date;
       if (date == null) {
-        // return "${DateTime.now().add(const Duration(days: 30)).toIso8601String()
-        //     .substring(0, 7)}+";
-        // return AppLocalizations.of(context)!.eventCategoryOngoing;
-        return "ongoing";
+        return "6_ongoing";
       }
-      return date.toIso8601String().substring(0, 7);
-      // (e.placement?.date ?? DateTime.now().add(const Duration(days: 30)))
-      //     .toIso8601String()
-      //     .substring(0, 7)
+
+      String weekId = formatWeekNumber(date);
+
+      if (weekId.compareTo(pastWeek) < 0) {
+        return "1_past";
+      }
+      if (weekId == pastWeek) {
+        return "2_pastWeek";
+      }
+      if (weekId == upcomingWeek) {
+        return "3_upcomingWeek";
+      }
+      if (weekId == nextWeek) {
+        return "4_nextWeek";
+      }
+      if (weekId.compareTo(nextWeek) > 0) {
+        return "5_future";
+      }
+
+      return "5_future";
+
+      // return date.toIso8601String().substring(0, 7);
     })
         .entries
         .sortedBy((element) => element.key)
-        // .map((e) => Column(
-        //       children: [
-        //         Padding(
-        //           padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-        //           child: Text(
-        //             e.key,
-        //             style: const TextStyle(fontSize: 20),
-        //           ),
-        //         ),
-        //         ...e.value.map(buildEventsItem).toList()
-        //       ],
-        //     ))
         .map((e) => EventsGroup(
             key: ValueKey(("EventsGroup", e.key)),
             // title: e.key,

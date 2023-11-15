@@ -27,7 +27,6 @@ class _EventEditPageState extends State<EventEditPage> {
 
   Future<Event?>? originalEvent;
   Future<String>? response;
-  // int? eventId;
 
   int? get eventId => widget.eventId;
 
@@ -43,8 +42,6 @@ class _EventEditPageState extends State<EventEditPage> {
 
   bool acceptBeta = true;
 
-  // final TextEditingController _signupLinkController = TextEditingController();
-
   Future<String>? payload;
   Future<Map?>? _submission;
   Future<Map?>? _deletion;
@@ -56,7 +53,6 @@ class _EventEditPageState extends State<EventEditPage> {
   void initState() {
     super.initState();
 
-    // eventId = null;
     if (eventId == null) {
       originalEvent = Future.value(null);
     }
@@ -83,7 +79,7 @@ class _EventEditPageState extends State<EventEditPage> {
               }).then((response) => Event.fromJson(
                       (response["data"]["event"] as Map).map<String, dynamic>(
                           (key, value) => MapEntry(key, value)))));
-          // originalEvent = evFuture;
+
           originalEvent = evFuture.then(
             (Event value) {
               setState(() {
@@ -93,7 +89,7 @@ class _EventEditPageState extends State<EventEditPage> {
                 _nameNLController.text = value.data["nameNL"] ?? "";
                 _locationController.text = value.location ?? "";
                 _startController.text = _dateFormat.format(
-                    value.start.toLocal()); //value.start.toIso8601String();
+                    value.start.toLocal());
                 _endController.text = "";
                 if (endDate != null) {
                   _endController.text = _dateFormat.format(endDate.toLocal());
@@ -117,18 +113,8 @@ class _EventEditPageState extends State<EventEditPage> {
       return null;
     }
 
-    // await Future.delayed(const Duration(seconds: 5));
-
-    // showDialog(context: context, builder:(context) {
-
-    // },);
-
     var submission = await conn.then((c) => c.delete("/events/$eventId"));
-
-    // router.go("/");
-
     return submission;
-    // return {};
   }
 
   Future<Map?> submit() async {
@@ -148,44 +134,13 @@ class _EventEditPageState extends State<EventEditPage> {
       router.goNamed("event_edit",
           pathParameters: {"event_id": newEventId.toString()});
 
-      // return const JsonEncoder.withIndent("  ").convert(submission);
       return submission;
     }
-
-    // await Future.delayed(const Duration(seconds: 4));
-    // return {"status": "success", "data": {"event_id": "5555"}};
-
-    // throw Exception("Not implemented");
 
     var submission =
         await conn.then((c) => c.put("/events/$eventId", body: payload));
 
     return submission;
-
-    // conn.then((c) => c.put("/events/$eventId", body: payload));
-
-    // String url = _urlController.text;
-    // Map? body = _requestBodyJsonController.text.isNotEmpty
-    //     ? jsonDecode(_requestBodyJsonController.text)
-    //     : null;
-
-    // setState(() {
-    //   response = connector!.then((c) {
-    //     switch (method) {
-    //       case "GET":
-    //         return c.get(url);
-    //       case "POST":
-    //         return c.post(url, body: body);
-    //       case "PUT":
-    //         return c.put(url, body: body);
-    //       case "DELETE":
-    //         return c.delete(url);
-    //     }
-    //     throw Exception("Unknown method $method");
-    //   }).then((value) {
-    //     return const JsonEncoder.withIndent("  ").convert(value);
-    //   });
-    // });
   }
 
   Future<Map> getPayloadJson() async {
@@ -238,7 +193,6 @@ class _EventEditPageState extends State<EventEditPage> {
       "start": dateInputToCanonical(startDateInput),
       "end": dateInputToCanonical(_endController.text),
       "description": _descriptionController.text,
-      // "signup": {"url": _signupLinkController.text}
     };
 
     var newSignupLink = _signupLinkController.text.trim();
@@ -285,11 +239,8 @@ class _EventEditPageState extends State<EventEditPage> {
                   border: OutlineInputBorder(),
                   labelText: 'Event location (optional)'),
             ))),
-            // if (location != null) Card(child: ListTile(title: Text(location))),
-            // Card(child: ListTile(title: Text("your (student) room. \ud83e\ude84\ud83c\udfa8\r\n\r\nWe will"))),
             Card(
                 child: ListTile(
-              // title: Text("${AppLocalizations.of(context)!.eventStarts}: "),
               subtitle: TextField(
                 controller: _startController,
                 onChanged: onFieldChanged,
@@ -300,7 +251,6 @@ class _EventEditPageState extends State<EventEditPage> {
             )),
             Card(
                 child: ListTile(
-              // title: Text("${AppLocalizations.of(context)!.eventEnds}: "),
               subtitle: TextField(
                 controller: _endController,
                 onChanged: onFieldChanged,
@@ -339,7 +289,6 @@ class _EventEditPageState extends State<EventEditPage> {
                       title: const Text(
                           "I understand this event will only show in the app, not on the website."))),
 
-            // Checkbox(value: value, onChanged: onChanged)
             const SizedBox(
               height: 32,
             ),
@@ -390,12 +339,7 @@ class _EventEditPageState extends State<EventEditPage> {
                       });
                     });
                   });
-
-                  // setState(() {
-                  //   _submission = delete_event();
-                  // });
                 },
-                // child: const Wrap(children: [Icon(Icons.delete), Text("Delete")]
                 child: const Text("Delete")),
             const SizedBox(
               height: 16,
@@ -427,7 +371,6 @@ class _EventEditPageState extends State<EventEditPage> {
                 return const SizedBox();
               },
             )
-            // buildThumbnailCard(context, event),
           ]));
 
   @override
@@ -446,26 +389,6 @@ class _EventEditPageState extends State<EventEditPage> {
             sliver: SliverList(
                 delegate: SliverChildListDelegate([
               const SizedBox(height: 20),
-              // if (_eventProvider.cached == null)
-              //   FutureBuilderPatched(
-              //       future: _eventProvider.loading,
-              //       builder: (eventContext, eventSnapshot) {
-              //         if (eventSnapshot.hasError) {
-              //           // return Text("${eventSnapshot.error}");
-              //           return Padding(
-              //               padding: const EdgeInsets.all(32),
-              //               child: Center(
-              //                   child: formatError(eventSnapshot.error)));
-              //         }
-              //         if (eventSnapshot.connectionState ==
-              //             ConnectionState.waiting) {
-              //           return const Padding(
-              //               padding: EdgeInsets.all(32),
-              //               child: Center(child: CircularProgressIndicator()));
-              //         }
-
-              //         return const SizedBox();
-              //       }),
 
               FutureBuilderPatched(
                   future: originalEvent,
@@ -481,7 +404,7 @@ class _EventEditPageState extends State<EventEditPage> {
                           child: Center(child: CircularProgressIndicator()));
                     }
 
-                    final Event? event = snapshot.data;
+                    // final Event? event = snapshot.data;
                     // if (event == null) {
                     //   return const SizedBox();
                     // }
@@ -512,11 +435,6 @@ class _EventEditPageState extends State<EventEditPage> {
                         child: Center(child: CircularProgressIndicator()));
                   }
 
-                  // if (snapshot.connectionState == ConnectionState.none &&
-                  //     !snapshot.hasData) {
-                  //   return const SizedBox();
-                  // }
-
                   var data = snapshot.data;
                   if (data == null) {
                     if (snapshot.connectionState == ConnectionState.none) {
@@ -528,7 +446,6 @@ class _EventEditPageState extends State<EventEditPage> {
                   return Text(const JsonEncoder.withIndent("  ").convert(data));
                 },
               )
-              // }()),
             ]))),
       ]))),
       AlertsPanel(
@@ -554,12 +471,6 @@ class _EventEditPageState extends State<EventEditPage> {
               "done_msg": (msg) => const Text("Deleted event"),
             }
           )
-        // ("details", _eventProvider.loading, _eventProvider.cached != null),
-        // (
-        //   "participants",
-        //   _participantsProvider.loading,
-        //   _participantsProvider.cached != null
-        // )
       ])
     ]));
   }

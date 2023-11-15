@@ -28,32 +28,32 @@ class EventsGroup extends StatelessWidget {
     // division.entries.sorted((a, b) => a.key.compareTo(b.key)).map((e) => )
 
     String currentWeek = formatWeekNumber(DateTime.now());
-    String upcomingWeek = formatWeekNumber(DateTime.now().add(const Duration(days: 3)));
+    String upcomingWeek = formatWeekNumber(DateTime.now().add(const Duration(days: 2)));
 
     for (var entry in division) {
       String weekNumber = entry.key;
 
       if (weekNumber == upcomingWeek) {
         String text = (weekNumber == currentWeek) ? "This week" : "Upcoming week";
-        yield const SizedBox(height: 64);
+        yield const SizedBox(height: 32);
 
-        // BEGIN Based on: https://stackoverflow.com/questions/54058228/horizontal-divider-with-text-in-the-middle-in-flutter
-        // answer by https://stackoverflow.com/users/10826159/jerome-escalante
-        yield Builder(builder: (context) =>
-        Row(
-            children: <Widget>[
-                Expanded(
-                    child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
-                ),
-                const SizedBox(width: 16,),
-                Text(text, style: Theme.of(context).textTheme.headlineSmall),
-                const SizedBox(width: 16,),
-                Expanded(
-                    child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
-                ),
-            ]
-        ));
-        // END Based on
+        // // BEGIN Based on: https://stackoverflow.com/questions/54058228/horizontal-divider-with-text-in-the-middle-in-flutter
+        // // answer by https://stackoverflow.com/users/10826159/jerome-escalante
+        // yield Builder(builder: (context) =>
+        // Row(
+        //     children: <Widget>[
+        //         Expanded(
+        //             child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
+        //         ),
+        //         const SizedBox(width: 16,),
+        //         Text(text, style: Theme.of(context).textTheme.headlineSmall),
+        //         const SizedBox(width: 16,),
+        //         Expanded(
+        //             child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
+        //         ),
+        //     ]
+        // ));
+        // // END Based on
 
 
         // yield Divider(color: Colors.red[700], thickness: 3);
@@ -80,6 +80,10 @@ class EventsGroup extends StatelessWidget {
         yield const SizedBox(height: 8);
         yield Divider(key: ValueKey(("divider", entry.key)));
         yield const SizedBox(height: 8);
+      }
+
+      if (weekNumber == upcomingWeek) {
+        yield const SizedBox(height: 32);
       }
     }
   }
