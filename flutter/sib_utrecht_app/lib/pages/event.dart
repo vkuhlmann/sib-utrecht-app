@@ -478,7 +478,7 @@ class _EventPageState extends State<EventPage> {
               child: SelectionArea(
                   child: CustomScrollView(slivers: [
             SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                 sliver: SliverList(
                     delegate: SliverChildListDelegate([
                   const SizedBox(height: 20),
@@ -522,13 +522,28 @@ class _EventPageState extends State<EventPage> {
                                     title: Text(event.getLocalEventName(
                                         Localizations.localeOf(context)))))),
                         // SignupIndicator(event: event),
+                        ListenableBuilder(
+                            listenable: prov,
+                            builder: (context, child) => SignupIndicator(
+                                event: AnnotatedEvent(
+                                    event: event,
+                                    participation: prov.getMeParticipation(
+                                        event,
+                                        feedback: ActionFeedback(
+                                          sendConfirm: (m) =>
+                                              ActionFeedback.sendConfirmToast(
+                                                  context, m),
+                                          sendError: (m) =>
+                                              ActionFeedback.showErrorDialog(
+                                                  context, m),
+                                        ))))),
                         IconButton(
                             onPressed: () {
                               router.goNamed("event_edit", pathParameters: {
                                 "event_id": widget.eventId.toString()
                               });
                             },
-                            icon: const Icon(Icons.edit))
+                            icon: const Icon(Icons.edit)),
                       ]),
                       if (location != null)
                         Card(
@@ -542,30 +557,30 @@ class _EventPageState extends State<EventPage> {
 
                       // if (annotatedEvent?.participation != null)
 
-                      ListenableBuilder(
-                          listenable: prov,
-                          builder: (context, child) => Row(children: [
-                                Expanded(child: Card(
-                                    child: ListTile(
-                                        title: Text(
-                                            "Participating: ${prov.isMeParticipating(event.eventId)}"
-                                            // annotatedEvent
-                                            //       ?.participation?.isParticipating
-                                            //       .toString() ??
-                                            //   "null"
-                                            )))),
-                                SignupIndicator(
-                                    event: AnnotatedEvent(
-                                        event: event,
-                                        participation: prov.getMeParticipation(
-                                            event,
-                                            feedback: ActionFeedback(
-                                              sendConfirm: (m) => ActionFeedback
-                                                  .sendConfirmToast(context, m),
-                                              sendError: (m) => ActionFeedback
-                                                  .showErrorDialog(context, m),
-                                            ))))
-                              ])),
+                      // ListenableBuilder(
+                      //     listenable: prov,
+                      //     builder: (context, child) => Row(children: [
+                      //           Expanded(child: Card(
+                      //               child: ListTile(
+                      //                   title: Text(
+                      //                       "Participating: ${prov.isMeParticipating(event.eventId)}"
+                      //                       // annotatedEvent
+                      //                       //       ?.participation?.isParticipating
+                      //                       //       .toString() ??
+                      //                       //   "null"
+                      //                       )))),
+                      //           SignupIndicator(
+                      //               event: AnnotatedEvent(
+                      //                   event: event,
+                      //                   participation: prov.getMeParticipation(
+                      //                       event,
+                      //                       feedback: ActionFeedback(
+                      //                         sendConfirm: (m) => ActionFeedback
+                      //                             .sendConfirmToast(context, m),
+                      //                         sendError: (m) => ActionFeedback
+                      //                             .showErrorDialog(context, m),
+                      //                       ))))
+                      //         ])),
                       // Card(child: ListTile(title: Text("your (student) room. \ud83e\ude84\ud83c\udfa8\r\n\r\nWe will"))),
                       Card(
                           child: ListTile(
@@ -656,7 +671,7 @@ class _EventPageState extends State<EventPage> {
                 ]))),
             if (expectParticipants)
               SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                   sliver: SliverList(
                       delegate: SliverChildListDelegate([
                     if (_participantsProvider.cached == null)
