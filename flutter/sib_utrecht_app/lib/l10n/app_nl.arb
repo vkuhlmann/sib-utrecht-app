@@ -44,6 +44,7 @@
   "loginStep2": "Stap 2: Authorizatie invullen",
   "loginStep3": "Stap 3: Verbindingscheck",
 
+  "eventNoParticipantsYet": "Nog geen deelnemers",
 
   "loadingComponent": "Laden: {componentString}...",
   "@loadingComponent": {

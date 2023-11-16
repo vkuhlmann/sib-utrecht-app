@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
-import '../view_model/annotated_event.dart';
+import '../../view_model/annotated_event.dart';
 
 import 'weekday_indicator.dart';
 import 'signup_indicator.dart';

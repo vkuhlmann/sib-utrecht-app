@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 
-import '../model/api_connector.dart';
 import '../log.dart';
 
 class CachedProviderT<T, U, V> extends ChangeNotifier {

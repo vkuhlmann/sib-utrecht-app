@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import "package:collection/collection.dart";
 
-import '../utils.dart';
-import '../view_model/annotated_event.dart';
+import '../../utils.dart';
+import '../../view_model/annotated_event.dart';
 
-import '../pages/events.dart';
+import '../../pages/events.dart';
 
 class EventsGroup extends StatelessWidget {
   final bool initiallyExpanded;
@@ -29,11 +29,11 @@ class EventsGroup extends StatelessWidget {
     
     // division.entries.sorted((a, b) => a.key.compareTo(b.key)).map((e) => )
 
-    String currentWeek = formatWeekNumber(DateTime.now());
-    String upcomingWeek = formatWeekNumber(DateTime.now().add(const Duration(days: 2)));
+    // String currentWeek = formatWeekNumber(DateTime.now());
+    // String upcomingWeek = formatWeekNumber(DateTime.now().add(const Duration(days: 2)));
 
     for (var entry in division) {
-      String weekNumber = entry.key;
+      // String weekNumber = entry.key;
 
       // if (weekNumber == upcomingWeek) {
       //   String text = (weekNumber == currentWeek) ? "This week" : "Upcoming week";
@@ -84,9 +84,9 @@ class EventsGroup extends StatelessWidget {
         yield const SizedBox(height: 8);
       }
 
-      if (weekNumber == upcomingWeek) {
-        yield const SizedBox(height: 32);
-      }
+      // if (weekNumber == upcomingWeek) {
+      //   yield const SizedBox(height: 32);
+      // }
     }
   }
 

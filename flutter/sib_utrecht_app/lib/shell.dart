@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
-import 'package:sib_utrecht_app/components/sib_appbar.dart';
 
 import 'globals.dart';
 import 'model/login_manager.dart';
 import 'model/login_state.dart';
 import 'components/api_access.dart';
-import 'components/sib_appbar.dart';
 
 import 'main.dart';
 
@@ -201,14 +198,11 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
         //       }, icon: const Icon(Icons.refresh))
         //     ],
-        child: 
-        ResourcePoolProvider(
-          child:
-        MediaQuery.of(context).size.width > 800
-            ? buildWide()
-            : buildMobile()
-        // )
-        ));
+        child: ResourcePoolProvider(
+            child: Builder(
+                builder: (context) => MediaQuery.of(context).size.width > 800
+                    ? buildWide()
+                    : buildMobile())));
   }
 
   void _onDestinationSelected(index) {
@@ -326,44 +320,42 @@ class _MyAppState extends State<MyApp> {
         // fontFamily: 'Roboto',
       );
       darkTheme = ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: sibColor, brightness: Brightness.dark,
-          // primary: sibColor,
-          // secondary: sibColor,
-          // onPrimary: sibColor,
-          // tertiary: sibColor,
-          // background: sibColor,
-          // onBackground: sibColor,
-          // onSecondary: sibColor,
-          // onTertiary: sibColor,
-          // primaryContainer: sibColor,
-          // secondaryContainer: sibColor,
-          // tertiaryContainer: sibColor,
-          inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
-          // surface: Colors.green,
-          // surface: Colors.black
-          // surfaceTint: Colors.greenAccent,
-          // surfaceVariant: Colors.lightGreen
-          // tertiaryContainer: Colors.red
-          // primary: Colors.grey[800],
-          // inverseSurface: sibColor
-        ).copyWith(),
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom()
-                            .copyWith(
-                                shape: MaterialStateProperty.all(
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(6)))))
-        // textTheme: ThemeData.dark().textTheme.copyWith(
-        //   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
-        //     fontFamily: "RobotoMono",
-        //     fontFamilyFallback: ["Roboto", "NotoEmoji", "NotoSans", "RobotoMono"]
-        //   ),
-        // ),
-        // fontFamily: 'Roboto',
-      );
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: sibColor, brightness: Brightness.dark,
+            // primary: sibColor,
+            // secondary: sibColor,
+            // onPrimary: sibColor,
+            // tertiary: sibColor,
+            // background: sibColor,
+            // onBackground: sibColor,
+            // onSecondary: sibColor,
+            // onTertiary: sibColor,
+            // primaryContainer: sibColor,
+            // secondaryContainer: sibColor,
+            // tertiaryContainer: sibColor,
+            inversePrimary: effectiveUseSibColorInStatusBar ? sibColor : null,
+            // surface: Colors.green,
+            // surface: Colors.black
+            // surfaceTint: Colors.greenAccent,
+            // surfaceVariant: Colors.lightGreen
+            // tertiaryContainer: Colors.red
+            // primary: Colors.grey[800],
+            // inverseSurface: sibColor
+          ).copyWith(),
+          useMaterial3: true,
+          brightness: Brightness.dark,
+          filledButtonTheme: FilledButtonThemeData(
+              style: FilledButton.styleFrom().copyWith(
+                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6)))))
+          // textTheme: ThemeData.dark().textTheme.copyWith(
+          //   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
+          //     fontFamily: "RobotoMono",
+          //     fontFamilyFallback: ["Roboto", "NotoEmoji", "NotoSans", "RobotoMono"]
+          //   ),
+          // ),
+          // fontFamily: 'Roboto',
+          );
 
       Color themeColor = sibColor;
 

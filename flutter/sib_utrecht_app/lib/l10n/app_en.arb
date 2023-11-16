@@ -43,6 +43,8 @@
   "loginStep2": "Step 2: Enter application password",
   "loginStep3": "Step 3: Connection test",
 
+  "eventNoParticipantsYet": "No participants yet",
+
 
   "loadingComponent": "Loading {componentString}...",
   "@loadingComponent": {

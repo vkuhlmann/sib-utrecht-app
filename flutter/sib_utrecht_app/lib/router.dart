@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 
 import 'shell.dart';
 import 'globals.dart';
@@ -200,6 +201,12 @@ final GoRouter router = GoRouter(
                                     eventId = int.tryParse(
                                         state.pathParameters['event_id']!);
                                   }
+
+                                  if (eventId == null) {
+                                    router.go("/");
+                                    return const Center(child: Text("Invalid event id"),);
+                                  }
+
                                   return EventPage(
                                       eventId: eventId,
                                       key: ValueKey("event/$eventId"));

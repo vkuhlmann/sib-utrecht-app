@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../view_model/annotated_event.dart';
+import '../../view_model/annotated_event.dart';
 
 class SignupIndicator extends StatefulWidget {
   final AnnotatedEvent event;

@@ -1,15 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 import "package:collection/collection.dart";
 import 'package:flutter/foundation.dart';
-import 'package:sib_utrecht_app/components/feedback.dart';
+import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/view_model/events_provider.dart';
 // import 'package:intl/intl.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../model/api_connector.dart';
 import '../model/event.dart';
-import '../view_model/cached_provider.dart';
 import '../view_model/event_participation.dart';
 import '../view_model/event_placement.dart';
 import '../log.dart';
@@ -30,6 +27,14 @@ class EventsCalendarList with ChangeNotifier {
     eventsProvider.addListener(_reprocessCached);
     // _eventsProvider.addListener(_reprocessCached);
     // _bookingsProvider.addListener(_reprocessCached);
+
+    _reprocessCached();
+  }
+
+  @override
+  void dispose() {
+    eventsProvider.removeListener(_reprocessCached);
+    super.dispose();
   }
 
   Iterable<AnnotatedEvent> placeEvent(Event event, ActionFeedback feedback) sync* {

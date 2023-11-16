@@ -88,7 +88,9 @@ class _ResourcePoolProviderState extends State<ResourcePoolProvider> {
     if (this.apiConnector != apiConnector) {
       log.fine(
           "[Resource pool] API connector changed from ${this.apiConnector} to $apiConnector");
-      this.apiConnector = apiConnector;
+      setState(() {
+      this.apiConnector = apiConnector;  
+      });
       // _eventProvider.setConnector(apiConnector);
       // _participantsProvider.setConnector(apiConnector);
       pool.setApiConnector(apiConnector);

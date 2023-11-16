@@ -8,11 +8,13 @@ import 'event_placement.dart';
 @immutable
 class AnnotatedEvent extends Event {
   final EventParticipation? participation;
+  final List<String>? participants;
   final EventPlacement? placement;
   
   AnnotatedEvent({
     required Event event,
     this.participation,
     this.placement,
+    this.participants,
   }) : super(data: event.data);
 }

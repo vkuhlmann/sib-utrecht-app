@@ -4,8 +4,8 @@ import 'package:logging/logging.dart';
 import "package:collection/collection.dart";
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../utils.dart';
-import '../view_model/async_patch.dart';
+import '../../utils.dart';
+import '../../view_model/async_patch.dart';
 
 class AlertsPanelStatusMessage {
   final String component;

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../view_model/async_patch.dart';
+import '../../view_model/async_patch.dart';
 
 // Contains code from https://www.kindacode.com/article/flutter-spinning-animation/
 

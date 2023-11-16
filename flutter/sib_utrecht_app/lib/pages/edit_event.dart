@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sib_utrecht_app/components/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 
 import '../utils.dart';
 import '../globals.dart';
 import '../model/api_connector.dart';
 import '../model/event.dart';
 import '../view_model/async_patch.dart';
-import '../components/alerts_panel.dart';
+import '../components/actions/alerts_panel.dart';
 import '../components/api_access.dart';
 
 class EventEditPage extends StatefulWidget {

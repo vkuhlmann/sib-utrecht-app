@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:sib_utrecht_app/components/sib_appbar.dart';
 
 import '/globals.dart';
-import '/model/login_manager.dart';
 import '/model/login_state.dart';
 import '/components/api_access.dart';
-import '/components/sib_appbar.dart';
 
 import '/shell.dart';
 
@@ -166,9 +159,9 @@ class WithSIBAppBar extends StatelessWidget {
   Widget buildBackButton() => Builder(builder: (context) {
         String? backAddress = getBackAddress(context);
 
-        bool isActive = backAddress != null ||
-            Navigator.of(context).canPop() ||
-            router.canPop();
+        // bool isActive = backAddress != null ||
+        //     Navigator.of(context).canPop() ||
+        //     router.canPop();
         // if (!isActive) {
         //   return const SizedBox();
         // }

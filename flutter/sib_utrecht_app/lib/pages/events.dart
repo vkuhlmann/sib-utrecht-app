@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sib_utrecht_app/components/feedback.dart';
+import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
-import 'package:sib_utrecht_app/components/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:sib_utrecht_app/view_model/events_calendar_list.dart';
@@ -14,14 +13,13 @@ import 'package:sib_utrecht_app/view_model/events_calendar_list.dart';
 import '../globals.dart';
 
 import '../utils.dart';
-import '../model/api_connector.dart';
 import '../components/api_access.dart';
 import '../view_model/annotated_event.dart';
 import '../view_model/async_patch.dart';
-import '../components/event_group.dart';
-import '../components/alerts_panel.dart';
-import '../components/event_tile.dart';
-import '../components/action_refresh.dart';
+import '../components/event/event_group.dart';
+import '../components/actions/alerts_panel.dart';
+import '../components/event/event_tile.dart';
+import '../components/actions/action_refresh.dart';
 
 // Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
 
@@ -59,7 +57,6 @@ class _EventsPageState extends State<EventsPage> {
 
   // Used by CustomScrollView to position upcoming events at the top
   final UniqueKey _center = UniqueKey();
-
 
   // final CachedProvider<List<Event>, Map> eventsProvider = CachedProvider<
   //         List<Event>, Map>(
@@ -99,20 +96,17 @@ class _EventsPageState extends State<EventsPage> {
 
   late EventsCalendarList calendar;
 
-
   @override
   void initState() {
     super.initState();
 
-    alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "calendar", status: "loading", data: {})
-    );
-    alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "calendar", status: "done", data: {})
-    );
+    alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "calendar", status: "loading", data: {}));
+    alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "calendar", status: "done", data: {}));
 
     apiConnector = null;
-    
+
     // calendar.addListener(() {
     //   setState(() {});
     // });
@@ -143,14 +137,16 @@ class _EventsPageState extends State<EventsPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    setState(() {
     calendar = EventsCalendarList(
-      eventsProvider: ResourcePoolAccess.of(context).pool.eventsProvider,
-      feedback: ActionFeedback(
-        sendConfirm: (m) => ActionFeedback.sendConfirmToast(context, m),
-        sendError: (m) => ActionFeedback.showErrorDialog(context, m),
-      )
-      // setEventReg: _setEventRegistration
-    );
+        eventsProvider: ResourcePoolAccess.of(context).pool.eventsProvider,
+        feedback: ActionFeedback(
+          sendConfirm: (m) => ActionFeedback.sendConfirmToast(context, m),
+          sendError: (m) => ActionFeedback.showErrorDialog(context, m),
+        )
+        // setEventReg: _setEventRegistration
+        );
+    });
     log.info("Calendar is $calendar");
 
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
@@ -191,7 +187,7 @@ class _EventsPageState extends State<EventsPage> {
   // }
 
   // Widget createDialog(String text) {
-    
+
   // }
 
   // void sendToast(String text) {
@@ -300,8 +296,10 @@ class _EventsPageState extends State<EventsPage> {
     String currentWeek = formatWeekNumber(DateTime.now());
     String upcomingWeek = formatWeekNumber(upcomingAnchor);
 
-    String pastWeek = formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
-    String nextWeek = formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
+    String pastWeek =
+        formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
+    String nextWeek =
+        formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
 
     String keyToTitle(String key) {
       var weekIdMap = {
@@ -309,7 +307,7 @@ class _EventsPageState extends State<EventsPage> {
         "1_past": "Past",
         "2_pastWeek": "Last week",
         "3_upcomingWeek":
-          (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
+            (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
         "4_nextWeek": "Next week",
         "5_future": "Future"
       };
@@ -391,8 +389,10 @@ class _EventsPageState extends State<EventsPage> {
     String currentWeek = formatWeekNumber(DateTime.now());
     String upcomingWeek = formatWeekNumber(upcomingAnchor);
 
-    String pastWeek = formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
-    String nextWeek = formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
+    String pastWeek =
+        formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
+    String nextWeek =
+        formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
 
     String keyToTitle(String key) {
       var weekIdMap = {
@@ -400,7 +400,7 @@ class _EventsPageState extends State<EventsPage> {
         "1_past": "Past",
         "2_pastWeek": "Last week",
         "3_upcomingWeek":
-          (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
+            (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
         "4_nextWeek": "Next week",
         "5_future": "Future"
       };
@@ -414,8 +414,8 @@ class _EventsPageState extends State<EventsPage> {
     }
 
     var superGroups = groupBy(eventsItems,
-            // (Event e) => formatWeekNumber(e.start).substring(0, 7)
-            (AnnotatedEvent e) {
+        // (Event e) => formatWeekNumber(e.start).substring(0, 7)
+        (AnnotatedEvent e) {
       var date = e.placement?.date;
       if (date == null) {
         return "6_ongoing";
@@ -456,36 +456,38 @@ class _EventsPageState extends State<EventsPage> {
           return key;
         }
 
-      return DateFormat("yMMMM", Localizations.localeOf(context).toString())
-          .format(d);
+        return DateFormat("yMMMM", Localizations.localeOf(context).toString())
+            .format(d);
       }
 
-      var pastGroups = groupBy(value, (e) => e.placement!.date.toIso8601String().substring(0, 7))
-      // .map((key, value) => MapEntry(formatMonthYear(key), value));
-      .entries
-      .sortedBy((element) => element.key)
-      .map((element) => EventsGroupInfo(element.key, formatMonthYear(element.key), element.value));
+      var pastGroups = groupBy(
+              value, (e) => e.placement!.date.toIso8601String().substring(0, 7))
+          // .map((key, value) => MapEntry(formatMonthYear(key), value));
+          .entries
+          .sortedBy((element) => element.key)
+          .map((element) => EventsGroupInfo(
+              element.key, formatMonthYear(element.key), element.value));
 
       return MapEntry(key, pastGroups);
     });
 
-
-        // .entries
-        // .sortedBy((element) => element.key)
-    return superGroups
-        .map((k, v) => MapEntry(k, 
-            Column(children:
-            // (String title, List<AnnotatedEvent> groupVal) 
-            v.map<Widget>((entry) => 
-            EventsGroup(
-            key: ValueKey(("EventsGroup", k, entry.key)),
-            title: entry.title,
-            isMajor: k == "3_upcomingWeek",
-            initiallyExpanded: k != "6_ongoing" && k != "5_future",
-            // children: e.value.map<EventsItem>(buildEventsItem).toList(),
-            children: entry.elements)).toList()
-            )));
-        // .toList();
+    // .entries
+    // .sortedBy((element) => element.key)
+    return superGroups.map((k, v) => MapEntry(
+        k,
+        Column(
+            children:
+                // (String title, List<AnnotatedEvent> groupVal)
+                v
+                    .map<Widget>((entry) => EventsGroup(
+                        key: ValueKey(("EventsGroup", k, entry.key)),
+                        title: entry.title,
+                        isMajor: k == "3_upcomingWeek",
+                        initiallyExpanded: k != "6_ongoing" && k != "5_future",
+                        // children: e.value.map<EventsItem>(buildEventsItem).toList(),
+                        children: entry.elements))
+                    .toList())));
+    // .toList();
   }
 
   Widget buildInProgress(
@@ -495,8 +497,9 @@ class _EventsPageState extends State<EventsPage> {
           builder: (context, snapshot) {
             var data = snapshot.data;
 
-            if (data != null && data.base is HTTPApiConnector
-            && (data.base as HTTPApiConnector).user == null) {
+            if (data != null &&
+                data.base is HTTPApiConnector &&
+                (data.base as HTTPApiConnector).user == null) {
               return Padding(
                   padding: const EdgeInsets.all(32),
                   child: Column(children: [
@@ -543,8 +546,20 @@ class _EventsPageState extends State<EventsPage> {
                   child: Center(child: CircularProgressIndicator()));
             }
 
-            return const SizedBox();
-            // return const Center(child: Text("No events"));
+            // if (calendarLoadSnapshot.hasError) {
+            //   return Padding(
+            //       padding: const EdgeInsets.all(32),
+            //       child: Center(
+            //           child: Text(
+            //               "Error loading events: ${calendarLoadSnapshot.error}")));
+            // }
+
+            // return const SizedBox();
+            return const Center(child: Text("No events"));
+
+            // return Center(child: Text(calendarLoadSnapshot.connectionState.toString()));
+
+            // return Center(child: Text(calendarLoadSnapshot.hasData.toString()));
           });
 
   @override
@@ -565,106 +580,105 @@ class _EventsPageState extends State<EventsPage> {
                   },
                 )
               ],
-              child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        //   if (eventsProvider.cached != null || eventsSnapshot.connectionState == ConnectionState.waiting)
-                        // Expanded(
-                        //     child: ListView(reverse: true, children: [
-                        FutureBuilderPatched(
-                          future: calendar.loading,
-                          builder: (calendarLoadContext, calendarLoadSnapshot) {
-                            if (calendar.events.isEmpty) {
-                              return Center(child: buildInProgress(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    //   if (eventsProvider.cached != null || eventsSnapshot.connectionState == ConnectionState.waiting)
+                    // Expanded(
+                    //     child: ListView(reverse: true, children: [
+                    FutureBuilderPatched(
+                      future: calendar.loading,
+                      builder: (calendarLoadContext, calendarLoadSnapshot) {
+                        if (calendar.events.isEmpty) {
+                          // return Center(child: Text("Calendar events empty"),);
+                          return Center(
+                              child: buildInProgress(
                                   calendarLoadContext, calendarLoadSnapshot));
-                            }
+                        }
 
-                            var events = buildEvents(calendar);
+                        var events = buildEvents(calendar);
 
-                            return Expanded(
-                              child:
-                                  // RefreshIndicator(
-                                  //   onRefresh: () async {
-                                  //     eventsProvider.invalidate();
-                                  //     bookingsProvider.invalidate();
-                                  //     await Future.wait([eventsProvider.loading, bookingsProvider.loading]);
-                                  //   },
-                                  //   child:
-                                  // ListView(
-                                  //     reverse: true,
-                                  //     children: buildEvents(calendar)
-                                  //         .reversed
-                                  //         .toList()),
+                        return Expanded(
+                          child:
+                              // RefreshIndicator(
+                              //   onRefresh: () async {
+                              //     eventsProvider.invalidate();
+                              //     bookingsProvider.invalidate();
+                              //     await Future.wait([eventsProvider.loading, bookingsProvider.loading]);
+                              //   },
+                              //   child:
+                              // ListView(
+                              //     reverse: true,
+                              //     children: buildEvents(calendar)
+                              //         .reversed
+                              //         .toList()),
 
-                                  CustomScrollView(
-                                      anchor: 0.1,
-                                      center: _center,
-                                      // center: const ValueKey(("EventsGroup", "3_upcomingWeek")),
-                                      slivers: [
-                                        SliverList.list(
-                                          children: [
-                                            events["2_pastWeek"] ?? const SizedBox(),
-                                            events["1_past"] ?? const SizedBox(),
-                                            // "6_ongoing": AppLocalizations.of(context)!.eventCategoryOngoing,
-                                            // "1_past": "Past",
-                                            // "2_pastWeek": "Last week",
-                                            // "3_upcomingWeek":
-                                            //   (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
-                                            // "4_nextWeek": "Next week",
-                                            // "5_future": "Future"
-                                          ],
-                                        ),
-                                         SliverToBoxAdapter(
-                                            key: _center,
-                                            child: events["3_upcomingWeek"] ?? const SizedBox()
-                                         ),
-                                        SliverList.list(
-                                          children: [
-                                            events["4_nextWeek"] ?? const SizedBox(),
-                                            events["5_future"] ?? const SizedBox(),
-                                            events["6_ongoing"] ?? const SizedBox(),
-                                          ],
-                                        )
-                                        // SliverList.list(
-                                        //   children: 
-                                        //   buildEvents(calendar)
-                                        //     .toList()
-                                        // ),
+                              CustomScrollView(
+                                  anchor: 0.1,
+                                  center: _center,
+                                  // center: const ValueKey(("EventsGroup", "3_upcomingWeek")),
+                                  slivers: [
+                                SliverList.list(
+                                  children: [
+                                    events["2_pastWeek"] ?? const SizedBox(),
+                                    events["1_past"] ?? const SizedBox(),
+                                  ],
+                                ),
+                                SliverToBoxAdapter(
+                                    key: _center,
+                                    child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 0, 0, 32),
+                                        child: events["3_upcomingWeek"] ??
+                                            const SizedBox())),
+                                // SliverToBoxAdapter(
+                                //   child: Center(child: Text("After upcoming week"))
+                                // ),
+                                SliverList.list(
+                                  children: [
+                                    events["4_nextWeek"] ?? const SizedBox(),
+                                    events["5_future"] ?? const SizedBox(),
+                                    events["6_ongoing"] ?? const SizedBox(),
+                                  ],
+                                )
+                                // SliverList.list(
+                                //   children:
+                                //   buildEvents(calendar)
+                                //     .toList()
+                                // ),
 
-                                        // SliverList.list(
-                                        //   children: [
-                                        //   Container(color: Colors.amber[900], height: 400,
-                                        //   width: 30)
-                                        // ]),
-                                        // SliverToBoxAdapter(
-                                        //     key: _center,
-                                        //     child: Container(
-                                        //         height: 70,
-                                        //         color: Colors.red)),
-                                        // SliverList.list(
-                                        //     children: [
-                                        //       Container(
-                                        //         color: Colors.yellow, height: 700)
-                                        //     ],
-                                        // )
-                                      ]),
-                            );
-                          },
-                        ),
-                        AlertsPanel(
-                            controller: alertsPanelController,
-                            loadingFutures: [
-                              if (loading != null)
-                                AlertsFutureStatus(
-                                    component: "calendar",
-                                    future: loading,
-                                    data: {
-                                      "isRefreshing": calendar.events.isNotEmpty
-                                    })
-                            ])
-                      ])));
+                                // SliverList.list(
+                                //   children: [
+                                //   Container(color: Colors.amber[900], height: 400,
+                                //   width: 30)
+                                // ]),
+                                // SliverToBoxAdapter(
+                                //     key: _center,
+                                //     child: Container(
+                                //         height: 70,
+                                //         color: Colors.red)),
+                                // SliverList.list(
+                                //     children: [
+                                //       Container(
+                                //         color: Colors.yellow, height: 700)
+                                //     ],
+                                // )
+                              ]),
+                        );
+                      },
+                    ),
+                    AlertsPanel(
+                        controller: alertsPanelController,
+                        loadingFutures: [
+                          if (loading != null)
+                            AlertsFutureStatus(
+                                component: "calendar",
+                                future: loading,
+                                data: {
+                                  "isRefreshing": calendar.events.isNotEmpty
+                                })
+                        ])
+                  ]));
         });
   }
 }

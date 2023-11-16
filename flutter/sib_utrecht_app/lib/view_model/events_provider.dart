@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart' as material;
-import 'package:sib_utrecht_app/components/feedback.dart';
+import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/bookings.dart';
@@ -12,7 +12,7 @@ import 'package:sib_utrecht_app/view_model/event_participation.dart';
 
 import '../log.dart';
 
-class EventsProvider with material.ChangeNotifier {
+class EventsProvider with ChangeNotifier {
   final CachedProvider<List<Event>> _eventsProvider =
       CachedProvider<List<Event>>(obtain: (c) => Events(c).list());
 
