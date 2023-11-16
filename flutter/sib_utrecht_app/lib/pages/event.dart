@@ -1,8 +1,15 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/feedback.dart';
+import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/signup_indicator.dart';
+import 'package:sib_utrecht_app/model/events.dart';
+import 'package:sib_utrecht_app/view_model/annotated_event.dart';
+import 'package:sib_utrecht_app/view_model/events_calendar_list.dart';
 
 import '../globals.dart';
 import '../constants.dart';
@@ -19,6 +26,7 @@ class EventPage extends StatefulWidget {
   const EventPage({Key? key, required this.eventId}) : super(key: key);
 
   final int? eventId;
+  // final EventsCalendarList? eventsCalendarList;
 
   @override
   State<EventPage> createState() => _EventPageState();
@@ -95,8 +103,8 @@ class ThumbnailImageDialog extends StatelessWidget {
 class _EventPageState extends State<EventPage> {
   Future<APIConnector>? apiConnector;
 
-  late CachedProvider<Event, Map> _eventProvider;
-  late CachedProvider<List<String>, Map> _participantsProvider;
+  late CachedProvider<Event> _eventProvider;
+  late CachedProvider<List<String>> _participantsProvider;
   final AlertsPanelController _alertsPanelController = AlertsPanelController();
 
   late void Function() listener;
@@ -104,35 +112,39 @@ class _EventPageState extends State<EventPage> {
   void initState() {
     super.initState();
 
-    _alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "details", status: "loading", data: {})
-    );
-    _alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "details", status: "done", data: {})
-    );
-    _alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "participants", status: "loading", data: {})
-    );
-    _alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "participants", status: "done", data: {})
-    );
+    _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "details", status: "loading", data: {}));
+    _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "details", status: "done", data: {}));
+    _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "participants", status: "loading", data: {}));
+    _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "participants", status: "done", data: {}));
 
-    _eventProvider = CachedProvider<Event, Map>(
-        getCached: (c) => c.then((conn) =>
-            conn?.getCached("events/${widget.eventId}?include_image=true")),
-        getFresh: (c) => c.get("events/${widget.eventId}?include_image=true"),
-        postProcess: (response) => Event.fromJson(
-            (response["data"]["event"] as Map)
-                .map<String, dynamic>((key, value) => MapEntry(key, value))));
+    // _eventProvider = CachedProvider<Event, Map>(
+    //     getCached: (c) => c.then((conn) =>
+    //         conn?.getCached("events/${widget.eventId}?include_image=true")),
+    //     getFresh: (c) => c.get("events/${widget.eventId}?include_image=true"),
+    //     postProcess: (response) => Event.fromJson(
+    //         (response["data"]["event"] as Map)
+    //             .map<String, dynamic>((key, value) => MapEntry(key, value))));
 
-    _participantsProvider = CachedProvider<List<String>, Map>(
-        getCached: (c) => c.then(
-            (conn) => conn?.getCached("events/${widget.eventId}/participants")),
-        getFresh: (c) => c.get("events/${widget.eventId}/participants"),
-        postProcess: (response) =>
-            (response["data"]["participants"] as Iterable<dynamic>)
-                .map((e) => e["name"] as String)
-                .toList());
+    _eventProvider = CachedProvider<Event>(obtain: (c) {
+      var eventId = widget.eventId;
+      if (eventId == null) {
+        throw Exception("Event ID is null");
+      }
+      return Events(c).getEvent(eventId: eventId, includeImage: true);
+    });
+
+    _participantsProvider = CachedProvider<List<String>>(obtain: (c) {
+      var eventId = widget.eventId;
+      if (eventId == null) {
+        throw Exception("Event ID is null");
+      }
+
+      return Events(c).listParticipants(eventId: eventId);
+    });
 
     listener = () {
       log.fine("[EventPage] Doing setState from listener");
@@ -141,6 +153,12 @@ class _EventPageState extends State<EventPage> {
 
     _eventProvider.addListener(listener);
     _participantsProvider.addListener(listener);
+
+    // var a = widget.eventsCalendarList;
+
+    // if (a != null) {
+    //   a.addListener(listener);
+    // }
 
     // Uri download_url = Uri.parse("https://sib-utrecht.nl/wp-content/uploads/2022/02/cropped-cropped-cropped-cropped-20210919_135253-scaled-2-1.jpg");
 
@@ -171,6 +189,12 @@ class _EventPageState extends State<EventPage> {
     _eventProvider.removeListener(listener);
     _participantsProvider.removeListener(listener);
 
+    // var a = widget.eventsCalendarList;
+
+    // if (a != null) {
+    //   a.removeListener(listener);
+    // }
+
     super.dispose();
   }
 
@@ -183,6 +207,11 @@ class _EventPageState extends State<EventPage> {
       this.apiConnector = apiConnector;
       _eventProvider.setConnector(apiConnector);
       _participantsProvider.setConnector(apiConnector);
+      // var a = widget.eventsCalendarList;
+
+      // if (a != null) {
+      //   a.setApiConnector(apiConnector);
+      // }
     }
 
     super.didChangeDependencies();
@@ -421,205 +450,251 @@ class _EventPageState extends State<EventPage> {
       expectParticipants = true;
     }
 
-    return
-    WithSIBAppBar(actions: [
-      ActionRefreshButton(
-                  refreshFuture: Future.wait([_eventProvider.loading, 
-                  if (expectParticipants)
-                  _participantsProvider.loading])
-                  .then((_) => DateTime.now()),
-                  triggerRefresh: () {
-                    // calendar.refresh();
-                    _eventProvider.invalidate();
-                    _participantsProvider.invalidate();
-                  },
-                )
-    ], child:
-     Column(children: [
-      Expanded(
-          child: SelectionArea(
-              child: CustomScrollView(slivers: [
-        SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            sliver: SliverList(
-                delegate: SliverChildListDelegate([
-              const SizedBox(height: 20),
-              if (_eventProvider.cached == null)
-                FutureBuilderPatched(
-                    future: _eventProvider.loading,
-                    builder: (eventContext, eventSnapshot) {
-                      if (eventSnapshot.hasError) {
-                        // return Text("${eventSnapshot.error}");
-                        return Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                                child: formatError(eventSnapshot.error)));
-                      }
-                      if (eventSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(child: CircularProgressIndicator()));
-                      }
+    var prov = ResourcePoolAccess.of(context).pool.eventsProvider;
 
-                      return const SizedBox();
-                    }),
-              ...(() {
-                final Event? event = _eventProvider.cached;
-                if (event == null) {
-                  return [];
-                }
-                var eventEnd = event.end;
-                var location = event.location;
+    // AnnotatedEvent? annotatedEvent;
+    // final calendarList = widget.eventsCalendarList;
+    // if (calendarList != null) {
+    //   annotatedEvent = calendarList.events
+    //       .firstWhereOrNull((element) => element.eventId == widget.eventId);
+    // }
 
-                return [
-                  Row(children: [
-                    // Expanded(
-                    //     child: Card(
-                    //         child: ListTile(title: Text(event.eventName)))),
-                    Expanded(
-                        child: Card(
-                            child: ListTile(
-                                title: Text(event.getLocalEventName(
-                                    Localizations.localeOf(context)))))),
-                    // SignupIndicator(event: event),
-                    IconButton(
-                        onPressed: () {
-                          router.goNamed("event_edit", pathParameters: {
-                            "event_id": widget.eventId.toString()
-                          });
-                        },
-                        icon: const Icon(Icons.edit))
-                  ]),
-                  if (location != null)
-                    Card(child: ListTile(title: Text("Location: $location"))),
-                  // Card(child: ListTile(title: Text("your (student) room. \ud83e\ude84\ud83c\udfa8\r\n\r\nWe will"))),
-                  Card(
-                      child: ListTile(
-                          title: Wrap(children: [
-                    SizedBox(
-                        width: 80,
-                        child: Text(
-                            "${AppLocalizations.of(context)!.eventStarts}: ")),
-                    Wrap(children: [
-                      SizedBox(
-                          width: 260,
-                          child: Text(DateFormat.yMMMMEEEEd(
+    return WithSIBAppBar(
+        actions: [
+          ActionRefreshButton(
+            refreshFuture: Future.wait([
+              _eventProvider.loading,
+              if (expectParticipants) _participantsProvider.loading
+            ]).then((_) => DateTime.now()),
+            triggerRefresh: () {
+              // calendar.refresh();
+              _eventProvider.invalidate();
+              _participantsProvider.invalidate();
+            },
+          )
+        ],
+        child: Column(children: [
+          Expanded(
+              child: SelectionArea(
+                  child: CustomScrollView(slivers: [
+            SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                  const SizedBox(height: 20),
+                  if (_eventProvider.cached == null)
+                    FutureBuilderPatched(
+                        future: _eventProvider.loading,
+                        builder: (eventContext, eventSnapshot) {
+                          if (eventSnapshot.hasError) {
+                            // return Text("${eventSnapshot.error}");
+                            return Padding(
+                                padding: const EdgeInsets.all(32),
+                                child: Center(
+                                    child: formatError(eventSnapshot.error)));
+                          }
+                          if (eventSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Padding(
+                                padding: EdgeInsets.all(32),
+                                child:
+                                    Center(child: CircularProgressIndicator()));
+                          }
+
+                          return const SizedBox();
+                        }),
+                  ...(() {
+                    final Event? event = _eventProvider.cached;
+                    if (event == null) {
+                      return [];
+                    }
+                    var eventEnd = event.end;
+                    var location = event.location;
+
+                    return [
+                      Row(children: [
+                        // Expanded(
+                        //     child: Card(
+                        //         child: ListTile(title: Text(event.eventName)))),
+                        Expanded(
+                            child: Card(
+                                child: ListTile(
+                                    title: Text(event.getLocalEventName(
+                                        Localizations.localeOf(context)))))),
+                        // SignupIndicator(event: event),
+                        IconButton(
+                            onPressed: () {
+                              router.goNamed("event_edit", pathParameters: {
+                                "event_id": widget.eventId.toString()
+                              });
+                            },
+                            icon: const Icon(Icons.edit))
+                      ]),
+                      if (location != null)
+                        Card(
+                            child:
+                                ListTile(title: Text("Location: $location"))),
+
+                      // if (annotatedEvent != null)
+                      // Card(
+                      //     child: ListTile(
+                      //         title: Text(annotatedEvent.signupType))),
+
+                      // if (annotatedEvent?.participation != null)
+
+                      ListenableBuilder(
+                          listenable: prov,
+                          builder: (context, child) => Row(children: [
+                                Expanded(child: Card(
+                                    child: ListTile(
+                                        title: Text(
+                                            "Participating: ${prov.isMeParticipating(event.eventId)}"
+                                            // annotatedEvent
+                                            //       ?.participation?.isParticipating
+                                            //       .toString() ??
+                                            //   "null"
+                                            )))),
+                                SignupIndicator(
+                                    event: AnnotatedEvent(
+                                        event: event,
+                                        participation: prov.getMeParticipation(
+                                            event,
+                                            feedback: ActionFeedback(
+                                              sendConfirm: (m) => ActionFeedback
+                                                  .sendConfirmToast(context, m),
+                                              sendError: (m) => ActionFeedback
+                                                  .showErrorDialog(context, m),
+                                            ))))
+                              ])),
+                      // Card(child: ListTile(title: Text("your (student) room. \ud83e\ude84\ud83c\udfa8\r\n\r\nWe will"))),
+                      Card(
+                          child: ListTile(
+                              title: Wrap(children: [
+                        SizedBox(
+                            width: 80,
+                            child: Text(
+                                "${AppLocalizations.of(context)!.eventStarts}: ")),
+                        Wrap(children: [
+                          SizedBox(
+                              width: 260,
+                              child: Text(DateFormat.yMMMMEEEEd(
+                                      Localizations.localeOf(context)
+                                          .toString())
+                                  .format(event.start))),
+                          // const SizedBox(width: 20),
+                          Text(DateFormat.Hm(
                                   Localizations.localeOf(context).toString())
-                              .format(event.start))),
-                      // const SizedBox(width: 20),
-                      Text(DateFormat.Hm(
-                              Localizations.localeOf(context).toString())
-                          .format(event.start))
-                    ])
-                  ]))),
-                  if (eventEnd != null)
+                              .format(event.start))
+                        ])
+                      ]))),
+                      if (eventEnd != null)
+                        Card(
+                            child: ListTile(
+                                title: Wrap(children: [
+                          SizedBox(
+                              width: 80,
+                              child: Text(
+                                  "${AppLocalizations.of(context)!.eventEnds}: ")),
+                          Wrap(children: [
+                            SizedBox(
+                                width: 260,
+                                child: Text(DateFormat.yMMMMEEEEd(
+                                        Localizations.localeOf(context)
+                                            .toString())
+                                    .format(eventEnd))),
+                            // const SizedBox(width: 20),
+                            Text(DateFormat.Hm(
+                                    Localizations.localeOf(context).toString())
+                                .format(eventEnd))
+                          ])
+                        ]))),
+                      // Table(columnWidths: const {
+                      //   0: IntrinsicColumnWidth(),
+                      //   1: FlexColumnWidth(),
+                      //   2: IntrinsicColumnWidth(),
+                      //   3: FlexColumnWidth()
+                      // }, children: <TableRow>[
+                      //   TableRow(children: <Widget>[
+                      //     const Text("Start: "),
+                      //     LocaleDateFormat(
+                      //         date: event.start, format: "yMMMMEEEEd"),
+                      //     const SizedBox(width: 30),
+                      //     LocaleDateFormat(date: event.start, format: "Hm")
+                      //   ]),
+                      //   TableRow(children: <Widget>[
+                      //     const Text("Eindigt: "),
+                      //     LocaleDateFormat(
+                      //         date: event.end, format: "yMMMMEEEEd"),
+                      //     const SizedBox(width: 30),
+                      //     LocaleDateFormat(date: event.end, format: "Hm")
+                      //   ])
+                      // ]),
+                      Card(
+                          child: ListTile(
+                              title: Text(AppLocalizations.of(context)!
+                                  .eventDescription),
+                              subtitle: buildDescription(context, event))),
+
+                      buildThumbnailCard(context, event),
+                      // Card(child:
+                      // FutureBuilder(future: _image, builder: (context, snapshot) {
+                      //   if (snapshot.hasData) {
+                      //     return Image.memory(snapshot.data!.bodyBytes);
+                      //   } else {
+                      //     return const Text("Loading...");
+                      //   }
+                      // })),
+                      // ListTile(title: const Text("aa")),)
+                    ];
+                  }()),
+                  const SizedBox(height: 32),
+                  if (expectParticipants)
                     Card(
                         child: ListTile(
-                            title: Wrap(children: [
-                      SizedBox(
-                          width: 80,
-                          child: Text(
-                              "${AppLocalizations.of(context)!.eventEnds}: ")),
-                      Wrap(children: [
-                        SizedBox(
-                            width: 260,
-                            child: Text(DateFormat.yMMMMEEEEd(
-                                    Localizations.localeOf(context).toString())
-                                .format(eventEnd))),
-                        // const SizedBox(width: 20),
-                        Text(DateFormat.Hm(
-                                Localizations.localeOf(context).toString())
-                            .format(eventEnd))
-                      ])
-                    ]))),
-                  // Table(columnWidths: const {
-                  //   0: IntrinsicColumnWidth(),
-                  //   1: FlexColumnWidth(),
-                  //   2: IntrinsicColumnWidth(),
-                  //   3: FlexColumnWidth()
-                  // }, children: <TableRow>[
-                  //   TableRow(children: <Widget>[
-                  //     const Text("Start: "),
-                  //     LocaleDateFormat(
-                  //         date: event.start, format: "yMMMMEEEEd"),
-                  //     const SizedBox(width: 30),
-                  //     LocaleDateFormat(date: event.start, format: "Hm")
-                  //   ]),
-                  //   TableRow(children: <Widget>[
-                  //     const Text("Eindigt: "),
-                  //     LocaleDateFormat(
-                  //         date: event.end, format: "yMMMMEEEEd"),
-                  //     const SizedBox(width: 30),
-                  //     LocaleDateFormat(date: event.end, format: "Hm")
-                  //   ])
-                  // ]),
-                  Card(
-                      child: ListTile(
-                          title: Text(
-                              AppLocalizations.of(context)!.eventDescription),
-                          subtitle: buildDescription(context, event))),
+                            title: Text(
+                                "${AppLocalizations.of(context)!.eventParticipants} (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
+                ]))),
+            if (expectParticipants)
+              SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                    if (_participantsProvider.cached == null)
+                      FutureBuilderPatched(
+                          future: _participantsProvider.loading,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) {
+                              return Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Center(
+                                      child: formatError(snapshot.error)));
+                            }
 
-                  buildThumbnailCard(context, event),
-                  // Card(child:
-                  // FutureBuilder(future: _image, builder: (context, snapshot) {
-                  //   if (snapshot.hasData) {
-                  //     return Image.memory(snapshot.data!.bodyBytes);
-                  //   } else {
-                  //     return const Text("Loading...");
-                  //   }
-                  // })),
-                  // ListTile(title: const Text("aa")),)
-                ];
-              }()),
-              const SizedBox(height: 32),
-              if (expectParticipants)
-                Card(
-                    child: ListTile(
-                        title: Text(
-                            "${AppLocalizations.of(context)!.eventParticipants} (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
-            ]))),
-        if (expectParticipants)
-          SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-              sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                if (_participantsProvider.cached == null)
-                  FutureBuilderPatched(
-                      future: _participantsProvider.loading,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasError) {
-                          return Padding(
-                              padding: const EdgeInsets.all(16),
-                              child:
-                                  Center(child: formatError(snapshot.error)));
-                        }
-
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        return const SizedBox();
-                      }),
-                ...(_participantsProvider.cached ?? []).map<Widget>((e) =>
-                    Padding(
-                        padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
-                        child: Card(child: ListTile(title: Text(e))))),
-                const SizedBox(height: 32),
-              ])))
-      ]))),
-      AlertsPanel(controller: _alertsPanelController, loadingFutures: [
-        AlertsFutureStatus(
-            component: "details",
-            future: _eventProvider.loading,
-            data: {"isRefreshing": _eventProvider.cached != null}),
-        if (expectParticipants)
-          AlertsFutureStatus(
-              component: "participants",
-              future: _participantsProvider.loading,
-              data: {"isRefreshing": _participantsProvider.cached != null})
-      ])
-    ]));
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+                            return const SizedBox();
+                          }),
+                    ...(_participantsProvider.cached ?? []).map<Widget>((e) =>
+                        Padding(
+                            padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
+                            child: Card(child: ListTile(title: Text(e))))),
+                    const SizedBox(height: 32),
+                  ])))
+          ]))),
+          AlertsPanel(controller: _alertsPanelController, loadingFutures: [
+            AlertsFutureStatus(
+                component: "details",
+                future: _eventProvider.loading,
+                data: {"isRefreshing": _eventProvider.cached != null}),
+            if (expectParticipants)
+              AlertsFutureStatus(
+                  component: "participants",
+                  future: _participantsProvider.loading,
+                  data: {"isRefreshing": _participantsProvider.cached != null})
+          ])
+        ]));
   }
 }

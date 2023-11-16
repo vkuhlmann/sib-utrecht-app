@@ -32,7 +32,7 @@ void main() {
   GoogleFonts.config.allowRuntimeFetching = true;
 
   LicenseRegistry.addLicense(() async* {
-    final license2 = await rootBundle.loadString('../../LICENSE');
+    final license2 = await rootBundle.loadString('LICENSE');
     yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license2);
 
     final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');

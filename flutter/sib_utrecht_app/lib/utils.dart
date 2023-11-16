@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
+import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'model/api_error.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,21 +21,20 @@ String formatErrorMsg(String? error) {
 }
 
 Widget formatError(Object? error) {
-  if (
-    error is APIError
-    && [401, 403].contains(error.statusCode)
-    )
-  {
-    if (error.connector.user == null) {
-      return 
-      Builder(builder: (context) =>
-      FilledButton(
-          onPressed: () {
-            GoRouter.of(context).go("/login?immediate=true");
-          },
-          child: Text(AppLocalizations.of(context)?.loginRequired ?? "Please log in")
-          )
-          );
+  if (error is APIError && [401, 403].contains(error.statusCode)) {
+    var c1 = error.connector;
+
+    if (c1 is CacherApiConnector) {
+      var c2 = c1.base;
+      if (c2 is HTTPApiConnector && c2.user == null) {
+        return Builder(
+            builder: (context) => FilledButton(
+                onPressed: () {
+                  GoRouter.of(context).go("/login?immediate=true");
+                },
+                child: Text(AppLocalizations.of(context)?.loginRequired ??
+                    "Please log in")));
+      }
     }
 
     if (error.message.toString() == "Sorry, you are not allowed to do that.") {
@@ -59,10 +60,7 @@ Widget formatError(Object? error) {
   DateTime firstWeek = DateTime(year, 1, 4)
       .add(Duration(days: (1 - DateTime(year, 1, 4).weekday)));
 
-  return (
-    year,
-    thursday.difference(firstWeek).inDays ~/ 7 + 1
-  );
+  return (year, thursday.difference(firstWeek).inDays ~/ 7 + 1);
 
   // int thisYear = dt.year;
   // DateTime firstWeekStart = DateTime(thisYear, 1, 4)

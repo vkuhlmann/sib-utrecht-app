@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/sib_appbar.dart';
 
 import 'globals.dart';
@@ -200,11 +201,14 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
 
         //       }, icon: const Icon(Icons.refresh))
         //     ],
-        child: MediaQuery.of(context).size.width > 800
+        child: 
+        ResourcePoolProvider(
+          child:
+        MediaQuery.of(context).size.width > 800
             ? buildWide()
             : buildMobile()
         // )
-        );
+        ));
   }
 
   void _onDestinationSelected(index) {

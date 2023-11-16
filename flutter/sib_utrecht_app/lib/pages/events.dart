@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-// import 'dart:math';
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/feedback.dart';
+import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/sib_appbar.dart';
+import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
+import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:sib_utrecht_app/view_model/events_calendar_list.dart';
 
 import '../globals.dart';
@@ -23,6 +26,14 @@ import '../components/action_refresh.dart';
 // Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
 
 // Bidirectional scroll code based on https://api.flutter.dev/flutter/rendering/RenderViewport-class.html
+
+class EventsGroupInfo {
+  String key;
+  String title;
+  List<AnnotatedEvent> elements;
+
+  EventsGroupInfo(this.key, this.title, this.elements);
+}
 
 class EventsPage extends StatefulWidget {
   const EventsPage({Key? key}) : super(key: key);
@@ -43,7 +54,7 @@ class EventsPage extends StatefulWidget {
 }
 
 class _EventsPageState extends State<EventsPage> {
-  Future<APIConnector>? apiConnector;
+  Future<CacherApiConnector>? apiConnector;
   final AlertsPanelController alertsPanelController = AlertsPanelController();
 
   // Used by CustomScrollView to position upcoming events at the top
@@ -101,7 +112,7 @@ class _EventsPageState extends State<EventsPage> {
     );
 
     apiConnector = null;
-    calendar = EventsCalendarList(setEventReg: _setEventRegistration);
+    
     // calendar.addListener(() {
     //   setState(() {});
     // });
@@ -132,13 +143,23 @@ class _EventsPageState extends State<EventsPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    calendar = EventsCalendarList(
+      eventsProvider: ResourcePoolAccess.of(context).pool.eventsProvider,
+      feedback: ActionFeedback(
+        sendConfirm: (m) => ActionFeedback.sendConfirmToast(context, m),
+        sendError: (m) => ActionFeedback.showErrorDialog(context, m),
+      )
+      // setEventReg: _setEventRegistration
+    );
+    log.info("Calendar is $calendar");
+
     final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
     if (this.apiConnector != apiConnector) {
       log.fine(
           "[EventsPage] API connector changed from ${this.apiConnector} to $apiConnector");
       this.apiConnector = apiConnector;
 
-      calendar.setApiConnector(apiConnector);
+      // calendar.setApiConnector(apiConnector);
 
       // eventsProvider.setConnector(apiConnector).then(
       //   (value) {
@@ -163,44 +184,28 @@ class _EventsPageState extends State<EventsPage> {
     }
   }
 
-  void popupDialog(String text) {
-    showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => createDialog(text));
-  }
+  // void popupDialog(String text) {
+  //   showDialog<String>(
+  //       context: context,
+  //       builder: (BuildContext context) => createDialog(text));
+  // }
 
-  Widget createDialog(String text) {
-    return AlertDialog(
-        title: const Text('Error'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              Text(text),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          Builder(
-              builder: (context) => TextButton(
-                  child: const Text('Close'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  })),
-        ]);
-  }
+  // Widget createDialog(String text) {
+    
+  // }
 
-  void sendToast(String text) {
-    // Based on https://stackoverflow.com/questions/45948168/how-to-create-toast-in-flutter
-    // answer by https://stackoverflow.com/users/8394265/r%c3%a9mi-rousselet
-    final scaffold = ScaffoldMessenger.of(context);
-    scaffold.showSnackBar(
-      SnackBar(
-        content: Text(text),
-        action: SnackBarAction(
-            label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
-      ),
-    );
-  }
+  // void sendToast(String text) {
+  //   // Based on https://stackoverflow.com/questions/45948168/how-to-create-toast-in-flutter
+  //   // answer by https://stackoverflow.com/users/8394265/r%c3%a9mi-rousselet
+  //   final scaffold = ScaffoldMessenger.of(context);
+  //   scaffold.showSnackBar(
+  //     SnackBar(
+  //       content: Text(text),
+  //       action: SnackBarAction(
+  //           label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+  //     ),
+  //   );
+  // }
 
   // void scheduleEventRegistration(int eventId, bool value,
   //     {bool initiateRefresh = true}) {
@@ -232,42 +237,42 @@ class _EventsPageState extends State<EventsPage> {
   //   });
   // }
 
-  Future<void> _setEventRegistration(int eventId, bool value) async {
-    var api = await apiConnector;
+  // static Future<void> _setEventRegistration(APIConnector? api, int eventId, bool value) async {
+  //   // var api = await apiConnector;
 
-    if (value) {
-      Map res;
-      try {
-        res = await api!
-            .post("/users/me/bookings/?event_id=$eventId&consent=true");
+  //   if (value) {
+  //     Map res;
+  //     try {
+  //       res = await api!
+  //           .post("/users/me/bookings/?event_id=$eventId&consent=true");
 
-        bool isSuccess = res["status"] == "success";
-        assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
+  //       bool isSuccess = res["status"] == "success";
+  //       assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
 
-        if (isSuccess) {
-          sendToast("Registered for event $eventId");
-        }
-      } catch (e) {
-        popupDialog("Failed to register for event $eventId: \n$e");
-      }
-    }
+  //       if (isSuccess) {
+  //         sendToast("Registered for event $eventId");
+  //       }
+  //     } catch (e) {
+  //       popupDialog("Failed to register for event $eventId: \n$e");
+  //     }
+  //   }
 
-    if (!value) {
-      Map res;
-      try {
-        res = await api!.delete("/users/me/bookings/by-event-id/$eventId");
+  //   if (!value) {
+  //     Map res;
+  //     try {
+  //       res = await api!.delete("/users/me/bookings/by-event-id/$eventId");
 
-        bool isSuccess = res["status"] == "success";
-        assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
+  //       bool isSuccess = res["status"] == "success";
+  //       assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
 
-        if (isSuccess) {
-          sendToast("Cancelled registration for event $eventId");
-        }
-      } catch (e) {
-        popupDialog("Failed to cancel registration for event $eventId: $e");
-      }
-    }
-  }
+  //       if (isSuccess) {
+  //         sendToast("Cancelled registration for event $eventId");
+  //       }
+  //     } catch (e) {
+  //       popupDialog("Failed to cancel registration for event $eventId: $e");
+  //     }
+  //   }
+  // }
 
   // Iterable<Widget> buildEventsItem(Event basicEvent) {
   //   return getPlacedEvents(basicEvent).map((event) {
@@ -374,7 +379,7 @@ class _EventsPageState extends State<EventsPage> {
         .toList();
   }
 
-  Map<String, EventsGroup> buildEvents(EventsCalendarList list, {group = true}) {
+  Map<String, Widget> buildEvents(EventsCalendarList list, {group = true}) {
     var eventsItems = list.events;
 
     // if (!group) {
@@ -408,7 +413,7 @@ class _EventsPageState extends State<EventsPage> {
       return key;
     }
 
-    return groupBy(eventsItems,
+    var superGroups = groupBy(eventsItems,
             // (Event e) => formatWeekNumber(e.start).substring(0, 7)
             (AnnotatedEvent e) {
       var date = e.placement?.date;
@@ -437,16 +442,49 @@ class _EventsPageState extends State<EventsPage> {
       return "5_future";
 
       // return date.toIso8601String().substring(0, 7);
-    })
+    }).map((key, value) {
+      if (key != "1_past") {
+        // return MapEntry(key, {keyToTitle(key): value});
+        return MapEntry(key, [EventsGroupInfo(key, keyToTitle(key), value)]);
+      }
+
+      String formatMonthYear(String key) {
+        DateTime d;
+        try {
+          d = DateFormat("y-M").parse(key);
+        } on FormatException catch (_) {
+          return key;
+        }
+
+      return DateFormat("yMMMM", Localizations.localeOf(context).toString())
+          .format(d);
+      }
+
+      var pastGroups = groupBy(value, (e) => e.placement!.date.toIso8601String().substring(0, 7))
+      // .map((key, value) => MapEntry(formatMonthYear(key), value));
+      .entries
+      .sortedBy((element) => element.key)
+      .map((element) => EventsGroupInfo(element.key, formatMonthYear(element.key), element.value));
+
+      return MapEntry(key, pastGroups);
+    });
+
+
         // .entries
         // .sortedBy((element) => element.key)
-        .map((k, v) => MapEntry(k, EventsGroup(
-            key: ValueKey(("EventsGroup", k)),
-            title: keyToTitle(k),
+    return superGroups
+        .map((k, v) => MapEntry(k, 
+            Column(children:
+            // (String title, List<AnnotatedEvent> groupVal) 
+            v.map<Widget>((entry) => 
+            EventsGroup(
+            key: ValueKey(("EventsGroup", k, entry.key)),
+            title: entry.title,
             isMajor: k == "3_upcomingWeek",
             initiallyExpanded: k != "6_ongoing" && k != "5_future",
             // children: e.value.map<EventsItem>(buildEventsItem).toList(),
-            children: v)));
+            children: entry.elements)).toList()
+            )));
         // .toList();
   }
 
@@ -457,7 +495,8 @@ class _EventsPageState extends State<EventsPage> {
           builder: (context, snapshot) {
             var data = snapshot.data;
 
-            if (data != null && data.user == null) {
+            if (data != null && data.base is HTTPApiConnector
+            && (data.base as HTTPApiConnector).user == null) {
               return Padding(
                   padding: const EdgeInsets.all(32),
                   child: Column(children: [
@@ -510,14 +549,6 @@ class _EventsPageState extends State<EventsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // if (eventsProvider.cached == null && apiConnector == null) {
-    //   return const SizedBox();
-    // }
-
-    // if (eventsProvider.cached == null && apiConnector) {
-    //   return const SizedBox();
-    // }
-
     log.fine("Doing events page build");
 
     return ListenableBuilder(
