@@ -64,6 +64,12 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Widget icon = Center(child: RotationTransition(
           turns: _animation,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/actions/action_provider.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
@@ -157,9 +158,9 @@ class EventParticipants extends StatelessWidget {
 
     return Column(children: [
       Card(
-        child: ListTile(
-            title: Text(
-                "${AppLocalizations.of(context)!.eventParticipants} (${eventProvider.participants.cached?.length ?? 'n/a'}):"))),
+          child: ListTile(
+              title: Text(
+                  "${AppLocalizations.of(context)!.eventParticipants} (${eventProvider.participants.cached?.length ?? 'n/a'}):"))),
       if (participantsCached == null)
         FutureBuilderPatched(
             future: eventProvider.participants.loading,
@@ -175,18 +176,16 @@ class EventParticipants extends StatelessWidget {
               }
               return const SizedBox();
             }),
-
       if (participantsCached == [])
         Padding(
             padding: const EdgeInsets.all(16),
             child: Center(
-                child: Text(AppLocalizations.of(context)!
-                    .eventNoParticipantsYet))),
-
+                child: Text(
+                    AppLocalizations.of(context)!.eventNoParticipantsYet))),
       if (participantsCached != null && participantsCached.isNotEmpty)
-      ...participantsCached.map<Widget>((e) => Padding(
-          padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
-          child: Card(child: ListTile(title: Text(e))))),
+        ...participantsCached.map<Widget>((e) => Padding(
+            padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
+            child: Card(child: ListTile(title: Text(e))))),
       const SizedBox(height: 32),
     ]);
   }
@@ -221,51 +220,58 @@ class EventPageContents extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => SelectionArea(
-          child: CustomScrollView(slivers: [
-        SliverPadding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-            sliver: SliverList.list(
-              children: [
-              const SizedBox(height: 20),
-              if (eventProvider.event.cached == null)
-                FutureBuilderPatched(
-                    future: eventProvider.event.loading,
-                    builder: (eventContext, eventSnapshot) {
-                      if (eventSnapshot.hasError) {
-                        return Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                                child: formatError(eventSnapshot.error)));
-                      }
-                      if (eventSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(child: CircularProgressIndicator()));
-                      }
+  Widget build(BuildContext context) {
+    // ActionProvider actionProvider = ActionProvider.of(context);
+    // actionProvider.controller.widgets.clear();
+    // actionProvider.controller.widgets.add(const Icon(Icons.abc));
+    // actionProvider.controller.widgets = [
+    //   const Icon(Icons.abc)
+    // ];
 
-                      return const SizedBox();
-                    }),
-              ...(() {
-                final AnnotatedEvent? event = this.event;
-                if (event == null) {
-                  return [];
-                }
+    return SelectionArea(
+        child: CustomScrollView(slivers: [
+      SliverPadding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          sliver: SliverList.list(children: [
+            const SizedBox(height: 20),
+            if (eventProvider.event.cached == null)
+              FutureBuilderPatched(
+                  future: eventProvider.event.loading,
+                  builder: (eventContext, eventSnapshot) {
+                    if (eventSnapshot.hasError) {
+                      return Padding(
+                          padding: const EdgeInsets.all(32),
+                          child:
+                              Center(child: formatError(eventSnapshot.error)));
+                    }
+                    if (eventSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(child: CircularProgressIndicator()));
+                    }
 
-                return [
-                  EventHeader(event),
-                  EventDescription(event),
-                  EventThumbnail(event),
-                  const SizedBox(height: 32),
-                  if (expectParticipants) ...[
-                    
-                    EventParticipants(event, eventProvider: eventProvider)
-                  ]
-                ];
-              }())
-            ])),
-      ]));
+                    return const SizedBox();
+                  }),
+            ...(() {
+              final AnnotatedEvent? event = this.event;
+              if (event == null) {
+                return [];
+              }
+
+              return [
+                EventHeader(event),
+                EventDescription(event),
+                EventThumbnail(event),
+                const SizedBox(height: 32),
+                if (expectParticipants) ...[
+                  EventParticipants(event, eventProvider: eventProvider)
+                ]
+              ];
+            }())
+          ])),
+    ]));
+  }
 }
 
 class _EventPageState extends State<EventPage> {

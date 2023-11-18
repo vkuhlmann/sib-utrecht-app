@@ -200,7 +200,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
         //     ],
         child: ResourcePoolProvider(
             child: Builder(
-                builder: (context) => MediaQuery.of(context).size.width > 800
+                builder: (context) => MediaQuery.sizeOf(context).width > 800
                     ? buildWide()
                     : buildMobile())));
   }

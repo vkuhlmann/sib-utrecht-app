@@ -40,6 +40,9 @@ void main() {
 
     final license3 = await rootBundle.loadString('assets/fonts/Roboto/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license3);
+
+    final license4 = await rootBundle.loadString('lib/components/dual_screen-1.0.4/LICENSE');
+    yield LicenseEntryWithLineBreaks(['dual_screen'], license4);
   });
 
   var a = const MyApp();

@@ -55,6 +55,9 @@ class AlertsPanel extends StatefulWidget {
 
 class _AlertsPanelState extends State<AlertsPanel> {
   final log = Logger("AlertsPanel");
+
+  List<Object> allowedCallbackIdentities = [];
+  List<Future> activeFutures = [];
   
   @override
   void initState() {
@@ -72,15 +75,31 @@ class _AlertsPanelState extends State<AlertsPanel> {
       var msg = AlertsPanelStatusMessage(
           component: fut.component, status: "done", data: fut.data);
 
-      fut.future.then((_) {
+      final Object callbackIdentity = Object();
+      allowedCallbackIdentities.add(callbackIdentity);
+
+      var a = fut.future.then((_) {
         return Future.delayed(const Duration(seconds: 2)).then((_) {
+          if (!allowedCallbackIdentities.contains(callbackIdentity)) {
+            return;
+          }
+
           log.info("Adding dismissed message");
           setState(() => widget.controller.dismissedMessages.add(msg));
 
           log.info("Dismissed messages: ${widget.controller.dismissedMessages}");
+          allowedCallbackIdentities.remove(callbackIdentity);
         });
       });
+      activeFutures.add(a);
     }
+  }
+
+  @override
+  void dispose() {
+    allowedCallbackIdentities.clear();
+    activeFutures.clear();
+    super.dispose();
   }
 
   @override
