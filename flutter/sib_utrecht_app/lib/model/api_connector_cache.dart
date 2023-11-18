@@ -29,7 +29,7 @@ class CacheApiConnector extends APIConnector {
   @override
   Future<Map> get(String url) async {
     var box = await boxFuture;
-    Map? res = box.get(url)?["response"];
+    Map? res = box.get(getKeyName(url))?["response"];
 
     if (res == null) {
       throw CacheMissException("Cache miss for $url");
@@ -48,7 +48,7 @@ class CacheApiConnector extends APIConnector {
 
   Future<void> setGetResult(String url, Map ans) async {
     var box = await boxFuture;
-    box.put(url, {
+    box.put(getKeyName(url), {
       "response": ans,
       "time": DateTime.now().millisecondsSinceEpoch,
     });
