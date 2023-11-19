@@ -55,7 +55,7 @@ class EventHeader extends StatelessWidget {
       if (event.location != null)
         Card(
             child: ListTile(
-                title: Text("Location: ${event.location.toString()}"))),
+                title: Text("${AppLocalizations.of(context)!.eventLocation}: ${event.location.toString()}"))),
 
       Card(
           child: ListTile(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -285,98 +286,99 @@ class _EventsPageState extends State<EventsPage> {
   //   });
   // }
 
-  List<Widget> buildEventsOrig(EventsCalendarList list, {group = true}) {
-    var eventsItems = list.events;
+  // List<Widget> buildEventsOrig(EventsCalendarList list, {group = true}) {
+  //   var eventsItems = list.events;
 
-    if (!group) {
-      return eventsItems.map(EventsPage.buildItem).toList();
-    }
+  //   if (!group) {
+  //     return eventsItems.map(EventsPage.buildItem).toList();
+  //   }
 
-    DateTime upcomingAnchor = DateTime.now().add(const Duration(days: 2));
+  //   DateTime upcomingAnchor = DateTime.now().add(const Duration(days: 2));
 
-    String currentWeek = formatWeekNumber(DateTime.now());
-    String upcomingWeek = formatWeekNumber(upcomingAnchor);
+  //   String currentWeek = formatWeekNumber(DateTime.now());
+  //   String upcomingWeek = formatWeekNumber(upcomingAnchor);
 
-    String pastWeek =
-        formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
-    String nextWeek =
-        formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
+  //   String pastWeek =
+  //       formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
+  //   String nextWeek =
+  //       formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
 
-    String keyToTitle(String key) {
-      var weekIdMap = {
-        "6_ongoing": AppLocalizations.of(context)!.eventCategoryOngoing,
-        "1_past": "Past",
-        "2_pastWeek": "Last week",
-        "3_upcomingWeek":
-            (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
-        "4_nextWeek": "Next week",
-        "5_future": "Future"
-      };
+  //   String keyToTitle(String key) {
+  //     var loc = AppLocalizations.of(context)!;
+  //     var weekIdMap = {
+  //       "6_ongoing": loc.eventCategoryOngoing,
+  //       "1_past": "Past",
+  //       "2_pastWeek": loc.lastWeek,
+  //       "3_upcomingWeek":
+  //           (upcomingWeek == currentWeek) ? loc.nextWeek : loc.upcomingWeek,
+  //       "4_nextWeek": loc.nextWeek,
+  //       "5_future": loc.future
+  //     };
 
-      var a = weekIdMap[key];
-      if (a != null) {
-        return a;
-      }
+  //     var a = weekIdMap[key];
+  //     if (a != null) {
+  //       return a;
+  //     }
 
-      return key;
+  //     return key;
 
-      // DateTime d;
-      // try {
-      //   d = DateFormat("y-M").parse(key);
-      // } on FormatException catch (_) {
-      //   return key;
-      // }
+  //     // DateTime d;
+  //     // try {
+  //     //   d = DateFormat("y-M").parse(key);
+  //     // } on FormatException catch (_) {
+  //     //   return key;
+  //     // }
 
-      // return DateFormat("yMMMM", Localizations.localeOf(context).toString())
-      //     .format(d);
+  //     // return DateFormat("yMMMM", Localizations.localeOf(context).toString())
+  //     //     .format(d);
 
-      // if (key == AppLocalizations.of(context)!.eventCategoryOngoing) {
-      //   return AppLocalizations.of(context)!.eventCategoryOngoing;
-      // }
-      // return formatWeekNumber(DateTime.parse(key));
-    }
+  //     // if (key == AppLocalizations.of(context)!.eventCategoryOngoing) {
+  //     //   return AppLocalizations.of(context)!.eventCategoryOngoing;
+  //     // }
+  //     // return formatWeekNumber(DateTime.parse(key));
+  //   }
 
-    return groupBy(eventsItems,
-            // (Event e) => formatWeekNumber(e.start).substring(0, 7)
-            (AnnotatedEvent e) {
-      var date = e.placement?.date;
-      if (date == null) {
-        return "6_ongoing";
-      }
+  //   return groupBy(eventsItems,
+  //           // (Event e) => formatWeekNumber(e.start).substring(0, 7)
+  //           (AnnotatedEvent e) {
+  //     var date = e.placement?.date;
+  //     if (date == null) {
+  //       return "6_ongoing";
+  //     }
 
-      String weekId = formatWeekNumber(date);
+  //     String weekId = formatWeekNumber(date);
 
-      if (weekId.compareTo(pastWeek) < 0) {
-        return "1_past";
-      }
-      if (weekId == pastWeek) {
-        return "2_pastWeek";
-      }
-      if (weekId == upcomingWeek) {
-        return "3_upcomingWeek";
-      }
-      if (weekId == nextWeek) {
-        return "4_nextWeek";
-      }
-      if (weekId.compareTo(nextWeek) > 0) {
-        return "5_future";
-      }
+  //     if (weekId.compareTo(pastWeek) < 0) {
+  //       return "1_past";
+  //     }
+  //     if (weekId == pastWeek) {
+  //       return "2_pastWeek";
+  //     }
+  //     if (weekId == upcomingWeek) {
+  //       return "3_upcomingWeek";
+  //     }
+  //     if (weekId == nextWeek) {
+  //       return "4_nextWeek";
+  //     }
+  //     if (weekId.compareTo(nextWeek) > 0) {
+  //       return "5_future";
+  //     }
 
-      return "5_future";
+  //     return "5_future";
 
-      // return date.toIso8601String().substring(0, 7);
-    })
-        .entries
-        .sortedBy((element) => element.key)
-        .map((e) => EventsGroup(
-            key: ValueKey(("EventsGroup", e.key)),
-            title: keyToTitle(e.key),
-            initiallyExpanded: e.key != "6_ongoing",
-            isMajor: e.key == "3_upcomingWeek",
-            // children: e.value.map<EventsItem>(buildEventsItem).toList(),
-            children: e.value))
-        .toList();
-  }
+  //     // return date.toIso8601String().substring(0, 7);
+  //   })
+  //       .entries
+  //       .sortedBy((element) => element.key)
+  //       .map((e) => EventsGroup(
+  //           key: ValueKey(("EventsGroup", e.key)),
+  //           title: keyToTitle(e.key),
+  //           initiallyExpanded: e.key != "6_ongoing",
+  //           isMajor: e.key == "3_upcomingWeek",
+  //           // children: e.value.map<EventsItem>(buildEventsItem).toList(),
+  //           children: e.value))
+  //       .toList();
+  // }
 
   Map<String, Widget> buildEvents(EventsCalendarList list, {group = true}) {
     var eventsItems = list.events;
@@ -385,9 +387,25 @@ class _EventsPageState extends State<EventsPage> {
     //   return eventsItems.map(EventsPage.buildItem).toList();
     // }
 
-    DateTime upcomingAnchor = DateTime.now().add(const Duration(days: 2));
+    DateTime now = DateTime.now();
 
-    String currentWeek = formatWeekNumber(DateTime.now());
+    String currentWeek = formatWeekNumber(now);
+
+    DateTime? lastInCurrentWeek = eventsItems
+      .map((el) => el.placement?.date)
+      .where((v) => v != null)
+      .map((v) => v!)
+      .where((v) => formatWeekNumber(v) == currentWeek)
+      .sortedBy((v) => v)
+      .lastOrNull;    
+
+    DateTime upcomingAnchor = now.add(const Duration(days: 3));
+    DateTime? activeEnd = lastInCurrentWeek?.add(const Duration(hours: 2));
+
+    if (activeEnd != null && activeEnd.isAfter(now) == true) {
+      upcomingAnchor = now;
+    }
+
     String upcomingWeek = formatWeekNumber(upcomingAnchor);
 
     String pastWeek =
@@ -396,14 +414,17 @@ class _EventsPageState extends State<EventsPage> {
         formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
 
     String keyToTitle(String key) {
+      var loc = AppLocalizations.of(context)!;
       var weekIdMap = {
-        "6_ongoing": AppLocalizations.of(context)!.eventCategoryOngoing,
+        "6_ongoing": loc.eventCategoryOngoing,
         "1_past": "Past",
-        "2_pastWeek": "Last week",
+        "2_pastWeek": loc.lastWeek,
         "3_upcomingWeek":
-            (upcomingWeek == currentWeek) ? "This week" : "Upcoming week",
-        "4_nextWeek": "Next week",
-        "5_future": "Future"
+            (upcomingWeek == currentWeek) ? loc.thisWeek : loc.upcomingWeek,
+        "4_nextWeek":
+            (upcomingWeek == currentWeek) ? loc.nextWeek : loc.weekAfterUpcomingWeek,
+        // loc.nextWeek,
+        "5_future": loc.future
       };
 
       var a = weekIdMap[key];
@@ -457,8 +478,11 @@ class _EventsPageState extends State<EventsPage> {
           return key;
         }
 
-        return DateFormat("yMMMM", Localizations.localeOf(context).toString())
+        String val = DateFormat("yMMMM", Localizations.localeOf(context).toString())
             .format(d);
+
+        return toBeginningOfSentenceCase(val, Localizations.localeOf(context).toString())
+            ?? val;
       }
 
       var pastGroups = groupBy(

@@ -18,12 +18,23 @@
   "board": "Board",
   "eventStarts": "Starts",
   "eventEnds": "Ends",
+  "eventLocation": "Location",
   "eventDescription": "Description",
   "eventImage": "Promo image",
   "eventNoImage": "No image",
   "eventParticipants": "Participants",
   "management": "Management",
   "eventCategoryOngoing": "Ongoing",
+
+  "upcomingWeek": "Upcoming week",
+  "nextWeek": "Next week",
+  "future": "Future",
+  "lastWeek": "Last week",
+  "thisWeek": "This week",
+  "weekAfterUpcomingWeek": "After upcoming week",
+
+  "save": "Save",
+  "delete": "Delete",
 
   "darkTheme": "Dark theme",
 

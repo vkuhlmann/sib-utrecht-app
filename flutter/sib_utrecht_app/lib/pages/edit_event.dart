@@ -340,7 +340,7 @@ class _EventEditPageState extends State<EventEditPage> {
                     });
                   });
                 },
-                child: const Text("Delete")),
+                child: Text(AppLocalizations.of(context)!.delete)),
             const SizedBox(
               height: 16,
             ),
@@ -351,7 +351,7 @@ class _EventEditPageState extends State<EventEditPage> {
                     _submission = submit();
                   });
                 },
-                child: const Text("Save")),
+                child: Text(AppLocalizations.of(context)!.save)),
             const SizedBox(height: 32),
             FutureBuilder(
               future: payload,

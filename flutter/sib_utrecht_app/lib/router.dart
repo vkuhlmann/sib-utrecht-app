@@ -150,6 +150,7 @@ GoRouter createRouter() {
       //     routes: [
       StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) {
+            log.info("Building indexed stack @@@@@@@@@@");
             return ScaffoldWithNavbar(
               loginController: loginManager,
               navigationShell,
@@ -169,6 +170,7 @@ GoRouter createRouter() {
                   ShellRoute(
                       builder: (context, state, child) {
                         bool isDetailsPriority = true;
+                        log.info("Shell route child is $child");
 
                         return TwoPane(
                           startPane:
