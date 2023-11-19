@@ -1,21 +1,8 @@
-// import 'dart:html';
-// import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-
-// import 'package:flutter/scheduler.dart';
-// import 'package:flutter/services.dart';
-// import 'package:tuple/tuple.dart';
-
-// import 'package:intl/date_symbol_data_local.dart';
-
-// import 'package:material_symbols_icons/symbols.dart';
 import 'package:logging/logging.dart';
 
-// import 'package:flutter_html/flutter_html.dart';
-// import 'package:flutter_html/style.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'shell.dart';
@@ -32,7 +19,7 @@ void main() {
   GoogleFonts.config.allowRuntimeFetching = true;
 
   LicenseRegistry.addLicense(() async* {
-    final license2 = await rootBundle.loadString('LICENSE');
+    final license2 = await rootBundle.loadString('assets/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['sib_utrecht_app'], license2);
 
     final license = await rootBundle.loadString('assets/fonts/RobotoMono/LICENSE.txt');
@@ -41,7 +28,8 @@ void main() {
     final license3 = await rootBundle.loadString('assets/fonts/Roboto/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license3);
 
-    final license4 = await rootBundle.loadString('lib/components/dual_screen-1.0.4/LICENSE');
+    // final license4 = await rootBundle.loadString('lib/components/dual_screen-1.0.4/LICENSE');
+    final license4 = await rootBundle.loadString('assets/dual_screen-LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['dual_screen'], license4);
   });
 

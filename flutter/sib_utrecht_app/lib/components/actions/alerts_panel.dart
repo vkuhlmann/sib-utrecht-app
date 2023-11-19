@@ -22,11 +22,9 @@ class AlertsPanelStatusMessage {
           // runtimeType == other.runtimeType &&
           component == other.component &&
           status == other.status;
-          //  &&
-          // data == other.data;
 
   @override
-  int get hashCode => component.hashCode ^ status.hashCode;// ^ data.hashCode;
+  int get hashCode => component.hashCode ^ status.hashCode;
 }
 
 class AlertsFutureStatus {

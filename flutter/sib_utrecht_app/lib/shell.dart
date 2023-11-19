@@ -411,8 +411,6 @@ class _MyAppState extends State<MyApp> {
                 locale: isDutch == true
                     ? const Locale('nl', 'NL')
                     : (isDutch == false ? const Locale('en', 'GB') : null),
-                // locale: const Locale('nl', 'NL'),
-                // locale: const Locale('en', 'GB'),
                 themeMode: useDarkTheme == null
                     ? ThemeMode.system
                     : (useDarkTheme ? ThemeMode.dark : ThemeMode.light),
