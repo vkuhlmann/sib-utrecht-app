@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sib_utrecht_app/components/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({Key? key}) : super(key: key);

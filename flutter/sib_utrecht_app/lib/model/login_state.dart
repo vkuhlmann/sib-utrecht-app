@@ -1,8 +1,8 @@
 
-import 'api_connector.dart';
+import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 
 class LoginState {
-  final APIConnector connector;
+  final CacherApiConnector connector;
   final Map<String, Map<String, dynamic>> profiles;
 
   final String? activeProfileName;

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import '../model/login_state.dart';
 
 class APIAccess extends InheritedWidget {
-  const APIAccess({super.key, required super.child, required this.state});
+  APIAccess({super.key, required super.child, required this.state})
+  : connector = state.then((s) => s.connector);
 
   final Future<LoginState> state;
+  final Future<CacherApiConnector> connector;
 
   static APIAccess? maybeOf(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<APIAccess>();

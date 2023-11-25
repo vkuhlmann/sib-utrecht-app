@@ -1,6 +1,8 @@
-
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sib_utrecht_app/model/api_connector_cache.dart';
+import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
+import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 
@@ -8,7 +10,6 @@ import '../log.dart';
 import '../constants.dart';
 import '../model/login_state.dart';
 import 'api_connector.dart';
-
 
 class LoginManager extends ChangeNotifier {
   late FlutterSecureStorage storage;
@@ -40,7 +41,8 @@ class LoginManager extends ChangeNotifier {
       log.info("Returning LoginState not logged in");
 
       return LoginState(
-          connector: APIConnector(apiAddress: defaultApiUrl),
+          connector: CacherApiConnector.fromHTTP(
+              HTTPApiConnector(apiAddress: defaultApiUrl)),
           profiles: profiles.map(
               (key, value) => MapEntry(key, value as Map<String, dynamic>)),
           activeProfileName: null,
@@ -52,10 +54,10 @@ class LoginManager extends ChangeNotifier {
     log.info("Returning LoginState logged in with $activeProfileName");
 
     return LoginState(
-        connector: APIConnector(
+        connector: CacherApiConnector.fromHTTP(HTTPApiConnector(
             apiAddress: activeProfile["api"]?["url"] ?? defaultApiUrl,
             user: activeProfile["user"],
-            apiSecret: activeProfile["apiSecret"]),
+            apiSecret: activeProfile["apiSecret"])),
         profiles: profiles
             .map((key, value) => MapEntry(key, value as Map<String, dynamic>)),
         activeProfileName: activeProfileName,
@@ -147,7 +149,7 @@ class LoginManager extends ChangeNotifier {
     prof[profileName] = profile;
 
     if (fillIdentity) {
-      var conn = APIConnector(
+      var conn = HTTPApiConnector(
           apiAddress: apiAddress, user: user, apiSecret: apiSecret);
       var res = await conn.get("/auth");
       var identity = res["data"]?["identity"];

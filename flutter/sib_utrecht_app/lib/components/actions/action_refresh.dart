@@ -1,24 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
-// import 'dart:math';
-import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sib_utrecht_app/components/sib_appbar.dart';
-import 'package:sib_utrecht_app/view_model/events_calendar_list.dart';
-
-import '../globals.dart';
-import '../model/api_connector.dart';
-import '../components/api_access.dart';
-import '../model/event.dart';
-import '../view_model/annotated_event.dart';
-import '../view_model/cached_provider.dart';
-import '../view_model/event_participation.dart';
-import '../view_model/async_patch.dart';
-import '../view_model/event_placement.dart';
-import '../components/event_group.dart';
-import '../components/alerts_panel.dart';
+import '../../view_model/async_patch.dart';
 
 // Contains code from https://www.kindacode.com/article/flutter-spinning-animation/
 
@@ -79,6 +61,12 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
     // var fut = widget.refreshFuture;
 
     // if (fut != )
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

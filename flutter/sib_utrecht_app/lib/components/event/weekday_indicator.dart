@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../view_model/annotated_event.dart';
+import '../../view_model/annotated_event.dart';
 
 class WeekdayIndicator extends StatelessWidget {
   final AnnotatedEvent event;
@@ -10,7 +10,7 @@ class WeekdayIndicator extends StatelessWidget {
 
   static const Color otherColor = Colors.pink;
 
-  static final List<Color> weekDayColors = [
+  static final List<Color> weekdayColorsOrig = [
     Colors.pink, // Monday
     Colors.blue, // Tuesday
     Colors.pink, // Wednesday
@@ -18,7 +18,19 @@ class WeekdayIndicator extends StatelessWidget {
     Colors.pink, // Friday
     Colors.pink, // Saturday
     Colors.pink // Sunday
-  ]; //.map((e) => HSLColor.fromColor(e).withLightness(0.4).toColor()).toList();
+  ];
+
+  static final List<Color> weekdayColors = [
+    Colors.pink, // Monday
+    Colors.blue, // Tuesday
+    Colors.pink, // Wednesday
+    Colors.pink, // Thursday
+    Colors.green, // Friday
+    Colors.pink, // Saturday
+    Colors.pink // Sunday
+  ];
+  
+   //.map((e) => HSLColor.fromColor(e).withLightness(0.4).toColor()).toList();
 
   // final Map<String, List<String>> WeekDays = {
   //   "en_GB": ["mo", "tu", "we", "th", "fr", "sa", "su"],
@@ -27,9 +39,17 @@ class WeekdayIndicator extends StatelessWidget {
 
   (Color, Color?) getColor(BuildContext context) {
     var date = event.placement?.date;
-    HSLColor color = HSLColor.fromColor(date == null
-        ? otherColor
-        : WeekdayIndicator.weekDayColors[date.weekday - 1]);
+    HSLColor color = HSLColor.fromColor(otherColor);
+
+    if (date != null) {
+      List<Color> weekdayColors = WeekdayIndicator.weekdayColors;
+
+      if (date.isBefore(DateTime(2023, 10, 21))) {
+        weekdayColors = WeekdayIndicator.weekdayColorsOrig;
+      }
+
+      color = HSLColor.fromColor(weekdayColors[date.weekday - 1]);
+    }
 
     color = color.withLightness(0.47);
 
@@ -85,7 +105,7 @@ class WeekdayIndicator extends StatelessWidget {
 
     // return Container(
     //   decoration: BoxDecoration(
-    //       color: EventTile.weekDayColors[event.date.weekday - 1],
+    //       color: EventTile.weekdayColors[event.date.weekday - 1],
     //       borderRadius: BorderRadius.circular(4)),
     //   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
     //   child: Text(

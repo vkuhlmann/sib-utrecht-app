@@ -11,25 +11,24 @@ import '../model/cors_fallback.dart'
 
 Future<Map?> getUserIdentity(
     {required bool doAuthorize, String? userLogin}) async {
-  var dummyRes = {
-    "identity": {
-      "user_id": "6001",
-      // "user_login": "me@example.org",
-      "user_login": "vincent-test1",
-      "user_email": "me@example.org",
-      "user_display_name": "Vincent Kuhlmann",
-      "user_firstname": "Vincent",
-    },
-    // "request_origin": $_SERVER['HTTP_ORIGIN'],
-    "authorization": {
-      // "user_login": "me@example.org",
-      "user_login": "vincent-test1",
-      "app_name": "sib-utrecht-app-0a0a0",
-      "password": "aaaaaa",
-      "api_url": 'https://sib-utrecht.nl/wp-json/sib-utrecht-wp-plugin/v1',
-    }
-  };
-
+  // var dummyRes = {
+  //   "identity": {
+  //     "user_id": "6001",
+  //     // "user_login": "me@example.org",
+  //     "user_login": "vincent-test1",
+  //     "user_email": "me@example.org",
+  //     "user_display_name": "Vincent Kuhlmann",
+  //     "user_firstname": "Vincent",
+  //   },
+  //   // "request_origin": $_SERVER['HTTP_ORIGIN'],
+  //   "authorization": {
+  //     // "user_login": "me@example.org",
+  //     "user_login": "vincent-test1",
+  //     "app_name": "sib-utrecht-app-0a0a0",
+  //     "password": "aaaaaa",
+  //     "api_url": 'https://sib-utrecht.nl/wp-json/sib-utrecht-wp-plugin/v1',
+  //   }
+  // };
   // return dummyRes;
 
   var client = getCorsClient(withCredentials: true);
@@ -118,7 +117,7 @@ Widget buildCorsLogin(BuildContext context, Map data) {
             throw Exception("Failed to authorize");
           }
 
-          LoginState stFut = await loginManager.completeLogin(
+          LoginState _ = await loginManager.completeLogin(
             user: auth["user_login"],
             apiSecret: auth["password"],
             apiAddress: auth["api_url"],

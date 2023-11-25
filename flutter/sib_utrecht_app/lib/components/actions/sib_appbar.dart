@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:sib_utrecht_app/components/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/actions/action_provider.dart';
+import 'package:sib_utrecht_app/components/actions/appbar_suppression.dart';
 
 import '/globals.dart';
-import '/model/login_manager.dart';
 import '/model/login_state.dart';
 import '/components/api_access.dart';
-import '/components/sib_appbar.dart';
 
 import '/shell.dart';
 
@@ -20,9 +15,13 @@ class WithSIBAppBar extends StatelessWidget {
   final List<Widget> actions;
   final Widget child;
   final bool showBackButton;
+  // final ActionsController actionsCollection = ActionsController();
 
-  const WithSIBAppBar({Key? key, required this.actions, required this.child,
-    this.showBackButton = true})
+  const WithSIBAppBar(
+      {Key? key,
+      required this.actions,
+      required this.child,
+      this.showBackButton = true})
       : super(key: key);
 
   static bool isBackActionAvailable(BuildContext context) {
@@ -166,9 +165,9 @@ class WithSIBAppBar extends StatelessWidget {
   Widget buildBackButton() => Builder(builder: (context) {
         String? backAddress = getBackAddress(context);
 
-        bool isActive = backAddress != null ||
-            Navigator.of(context).canPop() ||
-            router.canPop();
+        // bool isActive = backAddress != null ||
+        //     Navigator.of(context).canPop() ||
+        //     router.canPop();
         // if (!isActive) {
         //   return const SizedBox();
         // }
@@ -243,26 +242,46 @@ class WithSIBAppBar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          leading: showBackButton ? buildBackButton() : null,
-          title: Row(
-            // crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              // buildBackButton(),
-              Image.asset(
-                'assets/sib_logo_64.png',
-                fit: BoxFit.contain,
-                height: 40,
-                filterQuality: FilterQuality.medium,
-              ),
-              const SizedBox(width: 16),
-              // Text(widget.title),
-              const Text("SIB-Utrecht (Bèta)")
-              // const Spacer(),
-            ],
-          ),
-          actions: [...actions, buildLoginIcon(context)]),
-      body: child);
+  Widget build(BuildContext context) {
+    AppbarSuppression? suppression = AppbarSuppression.maybeOf(context);
+
+    // ActionProvider(
+    // controller: actionsCollection,
+    // child:
+    // Builder(
+    //     builder: (context) => ListenableBuilder(
+    //         listenable: ActionProvider.of(context).controller,
+    //         builder: (context, child) =>
+    return Scaffold(
+        appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            leading: (showBackButton && suppression?.suppressBackbutton != true)
+                ? buildBackButton()
+                : null,
+            title: suppression?.suppressTitle == true
+                ? null
+                : Row(
+                    // crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      // buildBackButton(),
+                      Image.asset(
+                        'assets/sib_logo_64.png',
+                        fit: BoxFit.contain,
+                        height: 40,
+                        filterQuality: FilterQuality.medium,
+                      ),
+                      const SizedBox(width: 16),
+                      // Text(widget.title),
+                      const Text("SIB-Utrecht (Bèta)")
+                      // const Spacer(),
+                    ],
+                  ),
+            actions: [
+              // ...ActionProvider.of(context).controller.widgets,
+              ...actions,
+              if (suppression?.suppressMenu != true) buildLoginIcon(context)
+            ]),
+        body: child);
+    // child: child)))
+  }
 }

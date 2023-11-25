@@ -1,625 +1,376 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sib_utrecht_app/components/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/actions/action_provider.dart';
+import 'package:sib_utrecht_app/components/event/thumbnail.dart';
+import 'package:sib_utrecht_app/components/actions/feedback.dart';
+import 'package:sib_utrecht_app/components/resource_pool.dart';
+import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/event/signup_indicator.dart';
+import 'package:sib_utrecht_app/view_model/annotated_event.dart';
+import 'package:sib_utrecht_app/view_model/event_participation.dart';
+import 'package:sib_utrecht_app/view_model/event_provider.dart';
 
 import '../globals.dart';
-import '../constants.dart';
 import '../utils.dart';
-import '../model/event.dart';
-import '../model/api_connector.dart';
-import '../view_model/cached_provider.dart';
 import '../view_model/async_patch.dart';
-import '../components/alerts_panel.dart';
+import '../components/actions/alerts_panel.dart';
 import '../components/api_access.dart';
-import '../components/action_refresh.dart';
+import '../components/actions/action_refresh.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({Key? key, required this.eventId}) : super(key: key);
-
-  final int? eventId;
+  final int eventId;
 
   @override
   State<EventPage> createState() => _EventPageState();
 }
 
-// class PromoImageView<T> extends Page<T> {
-//   const PromoImageView({Key? key, required this.url}) : super(key: key);
-// }
+class EventHeader extends StatelessWidget {
+  final AnnotatedEvent event;
 
-class ThumbnailImageDialog extends StatelessWidget {
-  const ThumbnailImageDialog({Key? key, required this.url}) : super(key: key);
-
-  final String url;
+  const EventHeader(this.event, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // return DialogPage(
-    //     builder: (_) => Center(
-    //           child: Image.network(url),
-    //         ));
+    var eventEnd = event.end;
 
-    return
-        // Dialog(
-        //     alignment: AlignmentDirectional.center,
-        //     // insetPadding: const EdgeInsets.fromLTRB(
-        //     //     16, 70, 16, 16),
-        //     insetPadding: const EdgeInsets.all(0),
-        //     child:
-        //   Stack(alignment: AlignmentDirectional.center,
-        //   children: [
-        //  Container(
-        //     constraints: const BoxConstraints.expand(),
-        //     child: GestureDetector(
-        //     // padding: const EdgeInsets.fromLTRB(
-        //     //     16, 16, 16, 32),
-        //     // width: 200,
-        //     onTap: () => Navigator.pop(context)
-        //     )),
-        //   Center(child: InteractiveViewer(
-        //       clipBehavior: Clip.none,
-        //         child: GestureDetector(
-        //           child: Image.network(
-        //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
-        //     ))
-        //   ])
-        Center(
-            child: Builder(
-                builder: (context) => InteractiveViewer(
-                    minScale: 0.1,
-                    // clipBehavior: Clip.none,
-                    child: Stack(
-                      alignment: AlignmentDirectional.center,
-                      children: [
-                        Container(
-                            constraints: const BoxConstraints.expand(),
-                            child: GestureDetector(
-                                // padding: const EdgeInsets.fromLTRB(
-                                //     16, 16, 16, 32),
-                                // width: 200,
-                                onTap: () => Navigator.pop(context))),
-                        Container(
-                            constraints: const BoxConstraints.expand(),
-                            child: GestureDetector(
-                                onTap: () => Navigator.pop(context),
-                                child: Padding(
-                                    padding: const EdgeInsets.all(32),
-                                    child: Image.network(url,
-                                        fit: BoxFit.contain))))
-                      ],
-                    ))));
+    return Column(children: [
+      Row(children: [
+        Expanded(
+            child: Card(
+                child: ListTile(
+                    title: Text(event
+                        .getLocalEventName(Localizations.localeOf(context)))))),
+        SignupIndicator(event: event),
+        IconButton(
+            onPressed: () {
+              router.goNamed("event_edit",
+                  pathParameters: {"event_id": event.eventId.toString()});
+            },
+            icon: const Icon(Icons.edit)),
+      ]),
+      if (event.location != null)
+        Card(
+            child: ListTile(
+                title: Text("${AppLocalizations.of(context)!.eventLocation}: ${event.location.toString()}"))),
+
+      Card(
+          child: ListTile(
+              title: Wrap(children: [
+        SizedBox(
+            width: 80,
+            child: Text("${AppLocalizations.of(context)!.eventStarts}: ")),
+        Wrap(children: [
+          SizedBox(
+              width: 260,
+              child: Text(DateFormat.yMMMMEEEEd(
+                      Localizations.localeOf(context).toString())
+                  .format(event.start))),
+          // const SizedBox(width: 20),
+          Text(DateFormat.Hm(Localizations.localeOf(context).toString())
+              .format(event.start))
+        ])
+      ]))),
+      if (eventEnd != null)
+        Card(
+            child: ListTile(
+                title: Wrap(children: [
+          SizedBox(
+              width: 80,
+              child: Text("${AppLocalizations.of(context)!.eventEnds}: ")),
+          Wrap(children: [
+            SizedBox(
+                width: 260,
+                child: Text(DateFormat.yMMMMEEEEd(
+                        Localizations.localeOf(context).toString())
+                    .format(eventEnd))),
+            // const SizedBox(width: 20),
+            Text(DateFormat.Hm(Localizations.localeOf(context).toString())
+                .format(eventEnd))
+          ])
+        ]))),
+      // Table(columnWidths: const {
+      //   0: IntrinsicColumnWidth(),
+      //   1: FlexColumnWidth(),
+      //   2: IntrinsicColumnWidth(),
+      //   3: FlexColumnWidth()
+      // }, children: <TableRow>[
+      //   TableRow(children: <Widget>[
+      //     const Text("Start: "),
+      //     LocaleDateFormat(
+      //         date: event.start, format: "yMMMMEEEEd"),
+      //     const SizedBox(width: 30),
+      //     LocaleDateFormat(date: event.start, format: "Hm")
+      //   ]),
+      //   TableRow(children: <Widget>[
+      //     const Text("Eindigt: "),
+      //     LocaleDateFormat(
+      //         date: event.end, format: "yMMMMEEEEd"),
+      //     const SizedBox(width: 30),
+      //     LocaleDateFormat(date: event.end, format: "Hm")
+      //   ])
+      // ]),
+    ]);
+  }
+}
+
+class EventDescription extends StatelessWidget {
+  final AnnotatedEvent event;
+
+  const EventDescription(this.event, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final (description, _) =
+        EventProvider.extractDescriptionAndThumbnail(event);
+
+    return Card(
+        child: ListTile(
+            title: Text(AppLocalizations.of(context)!.eventDescription),
+            subtitle: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+                child: HtmlWidget(
+                  // ((event.data["post_content"] ?? "") as String).replaceAll("\r\n\r\n", "<br/><br/>"),
+                  description ?? "",
+                  textStyle: Theme.of(context).textTheme.bodyMedium,
+                ))));
+  }
+}
+
+class EventParticipants extends StatelessWidget {
+  final AnnotatedEvent event;
+  final EventProvider eventProvider;
+
+  const EventParticipants(this.event, {Key? key, required this.eventProvider})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // return SliverPadding(
+    //     padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+    //     sliver: SliverList(
+    //         delegate: SliverChildListDelegate([
+
+    var participantsCached = event.participants;
+
+    return Column(children: [
+      Card(
+          child: ListTile(
+              title: Text(
+                  "${AppLocalizations.of(context)!.eventParticipants} (${eventProvider.participants.cached?.length ?? 'n/a'}):"))),
+      if (participantsCached == null)
+        FutureBuilderPatched(
+            future: eventProvider.participants.loading,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Center(child: formatError(snapshot.error)));
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return const SizedBox();
+            }),
+      if (participantsCached == [])
+        Padding(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+                child: Text(
+                    AppLocalizations.of(context)!.eventNoParticipantsYet))),
+      if (participantsCached != null && participantsCached.isNotEmpty)
+        ...participantsCached.map<Widget>((e) => Padding(
+            padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
+            child: Card(child: ListTile(title: Text(e))))),
+      const SizedBox(height: 32),
+    ]);
+  }
+}
+
+class EventPageContents extends StatelessWidget {
+  final EventProvider eventProvider;
+  final EventParticipation? eventParticipation;
+
+  final AnnotatedEvent? event;
+  final bool expectParticipants;
+
+  EventPageContents(this.eventProvider,
+      {Key? key, required this.eventParticipation, required this.event})
+      : expectParticipants = eventProvider.doesExpectParticipants(),
+        super(key: key);
+
+  static EventPageContents fromProvider(EventProvider eventProvider,
+      {Key? key, EventParticipation? eventParticipation}) {
+    var cachedEvent = eventProvider.event.cached;
+    AnnotatedEvent? event;
+    if (cachedEvent != null) {
+      event = AnnotatedEvent(
+        event: cachedEvent,
+        participation: eventParticipation,
+        participants: eventProvider.participants.cached,
+      );
+    }
+
+    return EventPageContents(eventProvider,
+        eventParticipation: eventParticipation, event: event);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // ActionProvider actionProvider = ActionProvider.of(context);
+    // actionProvider.controller.widgets.clear();
+    // actionProvider.controller.widgets.add(const Icon(Icons.abc));
+    // actionProvider.controller.widgets = [
+    //   const Icon(Icons.abc)
+    // ];
+
+    return SelectionArea(
+        child: CustomScrollView(slivers: [
+      SliverPadding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          sliver: SliverList.list(children: [
+            const SizedBox(height: 20),
+            if (eventProvider.event.cached == null)
+              FutureBuilderPatched(
+                  future: eventProvider.event.loading,
+                  builder: (eventContext, eventSnapshot) {
+                    if (eventSnapshot.hasError) {
+                      return Padding(
+                          padding: const EdgeInsets.all(32),
+                          child:
+                              Center(child: formatError(eventSnapshot.error)));
+                    }
+                    if (eventSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(child: CircularProgressIndicator()));
+                    }
+
+                    return const SizedBox();
+                  }),
+            ...(() {
+              final AnnotatedEvent? event = this.event;
+              if (event == null) {
+                return [];
+              }
+
+              return [
+                EventHeader(event),
+                EventDescription(event),
+                EventThumbnail(event),
+                const SizedBox(height: 32),
+                if (expectParticipants) ...[
+                  EventParticipants(event, eventProvider: eventProvider)
+                ]
+              ];
+            }())
+          ])),
+    ]));
   }
 }
 
 class _EventPageState extends State<EventPage> {
-  Future<APIConnector>? apiConnector;
-
-  late CachedProvider<Event, Map> _eventProvider;
-  late CachedProvider<List<String>, Map> _participantsProvider;
   final AlertsPanelController _alertsPanelController = AlertsPanelController();
+  late EventProvider _eventProvider;
 
-  late void Function() listener;
   @override
   void initState() {
     super.initState();
 
-    _alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "details", status: "loading", data: {})
-    );
-    _alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "details", status: "done", data: {})
-    );
-    _alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "participants", status: "loading", data: {})
-    );
-    _alertsPanelController.dismissedMessages.add(
-      const AlertsPanelStatusMessage(component: "participants", status: "done", data: {})
-    );
+    _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "details", status: "loading", data: {}));
+    _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "details", status: "done", data: {}));
+    _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "participants", status: "loading", data: {}));
+    _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
+        component: "participants", status: "done", data: {}));
 
-    _eventProvider = CachedProvider<Event, Map>(
-        getCached: (c) => c.then((conn) =>
-            conn?.getCached("events/${widget.eventId}?include_image=true")),
-        getFresh: (c) => c.get("events/${widget.eventId}?include_image=true"),
-        postProcess: (response) => Event.fromJson(
-            (response["data"]["event"] as Map)
-                .map<String, dynamic>((key, value) => MapEntry(key, value))));
-
-    _participantsProvider = CachedProvider<List<String>, Map>(
-        getCached: (c) => c.then(
-            (conn) => conn?.getCached("events/${widget.eventId}/participants")),
-        getFresh: (c) => c.get("events/${widget.eventId}/participants"),
-        postProcess: (response) =>
-            (response["data"]["participants"] as Iterable<dynamic>)
-                .map((e) => e["name"] as String)
-                .toList());
-
-    listener = () {
-      log.fine("[EventPage] Doing setState from listener");
-      setState(() {});
-    };
-
-    _eventProvider.addListener(listener);
-    _participantsProvider.addListener(listener);
-
-    // Uri download_url = Uri.parse("https://sib-utrecht.nl/wp-content/uploads/2022/02/cropped-cropped-cropped-cropped-20210919_135253-scaled-2-1.jpg");
-
-    // _image = http.get(
-    //   Uri.parse("http://192.168.50.200/wordpress/wp-content/uploads/"
-    //   + "2023/06/cropped-cropped-cropped-cropped-cropped-"
-    //   + "20210919_135253-scaled-2-1.jpg"),
-    //   // download_url,
-    //   headers: {
-    //     // "Authorization": "Basic dmluY2VudDpsN3c3IGd4WkEgandXQSAwRE1lIEhEM20gRVg4bg==",
-    //     "Origin": "*",
-    //     // "X-test": "Hoi"
-    //   }
-    //   ).then((reponse) {
-    //   print("Got response ${reponse.statusCode} with length ${reponse.body.length}");
-    //   return reponse;
-    // }).onError((error, stackTrace) {
-    //   print("Got error $error");
-    //   // print("Got error $error");
-    //   return http.Response("Error", 500);
-
-    //   // return error;
-    // },);
-  }
-
-  @override
-  void dispose() {
-    _eventProvider.removeListener(listener);
-    _participantsProvider.removeListener(listener);
-
-    super.dispose();
+    _eventProvider = EventProvider(
+        eventId: widget.eventId, apiConnector: null, cachedEvent: null);
   }
 
   @override
   void didChangeDependencies() {
-    final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
-    if (this.apiConnector != apiConnector) {
-      log.fine(
-          "[EventPage] API connector changed from ${this.apiConnector} to $apiConnector");
-      this.apiConnector = apiConnector;
-      _eventProvider.setConnector(apiConnector);
-      _participantsProvider.setConnector(apiConnector);
+    final apiConnector = APIAccess.of(context).connector;
+
+    if (apiConnector != _eventProvider.apiConnector) {
+      log.info(
+          "Event page: API connector changed from ${_eventProvider.apiConnector} "
+          " to $apiConnector, reloading event data");
+      _eventProvider = EventProvider(
+          eventId: widget.eventId,
+          apiConnector: apiConnector,
+          cachedEvent: ResourcePoolAccess.of(context)
+              .pool
+              .eventsProvider
+              .events
+              .firstWhereOrNull(
+                  (element) => element.eventId == widget.eventId));
     }
 
     super.didChangeDependencies();
   }
 
-  (String?, Map?) extractDescriptionAndThumbnail(Event event) {
-    String description = ((event.data["post_content"] ??
-            event.data["description"] ??
-            "") as String)
-        .replaceAll("\r\n\r\n", "<br/><br/>");
-    Map? thumbnail = event.data["thumbnail"];
-
-    if (thumbnail != null &&
-        thumbnail["url"] != null &&
-        !(thumbnail["url"] as String).startsWith("http")) {
-      thumbnail["url"] = "$wordpressUrl/${thumbnail["url"]}";
-    }
-
-    if (thumbnail == null && description.contains("<img")) {
-      final img = RegExp("<img[^>]+src=\"(?<url>[^\"]+)\"[^>]*>")
-          .firstMatch(description);
-
-      if (img != null) {
-        thumbnail = {"url": img.namedGroup("url")};
-        // description = description.replaceAll(img.group(0)!, "");
-        description = description.replaceFirst(img.group(0)!, "");
-      }
-    }
-
-    if (thumbnail != null &&
-        thumbnail["url"] != null &&
-        (thumbnail["url"] as String).startsWith("http://sib-utrecht.nl/")) {
-      thumbnail["url"] = (thumbnail["url"] as String)
-          .replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
-    }
-
-    description = description.replaceAll(
-        RegExp("^(\r|\n|<br */>|<br *>)*", multiLine: false), "");
-
-    return (description.isEmpty ? null : description, thumbnail);
-  }
-
-  Widget buildDescription(BuildContext context, Event event) {
-    // return const SizedBox();
-
-    final (description, _) = extractDescriptionAndThumbnail(event);
-
-    return Padding(
-        padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
-        child: HtmlWidget(
-          // ((event.data["post_content"] ?? "") as String).replaceAll("\r\n\r\n", "<br/><br/>"),
-          description ?? "",
-          textStyle: Theme.of(context).textTheme.bodyMedium,
-        ));
-  }
-
-  Widget openThumbnailView(BuildContext context, Map thumbnail) {
-    return ThumbnailImageDialog(url: thumbnail["url"] as String);
-    // return Dialog(
-    //     alignment: AlignmentDirectional.center,
-    //     // insetPadding: const EdgeInsets.fromLTRB(
-    //     //     16, 70, 16, 16),
-    //     insetPadding: const EdgeInsets.all(0),
-    //     child:
-    //         //   Stack(alignment: AlignmentDirectional.center,
-    //         //   children: [
-    //         //  Container(
-    //         //     constraints: const BoxConstraints.expand(),
-    //         //     child: GestureDetector(
-    //         //     // padding: const EdgeInsets.fromLTRB(
-    //         //     //     16, 16, 16, 32),
-    //         //     // width: 200,
-    //         //     onTap: () => Navigator.pop(context)
-    //         //     )),
-    //         //   Center(child: InteractiveViewer(
-    //         //       clipBehavior: Clip.none,
-    //         //         child: GestureDetector(
-    //         //           child: Image.network(
-    //         //             "$wordpressUrl/${event.data["thumbnail"]["url"]}"))
-    //         //     ))
-    //         //   ])
-    //         Center(
-    //             child: Builder(
-    //                 builder: (context) => InteractiveViewer(
-    //                         // clipBehavior: Clip.none,
-    //                         child: Stack(
-    //                       alignment: AlignmentDirectional.center,
-    //                       children: [
-    //                         Container(
-    //                             constraints: const BoxConstraints.expand(),
-    //                             child: GestureDetector(
-    //                                 // padding: const EdgeInsets.fromLTRB(
-    //                                 //     16, 16, 16, 32),
-    //                                 // width: 200,
-    //                                 onTap: () => Navigator.pop(context))),
-    //                         GestureDetector(
-    //                             onTap: () => Navigator.pop(context),
-    //                             child: Image.network(thumbnail["url"]))
-    //                       ],
-    //                     )))));
-    // return Dialog(
-    //     alignment: AlignmentDirectional.center,
-    //     // insetPadding: const EdgeInsets.fromLTRB(
-    //     //     16, 70, 16, 16),
-    //     insetPadding: const EdgeInsets.all(0),
-    //     child: Container(
-    //       constraints: const BoxConstraints.expand(),
-    //       child: GestureDetector(
-    //       // padding: const EdgeInsets.fromLTRB(
-    //       //     16, 16, 16, 32),
-    //       // width: 200,
-    //       onTap: () => Navigator.pop(context),
-    //       child: Center(child: InteractiveViewer(
-    //         clipBehavior: Clip.none,
-    //           child: GestureDetector(
-    //             child: Image.network(
-    //               "$wordpressUrl/${event.data["thumbnail"]["url"]}"))))),
-    //     ));
-  }
-
-  Widget buildThumbnailCard(BuildContext context, Event event) {
-    final (_, thumbnail) = extractDescriptionAndThumbnail(event);
-
-    return Card(
-        child: WillPopScope(
-            onWillPop: () async {
-              log.info("Received onWillPop");
-              Navigator.pop(context);
-              return false;
-            },
-            child: ListTile(
-                title: Text(AppLocalizations.of(context)!.eventImage),
-                subtitle: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
-                    child: Builder(builder: (context) {
-                      if (thumbnail == null) {
-                        return Text(AppLocalizations.of(context)!.eventNoImage);
-                      }
-                      try {
-                        // return Text(jsonEncode(event.data["thumbnail"]));
-                        // return Image.network("$wordpressUrl/wp-content/uploads/" +
-                        //     event.data["thumbnail"]["path"] +
-                        //     "?width=200")
-                        // return Image.network("$wordpressUrl/${event.data["thumbnail"]["url"]}");
-                        // return InteractiveViewer(child:
-                        //  Image.network("$wordpressUrl/${event.data["thumbnail"]["url"]}")
-                        // );
-
-                        // return PhotoView(
-                        //   imageProvider: NetworkImage("$wordpressUrl/${event.data["thumbnail"]["url"]}"),
-                        // );
-
-                        return Center(
-                            child: InkWell(
-                                onTap: () {
-                                  // showDialog(
-                                  //     context: context,
-                                  //     builder: (BuildContext context) {
-                                  //       return openThumbnailView(
-                                  //           context, thumbnail);
-                                  //     });
-                                  // router.push(GoRouterState.of(context).matchedLocation + "#");
-                                  // router.push("/#/event/96#");
-
-                                  // router.push("/event/96/image", extra: {"url": thumbnail["url"]});
-                                  router.pushNamed("event_image_dialog",
-                                      pathParameters: {
-                                        "event_id": widget.eventId.toString()
-                                      },
-                                      queryParameters: {
-                                        "url": thumbnail["url"]
-                                      });
-                                  return;
-
-                                  // GoRouterState.of(context)
-                                  //     .push(DialogRoute(
-                                  //   context: context,
-                                  //   builder: (context) =>
-                                  //       openThumbnailView(context, thumbnail),
-                                  //   themes: themes,
-                                  //   traversalEdgeBehavior:
-                                  //       TraversalEdgeBehavior.closedLoop,
-                                  // ));
-
-                                  // Navigator.of(context, rootNavigator: true)
-                                  //     .push(DialogRoute(
-                                  //   context: context,
-                                  //   builder: (context) =>
-                                  //       openThumbnailView(context, thumbnail),
-                                  //   themes: themes,
-                                  //   traversalEdgeBehavior:
-                                  //       TraversalEdgeBehavior.closedLoop,
-                                  // ));
-
-                                  // Navigator.push(
-                                  //     context,
-                                  //     MaterialPageRoute(
-                                  //         builder: (context) => InteractiveViewer(
-                                  //             child: Image.network(
-                                  //                 "$wordpressUrl/${event.data["thumbnail"]["url"]}"))));
-                                },
-                                child: Container(
-                                    constraints: const BoxConstraints(
-                                        maxWidth: 400, maxHeight: 500),
-                                    child: Image.network(thumbnail["url"]))));
-
-                        // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
-                      } catch (e) {
-                        try {
-                          return Text("Error: ${thumbnail["error"]}");
-                        } catch (_) {
-                          return const Text("Error");
-                        }
-                      }
-                    })))));
-  }
-
   @override
   Widget build(BuildContext context) {
-    log.fine("Building event page for event id ${widget.eventId}");
-    bool expectParticipants = false;
+    var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
+    return ListenableBuilder(
+        listenable: Listenable.merge([_eventProvider, provEvents]),
+        builder: (context, _) {
+          log.fine("Building event page for event id ${widget.eventId}");
 
-    Event? event = _eventProvider.cached;
+          var prov = _eventProvider;
+          var cachedEvent = prov.event.cached;
 
-    if (event != null) {
-      var signupType = event.signupType;
+          EventParticipation? participation;
+          if (cachedEvent != null) {
+            participation = provEvents.getMeParticipation(cachedEvent,
+                feedback: ActionFeedback(
+                  sendConfirm: (m) =>
+                      ActionFeedback.sendConfirmToast(context, m),
+                  sendError: (m) => ActionFeedback.showErrorDialog(context, m),
+                ));
+          }
 
-      if (signupType == "api") {
-        expectParticipants = true;
-      }
-    }
-
-    var cachedParticipants = _participantsProvider.cached;
-
-    if (cachedParticipants != null && cachedParticipants.isNotEmpty) {
-      expectParticipants = true;
-    }
-
-    return
-    WithSIBAppBar(actions: [
-      ActionRefreshButton(
-                  refreshFuture: Future.wait([_eventProvider.loading, 
-                  if (expectParticipants)
-                  _participantsProvider.loading])
-                  .then((_) => DateTime.now()),
-                  triggerRefresh: () {
-                    // calendar.refresh();
-                    _eventProvider.invalidate();
-                    _participantsProvider.invalidate();
-                  },
-                )
-    ], child:
-     Column(children: [
-      Expanded(
-          child: SelectionArea(
-              child: CustomScrollView(slivers: [
-        SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            sliver: SliverList(
-                delegate: SliverChildListDelegate([
-              const SizedBox(height: 20),
-              if (_eventProvider.cached == null)
-                FutureBuilderPatched(
-                    future: _eventProvider.loading,
-                    builder: (eventContext, eventSnapshot) {
-                      if (eventSnapshot.hasError) {
-                        // return Text("${eventSnapshot.error}");
-                        return Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                                child: formatError(eventSnapshot.error)));
-                      }
-                      if (eventSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(child: CircularProgressIndicator()));
-                      }
-
-                      return const SizedBox();
-                    }),
-              ...(() {
-                final Event? event = _eventProvider.cached;
-                if (event == null) {
-                  return [];
-                }
-                var eventEnd = event.end;
-                var location = event.location;
-
-                return [
-                  Row(children: [
-                    // Expanded(
-                    //     child: Card(
-                    //         child: ListTile(title: Text(event.eventName)))),
-                    Expanded(
-                        child: Card(
-                            child: ListTile(
-                                title: Text(event.getLocalEventName(
-                                    Localizations.localeOf(context)))))),
-                    // SignupIndicator(event: event),
-                    IconButton(
-                        onPressed: () {
-                          router.goNamed("event_edit", pathParameters: {
-                            "event_id": widget.eventId.toString()
-                          });
-                        },
-                        icon: const Icon(Icons.edit))
-                  ]),
-                  if (location != null)
-                    Card(child: ListTile(title: Text("Location: $location"))),
-                  // Card(child: ListTile(title: Text("your (student) room. \ud83e\ude84\ud83c\udfa8\r\n\r\nWe will"))),
-                  Card(
-                      child: ListTile(
-                          title: Wrap(children: [
-                    SizedBox(
-                        width: 80,
-                        child: Text(
-                            "${AppLocalizations.of(context)!.eventStarts}: ")),
-                    Wrap(children: [
-                      SizedBox(
-                          width: 260,
-                          child: Text(DateFormat.yMMMMEEEEd(
-                                  Localizations.localeOf(context).toString())
-                              .format(event.start))),
-                      // const SizedBox(width: 20),
-                      Text(DateFormat.Hm(
-                              Localizations.localeOf(context).toString())
-                          .format(event.start))
+          return WithSIBAppBar(
+              actions: [
+                ActionRefreshButton(
+                    refreshFuture: Future.wait([
+                      _eventProvider.event.loading,
+                      if (prov.doesExpectParticipants())
+                        _eventProvider.participants.loading
+                    ]).then((_) => DateTime.now()),
+                    triggerRefresh: _eventProvider.refresh)
+              ],
+              child: Column(children: [
+                Expanded(
+                    child: EventPageContents.fromProvider(prov,
+                        eventParticipation: participation)),
+                AlertsPanel(
+                    controller: _alertsPanelController,
+                    loadingFutures: [
+                      AlertsFutureStatus(
+                          component: "details",
+                          future: _eventProvider.event.loading,
+                          data: {
+                            "isRefreshing": _eventProvider.event.cached != null
+                          }),
+                      if (prov.doesExpectParticipants())
+                        AlertsFutureStatus(
+                            component: "participants",
+                            future: _eventProvider.participants.loading,
+                            data: {
+                              "isRefreshing":
+                                  _eventProvider.participants.cached != null
+                            })
                     ])
-                  ]))),
-                  if (eventEnd != null)
-                    Card(
-                        child: ListTile(
-                            title: Wrap(children: [
-                      SizedBox(
-                          width: 80,
-                          child: Text(
-                              "${AppLocalizations.of(context)!.eventEnds}: ")),
-                      Wrap(children: [
-                        SizedBox(
-                            width: 260,
-                            child: Text(DateFormat.yMMMMEEEEd(
-                                    Localizations.localeOf(context).toString())
-                                .format(eventEnd))),
-                        // const SizedBox(width: 20),
-                        Text(DateFormat.Hm(
-                                Localizations.localeOf(context).toString())
-                            .format(eventEnd))
-                      ])
-                    ]))),
-                  // Table(columnWidths: const {
-                  //   0: IntrinsicColumnWidth(),
-                  //   1: FlexColumnWidth(),
-                  //   2: IntrinsicColumnWidth(),
-                  //   3: FlexColumnWidth()
-                  // }, children: <TableRow>[
-                  //   TableRow(children: <Widget>[
-                  //     const Text("Start: "),
-                  //     LocaleDateFormat(
-                  //         date: event.start, format: "yMMMMEEEEd"),
-                  //     const SizedBox(width: 30),
-                  //     LocaleDateFormat(date: event.start, format: "Hm")
-                  //   ]),
-                  //   TableRow(children: <Widget>[
-                  //     const Text("Eindigt: "),
-                  //     LocaleDateFormat(
-                  //         date: event.end, format: "yMMMMEEEEd"),
-                  //     const SizedBox(width: 30),
-                  //     LocaleDateFormat(date: event.end, format: "Hm")
-                  //   ])
-                  // ]),
-                  Card(
-                      child: ListTile(
-                          title: Text(
-                              AppLocalizations.of(context)!.eventDescription),
-                          subtitle: buildDescription(context, event))),
-
-                  buildThumbnailCard(context, event),
-                  // Card(child:
-                  // FutureBuilder(future: _image, builder: (context, snapshot) {
-                  //   if (snapshot.hasData) {
-                  //     return Image.memory(snapshot.data!.bodyBytes);
-                  //   } else {
-                  //     return const Text("Loading...");
-                  //   }
-                  // })),
-                  // ListTile(title: const Text("aa")),)
-                ];
-              }()),
-              const SizedBox(height: 32),
-              if (expectParticipants)
-                Card(
-                    child: ListTile(
-                        title: Text(
-                            "${AppLocalizations.of(context)!.eventParticipants} (${_participantsProvider.cached?.length ?? 'n/a'}):"))),
-            ]))),
-        if (expectParticipants)
-          SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-              sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                if (_participantsProvider.cached == null)
-                  FutureBuilderPatched(
-                      future: _participantsProvider.loading,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasError) {
-                          return Padding(
-                              padding: const EdgeInsets.all(16),
-                              child:
-                                  Center(child: formatError(snapshot.error)));
-                        }
-
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        return const SizedBox();
-                      }),
-                ...(_participantsProvider.cached ?? []).map<Widget>((e) =>
-                    Padding(
-                        padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
-                        child: Card(child: ListTile(title: Text(e))))),
-                const SizedBox(height: 32),
-              ])))
-      ]))),
-      AlertsPanel(controller: _alertsPanelController, loadingFutures: [
-        AlertsFutureStatus(
-            component: "details",
-            future: _eventProvider.loading,
-            data: {"isRefreshing": _eventProvider.cached != null}),
-        if (expectParticipants)
-          AlertsFutureStatus(
-              component: "participants",
-              future: _participantsProvider.loading,
-              data: {"isRefreshing": _participantsProvider.cached != null})
-      ])
-    ]));
+              ]));
+        });
   }
 }

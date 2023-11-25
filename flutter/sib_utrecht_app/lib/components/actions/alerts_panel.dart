@@ -4,8 +4,8 @@ import 'package:logging/logging.dart';
 import "package:collection/collection.dart";
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../utils.dart';
-import '../view_model/async_patch.dart';
+import '../../utils.dart';
+import '../../view_model/async_patch.dart';
 
 class AlertsPanelStatusMessage {
   final String component;
@@ -22,11 +22,9 @@ class AlertsPanelStatusMessage {
           // runtimeType == other.runtimeType &&
           component == other.component &&
           status == other.status;
-          //  &&
-          // data == other.data;
 
   @override
-  int get hashCode => component.hashCode ^ status.hashCode;// ^ data.hashCode;
+  int get hashCode => component.hashCode ^ status.hashCode;
 }
 
 class AlertsFutureStatus {
@@ -55,6 +53,9 @@ class AlertsPanel extends StatefulWidget {
 
 class _AlertsPanelState extends State<AlertsPanel> {
   final log = Logger("AlertsPanel");
+
+  List<Object> allowedCallbackIdentities = [];
+  List<Future> activeFutures = [];
   
   @override
   void initState() {
@@ -72,15 +73,31 @@ class _AlertsPanelState extends State<AlertsPanel> {
       var msg = AlertsPanelStatusMessage(
           component: fut.component, status: "done", data: fut.data);
 
-      fut.future.then((_) {
+      final Object callbackIdentity = Object();
+      allowedCallbackIdentities.add(callbackIdentity);
+
+      var a = fut.future.then((_) {
         return Future.delayed(const Duration(seconds: 2)).then((_) {
+          if (!allowedCallbackIdentities.contains(callbackIdentity)) {
+            return;
+          }
+
           log.info("Adding dismissed message");
           setState(() => widget.controller.dismissedMessages.add(msg));
 
           log.info("Dismissed messages: ${widget.controller.dismissedMessages}");
+          allowedCallbackIdentities.remove(callbackIdentity);
         });
       });
+      activeFutures.add(a);
     }
+  }
+
+  @override
+  void dispose() {
+    allowedCallbackIdentities.clear();
+    activeFutures.clear();
+    super.dispose();
   }
 
   @override

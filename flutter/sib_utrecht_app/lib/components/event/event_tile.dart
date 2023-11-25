@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
-import '../view_model/annotated_event.dart';
+import '../../view_model/annotated_event.dart';
 
 import 'weekday_indicator.dart';
 import 'signup_indicator.dart';
@@ -109,11 +109,16 @@ class _EventTileState extends State<EventTile> {
     }
 
     String infoLine = "";
-    bool showLocation = widget.event.location != null;
+    
     bool showTime = widget.event.start.toIso8601String().substring(0, 10)
       == placement?.date.toIso8601String().substring(0, 10)
       && widget.event.start.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0)
       != widget.event.start;
+
+    
+    bool showLocation = widget.event.location != null
+      && showTime;
+      // && (widget.event.placement?.isContinuation != true)
 
     if (showLocation) {
       infoLine += "@ ${widget.event.location ?? 'Unknown'}";
@@ -127,11 +132,6 @@ class _EventTileState extends State<EventTile> {
     }
 
     return InkWell(
-        // onTap: (false && widget.event.data["post_id"] == null)
-        //     ? null
-        //     : () {
-        //         GoRouter.of(context).go("/event/${widget.event.eventId}");
-        //       },
         onTap: () {
           GoRouter.of(context).go("/event/${widget.event.eventId}");
         },
@@ -150,15 +150,12 @@ class _EventTileState extends State<EventTile> {
                           margin: const EdgeInsets.all(5),
                           child: 
                           Text(dayMonth)
-                          // LocaleDateFormat(
-                          //     format: "d MMM", date: placement.date)
                               )),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.all(0),
                       margin: const EdgeInsets.all(5),
-                      // child: Text(widget.event.eventName)
                       child: 
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,29 +163,10 @@ class _EventTileState extends State<EventTile> {
                         Text(widget.event.getLocalEventName(Localizations.localeOf(context))),
                         if (infoLine.isNotEmpty)
                           Text(infoLine, style: const TextStyle(color: Colors.grey, fontSize: 12))
-                        // Row(mainAxisSize: MainAxisSize.min, children: [
-                        //   if (widget.event.location != null)
-                        //     Text("@ ${widget.event.location ?? ''}")
-                          
-                        // ],)
-                        // Text(widget.event.getLocalEventLocation(context))
                       ])
                       )),
               if (placement?.isContinuation != true)
                 SignupIndicator(event: widget.event),
-              // if (widget.event.start.toIso8601String().substring(0, 10) ==
-              //     placement?.date.toIso8601String().substring(0, 10))
-              //   Container(
-              //     alignment: Alignment.centerLeft,
-              //     padding: const EdgeInsets.all(10),
-              //     margin: const EdgeInsets.all(5),
-              //     child: Text(_timeFormat.format(widget.event.start)),
-              //     // Text(_timeFormat.format(widget.end)),
-              //     // Text(start_time.format(context)),
-              //     // Text(end_time.format(context))
-              //     // Text('${widget.start.hour:2d}:${widget.start.minute}'),
-              //     // Text('${widget.end.hour}:${widget.end.minute}'),
-              //   )
             ])));
   }
 }

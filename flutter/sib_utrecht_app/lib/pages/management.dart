@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sib_utrecht_app/components/sib_appbar.dart';
+import 'package:hive/hive.dart';
+import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 
 import '../globals.dart';
 
@@ -29,6 +30,24 @@ class ManagementPage extends StatelessWidget {
                   onTap: () {
                     router.go("/event/new/edit");
                   })),
+          Card(
+            child: InkWell(
+              child: const ListTile(title: Text("Clear cache")),
+              onTap: () {
+                Hive.init(null);
+                Hive.openBox("api_cache").then((box) {
+                  box.clear();
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text("Cache cleared"),
+                  ));
+                }).catchError((e) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text("Error clearing cache"),
+                  ));
+                });
+              },
+            ),
+          )
         ])));
   }
 }
