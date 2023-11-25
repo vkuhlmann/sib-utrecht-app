@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/components/actions/appbar_suppression.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/dual_screen-1.0.4/lib/dual_screen.dart';
+import 'package:sib_utrecht_app/pages/groups_page.dart';
 
 import 'shell.dart';
 import 'globals.dart';
@@ -324,6 +325,10 @@ GoRouter createRouter() {
                   GoRoute(
                     path: '/management',
                     builder: (context, state) => const ManagementPage(),
+                  ),
+                  GoRoute(
+                    path: '/management/groups',
+                    builder: (context, state) => const GroupsPage(),
                   ),
                 ]),
             // StatefulShellBranch(

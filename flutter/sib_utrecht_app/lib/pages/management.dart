@@ -19,10 +19,12 @@ class ManagementPage extends StatelessWidget {
                   onTap: () {
                     router.go("/api-debug");
                   })),
-          const Card(
+          Card(
               child: InkWell(
-            onTap: null,
-            child: ListTile(title: Text("Groups")),
+            onTap: () {
+              router.go("/management/groups");
+            },
+            child: const ListTile(title: Text("Groups")),
           )),
           Card(
               child: InkWell(

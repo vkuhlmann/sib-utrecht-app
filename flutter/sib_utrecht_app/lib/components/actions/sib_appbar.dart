@@ -144,6 +144,7 @@ class WithSIBAppBar extends StatelessWidget {
     String? backAddress = {
       "/event/:event_id": "/",
       "/management": "/info",
+      "/management/groups": "/management",
       "/api-debug": "/management",
       "/info": "/",
       "/feed": "/",
