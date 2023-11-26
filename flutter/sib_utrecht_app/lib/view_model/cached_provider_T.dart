@@ -17,6 +17,9 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
   int _loadTargetId = 0;
   (int, T)? _cached;
   late Future<T> _loading;
+  Object? _error;
+
+  Object? get error => _error;
 
   T? get cached => _cached?.$2;
   int get cachedId => _cached?.$1 ?? -2;
@@ -73,13 +76,23 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     int thisLoad = firstValidId;
 
     var fut = _fetchFreshResult();
-    _loading = fut;//.then((value) => (thisLoad, value),);
+    _loading = fut.then((v) async {
+      _error = null;
+      setCache(thisLoad, v);
+      return v;
+    }).onError<Object>((error, stackTrace) {
+      // log.warning("Failed to load fresh data: $error");
+      // _loading = Future.error(error, stackTrace);
+      _error = error;
+      notifyListeners();
+      throw error;
+    });
+    
+    //.then((value) => (thisLoad, value),);
     _loadTargetId = max(_loadTargetId, thisLoad);
     notifyListeners();
 
     var res = await fut;
-    setCache(thisLoad, res);
-
     return res;
   }
 

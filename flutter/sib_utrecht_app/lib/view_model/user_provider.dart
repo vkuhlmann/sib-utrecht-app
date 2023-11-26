@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
+import 'package:sib_utrecht_app/log.dart';
 // import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 // import 'package:sib_utrecht_app/model/event.dart';
@@ -27,12 +29,29 @@ class UserProvider extends StatefulWidget {
 class _UserProviderState extends State<UserProvider> {
   Future<CacherApiConnector>? apiConnector;
   late List<CachedProvider<User>> users;
+  List<CachedProvider<User>>? loadingUsers;
 
   @override
   void initState() {
     super.initState();
 
-    initUsers();
+    users = initUsers();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    for (var element in users) {
+      element.dispose();
+    }
+
+    if (loadingUsers != null) {
+      for (var element in loadingUsers!) {
+        element.dispose();
+      }
+    }
+
+    loadingUsers = null;
   }
 
   @override
@@ -59,10 +78,13 @@ class _UserProviderState extends State<UserProvider> {
     //   }
     // }
 
-    initUsers();
+    if (!listEquals(widget.entityNames, oldWidget.entityNames)) {
+      log.info("[UserProvider] entityNames changed from ${oldWidget.entityNames} to ${widget.entityNames}");
+      initUsers();
+    }
   }
 
-  void initUsers() {
+  List<CachedProvider<User>> initUsers() {
     var newUsers = widget.entityNames
         .map((e) => CachedProvider<User>(
               obtain: (c) => Users(c).getUser(entityName: e),
@@ -76,10 +98,21 @@ class _UserProviderState extends State<UserProvider> {
       }
     }
 
-    setState(() {
-      // apiConnector = ResourcePoolAccess.of(context).pool.connector;
-      users = newUsers;
+    loadingUsers = newUsers;
+    Future.wait(newUsers.map((e) => e.loading)).whenComplete(() {
+      if (mounted && loadingUsers == newUsers) {
+        setState(() {
+          users = newUsers;
+          loadingUsers = null;
+        });
+      }
     });
+
+    return newUsers;
+    // setState(() {
+    //   // apiConnector = ResourcePoolAccess.of(context).pool.connector;
+    //   users = newUsers;
+    // });
   }
 
   @override
@@ -96,7 +129,11 @@ class _UserProviderState extends State<UserProvider> {
                 }
 
                 var cachedVals = users.map((e) => e.cached).toList();
+                log.info("[UserProvider] cachedVals.length: ${cachedVals.length}");
+
                 if (cachedVals.contains(null)) {
+                  log.info("[UserProvider] cached contains null");
+                  
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }

@@ -67,7 +67,9 @@ class _GroupMembersProviderState extends State<GroupMembersProvider> {
     //   //   element.setConnector(conn);
     //   // }
     // }
-    initMembers();
+    if (widget.groupName != oldWidget.groupName) {
+      initMembers();
+    }
   }
 
   void initMembers() {
@@ -97,6 +99,8 @@ class _GroupMembersProviderState extends State<GroupMembersProvider> {
             }
 
             var cached = members.cached;
+            log.info("[GroupMembersProvider] cached: $cached, cached.length: ${cached?.length}");
+
             if (cached == null) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
