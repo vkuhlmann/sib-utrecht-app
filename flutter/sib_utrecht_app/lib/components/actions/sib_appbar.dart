@@ -148,6 +148,10 @@ class WithSIBAppBar extends StatelessWidget {
       "/api-debug": "/management",
       "/info": "/",
       "/info/confidants": "/info",
+      "/info/committees": "/info",
+      // "/info/committeees/:committee_id": "/info/committees",
+      "/info/societies": "/info",
+      "/info/board": "/info",
       "/feed": "/",
       "/": null
     }[routerState.fullPath];

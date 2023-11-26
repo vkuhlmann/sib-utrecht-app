@@ -4,6 +4,7 @@ import 'package:sib_utrecht_app/components/actions/appbar_suppression.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/dual_screen-1.0.4/lib/dual_screen.dart';
 import 'package:sib_utrecht_app/pages/confidants.dart';
+import 'package:sib_utrecht_app/pages/group_members.dart';
 import 'package:sib_utrecht_app/pages/groups.dart';
 
 import 'shell.dart';
@@ -323,6 +324,20 @@ GoRouter createRouter() {
                     path: '/info/confidants',
                     // parentNavigatorKey: _infoNavigatorKey,
                     builder: (context, state) => const ConfidantsPage(),
+                  ),
+                  GoRoute(
+                    path: '/info/committees',
+                    // parentNavigatorKey: _infoNavigatorKey,
+                    builder: (context, state) => const GroupMembersPage(groupName: "committees",),
+                  ),
+                  GoRoute(
+                    path: '/info/societies',
+                    // parentNavigatorKey: _infoNavigatorKey,
+                    builder: (context, state) => const GroupMembersPage(groupName: "societies",),
+                  ),
+                  GoRoute(
+                    path: '/info/board',
+                    builder:(context, state) => const GroupMembersPage(groupName: "boards",),
                   ),
                   GoRoute(
                     path: '/api-debug',

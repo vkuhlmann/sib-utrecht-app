@@ -99,7 +99,7 @@ class _GroupMembersProviderState extends State<GroupMembersProvider> {
             }
 
             var cached = members.cached;
-            log.info("[GroupMembersProvider] cached: $cached, cached.length: ${cached?.length}");
+            log.info("[GroupMembersProvider] cached.length: ${cached?.length}");
 
             if (cached == null) {
               if (snapshot.connectionState == ConnectionState.waiting) {

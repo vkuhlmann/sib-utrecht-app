@@ -31,13 +31,30 @@ class _InfoPageState extends State<InfoPage> {
             // const Card(child: ListTile(title: Text("Genootschappen"))),
             Card(
                 child:
-                    ListTile(title: Text(AppLocalizations.of(context)!.board))),
+                InkWell(
+                  onTap:() {
+                    router.go("/info/board");
+                  },
+                  child: 
+                    ListTile(title: Text(AppLocalizations.of(context)!.board)))),
             Card(
-                child: ListTile(
-                    title: Text(AppLocalizations.of(context)!.committees))),
+                child:
+                InkWell(
+                  onTap:() {
+                    router.go("/info/committees");
+                  },
+                  child:
+                ListTile(
+                    title: Text(AppLocalizations.of(context)!.committees)))),
             Card(
-                child: ListTile(
-                    title: Text(AppLocalizations.of(context)!.societies))),
+                child: 
+                InkWell(
+                  onTap:() {
+                    router.go("/info/societies");
+                  },
+                  child:
+                ListTile(
+                    title: Text(AppLocalizations.of(context)!.societies)))),
           ])),
           SliverFillRemaining(
               hasScrollBody: false,
