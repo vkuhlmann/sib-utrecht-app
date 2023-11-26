@@ -119,7 +119,8 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
       }
     }
 
-    var _ = loadFresh();
+    // var _ = loadFresh();
+    invalidate();
   }
 
   void clear() {

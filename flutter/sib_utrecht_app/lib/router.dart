@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/components/actions/appbar_suppression.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/dual_screen-1.0.4/lib/dual_screen.dart';
-import 'package:sib_utrecht_app/pages/groups_page.dart';
+import 'package:sib_utrecht_app/pages/confidants.dart';
+import 'package:sib_utrecht_app/pages/groups.dart';
 
 import 'shell.dart';
 import 'globals.dart';
@@ -317,6 +318,11 @@ GoRouter createRouter() {
                     path: '/info',
                     // parentNavigatorKey: _infoNavigatorKey,
                     builder: (context, state) => const InfoPage(),
+                  ),
+                  GoRoute(
+                    path: '/info/confidants',
+                    // parentNavigatorKey: _infoNavigatorKey,
+                    builder: (context, state) => const ConfidantsPage(),
                   ),
                   GoRoute(
                     path: '/api-debug',

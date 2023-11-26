@@ -101,6 +101,7 @@ class GroupsProvider with ChangeNotifier {
 
     // await Future.wait([_eventsProvider.loading, _bookingsProvider.loading]);
     await _groupsProvider.loading;
+    _reprocessCached();
   }
 
   void refresh() {
@@ -109,7 +110,7 @@ class GroupsProvider with ChangeNotifier {
     //   loading = _doLoad(conn);
     // }
 
-    log.info("Refreshing calendar");
+    // log.info("Refreshing groups");
     _groupsProvider.invalidate(doRefresh: true);
     // _bookingsProvider.invalidate(doRefresh: true);
 

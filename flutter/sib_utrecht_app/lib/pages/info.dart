@@ -52,9 +52,14 @@ class _InfoPageState extends State<InfoPage> {
                         //         ListTile(title: Text("Vertrouwenspersonen"))),
                         // const Card(child: ListTile(title: Text("Over SIB"))),
                         Card(
-                            child: ListTile(
+                            child: 
+                            InkWell(
+                              onTap:() {
+                                router.go("/info/confidants");
+                              },
+                              child: ListTile(
                                 title: Text(AppLocalizations.of(context)!
-                                    .confidentialAdvisers))),
+                                    .confidentialAdvisers)))),
                         Card(child: ListTile(title: Text(
                             // "Over SIB"
                             AppLocalizations.of(context)!.aboutSIB))),
