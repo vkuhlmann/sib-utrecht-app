@@ -1,4 +1,6 @@
-class User {
+import 'package:sib_utrecht_app/model/entity.dart';
+
+class User extends Entity {
   final Map<String, dynamic> data;
 
   String get entityName => data["entity_name"];

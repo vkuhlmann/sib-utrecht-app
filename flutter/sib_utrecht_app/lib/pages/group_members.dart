@@ -1,6 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/people/entity_card.dart';
+import 'package:sib_utrecht_app/view_model/entity_provider.dart';
 import 'package:sib_utrecht_app/view_model/group_members_provider.dart';
 
 class GroupMembersPage extends StatelessWidget {
@@ -10,21 +11,36 @@ class GroupMembersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return 
-    WithSIBAppBar(actions: [], child: 
-    GroupMembersProvider(groupName: groupName, builder: (context, members) {
-      if (members.isEmpty) {
-        return const Center(child: Text("No members found"));
-      }
+    return WithSIBAppBar(
+        actions: [],
+        child: GroupMembersProvider(
+            groupName: groupName,
+            builder: (context, membersNames) {
+              if (membersNames.isEmpty) {
+                return const Center(child: Text("No members found"));
+              }
 
-      return ListView.builder(
-          itemCount: members.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(members[index]['entity'] ?? "N/A"),
-            );
-          },
-        );
-    }));
+              return EntityProvider(
+                  entityNames:
+                      membersNames.map((e) => e['entity'] as String).toList(),
+                  builder: (context, members) => Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      child: ListView.builder(
+                        itemCount: members.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
+                              child: EntityCard(entity: members[index])
+                              //  ListTile(
+                              //   leading: CircleAvatar(
+                              //     child: Text(members[index]['entity']?[0] ?? "N/A"),
+                              //   ),
+                              //   title: Text(members[index]['entity'] ?? "N/A"),
+                              // )
+
+                              );
+                        },
+                      )));
+            }));
   }
 }

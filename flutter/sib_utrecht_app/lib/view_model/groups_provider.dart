@@ -5,7 +5,7 @@ import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/group.dart';
-import 'package:sib_utrecht_app/model/groups.dart';
+import 'package:sib_utrecht_app/model/api/groups.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 import 'package:sib_utrecht_app/view_model/event_participation.dart';
 

@@ -14,6 +14,9 @@ class UserCard extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [ListTile(
+            leading: CircleAvatar(
+                child: Text(user.shortName[0]),
+              ),
       title: Text(user.longName),
       subtitle: Text(user.entityName),
     ),

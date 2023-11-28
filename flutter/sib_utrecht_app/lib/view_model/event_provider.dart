@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/event.dart';
-import 'package:sib_utrecht_app/model/events.dart';
+import 'package:sib_utrecht_app/model/api/events.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 
 import '../constants.dart';

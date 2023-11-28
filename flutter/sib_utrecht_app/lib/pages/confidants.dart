@@ -1,9 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
-import 'package:sib_utrecht_app/components/group/group_card.dart';
+import 'package:sib_utrecht_app/components/people/group_card.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
-import 'package:sib_utrecht_app/components/users/user_card.dart';
+import 'package:sib_utrecht_app/components/people/user_card.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/view_model/group_members_provider.dart';

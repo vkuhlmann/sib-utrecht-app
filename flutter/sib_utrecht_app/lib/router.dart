@@ -331,6 +331,13 @@ GoRouter createRouter() {
                     builder: (context, state) => const GroupMembersPage(groupName: "committees",),
                   ),
                   GoRoute(
+                    name: "group_members",
+                    path: '/info/groups/@:group_name/members',
+                    // parentNavigatorKey: _infoNavigatorKey,
+                    builder: (context, state) => GroupMembersPage(
+                      groupName: state.pathParameters["group_name"]!,),
+                  ),
+                  GoRoute(
                     path: '/info/societies',
                     // parentNavigatorKey: _infoNavigatorKey,
                     builder: (context, state) => const GroupMembersPage(groupName: "societies",),

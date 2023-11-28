@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 
 class GroupCard extends StatelessWidget {
@@ -9,7 +10,10 @@ class GroupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    String title = group.getLocalTitle(Localizations.localeOf(context)) ?? group.groupName;
+
+    return 
+    Card(
         // child: InkWell(
         //     // onTap: () {
         //     //   Navigator.pushNamed(context, "/group", arguments: group);
@@ -26,9 +30,25 @@ class GroupCard extends StatelessWidget {
         //               Text(group.membershipCount.toString() + " members",
         //                   style: Theme.of(context).textTheme.bodyText2),
         //             ]))));
-        child: ListTile(
-          title: Text(group.getLocalTitle(Localizations.localeOf(context)) ?? group.groupName),
-          subtitle: Text(group.groupName),
-        ));
+        child: InkWell(
+      onTap: () {
+        // Navigator.pushNamed(context, "/group", arguments: group);
+        GoRouter.of(context).goNamed("group_members", 
+          pathParameters: {"group_name": group.groupName}
+        );        
+      },
+      child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+          child: 
+        ListTile(
+              leading: CircleAvatar(
+                child: Text(title[0]),
+              ),
+              title: Text(title),
+            ))));
+        // ListTile(
+        //   title: Text(group.getLocalTitle(Localizations.localeOf(context)) ?? group.groupName),
+        //   subtitle: Text(group.groupName),
+        // ));
   }
 }

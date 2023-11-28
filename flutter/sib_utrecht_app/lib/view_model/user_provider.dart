@@ -7,7 +7,7 @@ import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 // import 'package:sib_utrecht_app/model/event.dart';
 // import 'package:sib_utrecht_app/model/events.dart';
 import 'package:sib_utrecht_app/model/user.dart';
-import 'package:sib_utrecht_app/model/users.dart';
+import 'package:sib_utrecht_app/model/api/users.dart';
 import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';

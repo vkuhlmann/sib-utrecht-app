@@ -6,7 +6,7 @@ import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/bookings.dart';
 import 'package:sib_utrecht_app/model/event.dart';
-import 'package:sib_utrecht_app/model/events.dart';
+import 'package:sib_utrecht_app/model/api/events.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 import 'package:sib_utrecht_app/view_model/event_participation.dart';
 

@@ -1,6 +1,8 @@
 import 'dart:ui';
 
-class Group {
+import 'package:sib_utrecht_app/model/entity.dart';
+
+class Group extends Entity {
   final Map<String, dynamic> data;
 
   // int get eventId => data["event_id"];
