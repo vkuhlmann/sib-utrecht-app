@@ -26,7 +26,7 @@ class GroupsPageContents extends StatelessWidget {
     return SelectionArea(
         child: CustomScrollView(slivers: [
       SliverPadding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          padding: const EdgeInsets.fromLTRB(10, 18, 10, 32),
           sliver: SliverList.list(children: 
             groups.map((group) => GroupCard(group: group)).toList()
           ))
@@ -59,10 +59,11 @@ class _GroupsPageState extends State<GroupsPage> {
     var provGroups = ResourcePoolAccess.of(context).pool.groupsProvider;
     return ListenableBuilder(
       listenable: provGroups,
-      builder: (context, _) => WithSIBAppBar(actions: const [], child: 
+      builder: (context, _) => 
+      // WithSIBAppBar(actions: const [], child: 
       Column(children: [
         Expanded(child: GroupsPageContents.fromProvider(provGroups)),
-      ])),
+      ]),
     );
   }
 }

@@ -1,6 +1,8 @@
 
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/event.dart';
+import 'package:sib_utrecht_app/model/user.dart';
+import 'package:sib_utrecht_app/view_model/annotated_user.dart';
 
 class Events {
   final APIConnector apiConnector;
@@ -25,7 +27,23 @@ class Events {
                 .map<String, dynamic>((key, value) => MapEntry(key, value)));
   }
 
-  Future<List<String>> listParticipants({required int eventId})
+  Future<List<AnnotatedUser>> listParticipants({required int eventId})
+  async {
+    var raw = await apiConnector.get("/events/$eventId/participants");
+
+    return (raw["data"]["participants"] as Iterable<dynamic>)
+                .map((e) => AnnotatedUser(user: 
+                User.fromJson({
+                  "long_name": e["name"],
+                  "short_name": e["name_first"] ?? e["name"]
+                }),
+                comment: e["comment"] as String?)
+                )
+                //e["name"] as String)
+                .toList();
+  }
+
+  Future<List<String>> listParticipantsNames({required int eventId})
   async {
     var raw = await apiConnector.get("/events/$eventId/participants");
 

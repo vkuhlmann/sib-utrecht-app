@@ -19,7 +19,7 @@ class _InfoPageState extends State<InfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WithSIBAppBar(actions: const [], child:
+    return //WithSIBAppBar(actions: const [], child:
      Container(
         alignment: Alignment.topCenter,
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
@@ -111,6 +111,8 @@ class _InfoPageState extends State<InfoPage> {
                                 title: Text(AppLocalizations.of(context)!
                                     .management)))),
                       ])))
-        ])));
+        ]))
+        //)
+        ;
   }
 }

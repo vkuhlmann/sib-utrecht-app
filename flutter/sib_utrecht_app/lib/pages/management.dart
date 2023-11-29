@@ -9,7 +9,8 @@ class ManagementPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WithSIBAppBar(actions: const [], child:
+    return 
+    // WithSIBAppBar(actions: const [], child:
     Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(children: [
@@ -50,6 +51,6 @@ class ManagementPage extends StatelessWidget {
               },
             ),
           )
-        ])));
+        ]));
   }
 }

@@ -11,9 +11,11 @@ class GroupMembersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WithSIBAppBar(
-        actions: [],
-        child: GroupMembersProvider(
+    return
+    // WithSIBAppBar(
+    //     actions: [],
+    //     child: 
+        GroupMembersProvider(
             groupName: groupName,
             builder: (context, membersNames) {
               if (membersNames.isEmpty) {
@@ -41,6 +43,6 @@ class GroupMembersPage extends StatelessWidget {
                               );
                         },
                       )));
-            }));
+            });
   }
 }

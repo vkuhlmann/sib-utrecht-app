@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/components/actions/appbar_suppression.dart';
+import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/dual_screen-1.0.4/lib/dual_screen.dart';
 import 'package:sib_utrecht_app/pages/confidants.dart';
 import 'package:sib_utrecht_app/pages/group_members.dart';
 import 'package:sib_utrecht_app/pages/groups.dart';
+import 'package:sib_utrecht_app/pages/user_page.dart';
 
 import 'shell.dart';
 import 'globals.dart';
@@ -24,7 +26,11 @@ import 'pages/edit_event.dart';
 
 final GoRouter router = createRouter();
 
+// GoRouter.optionURLReflectsImperativeAPIs = true;
+
 GoRouter createRouter() {
+  GoRouter.optionURLReflectsImperativeAPIs = true;
+
   final rootNavigatorKey = GlobalKey<NavigatorState>();
 // final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 // final _eventSpecNavigatorKey = GlobalKey<NavigatorState>();
@@ -315,37 +321,49 @@ GoRouter createRouter() {
                 initialLocation: "/info",
                 // navigatorKey: _infoNavigatorKey,
                 routes: <RouteBase>[
+                  ShellRoute(
+                    builder: (context, state, child) => 
+                    WithSIBAppBar(actions: [], child: child),
+                    routes: [
                   GoRoute(
-                    path: '/info',
-                    // parentNavigatorKey: _infoNavigatorKey,
-                    builder: (context, state) => const InfoPage(),
-                  ),
-                  GoRoute(
-                    path: '/info/confidants',
-                    // parentNavigatorKey: _infoNavigatorKey,
-                    builder: (context, state) => const ConfidantsPage(),
-                  ),
-                  GoRoute(
-                    path: '/info/committees',
-                    // parentNavigatorKey: _infoNavigatorKey,
-                    builder: (context, state) => const GroupMembersPage(groupName: "committees",),
-                  ),
-                  GoRoute(
-                    name: "group_members",
-                    path: '/info/groups/@:group_name/members',
-                    // parentNavigatorKey: _infoNavigatorKey,
-                    builder: (context, state) => GroupMembersPage(
-                      groupName: state.pathParameters["group_name"]!,),
-                  ),
-                  GoRoute(
-                    path: '/info/societies',
-                    // parentNavigatorKey: _infoNavigatorKey,
-                    builder: (context, state) => const GroupMembersPage(groupName: "societies",),
-                  ),
-                  GoRoute(
-                    path: '/info/board',
-                    builder:(context, state) => const GroupMembersPage(groupName: "boards",),
-                  ),
+                      path: '/info',
+                      // parentNavigatorKey: _infoNavigatorKey,
+                      builder: (context, state) => const InfoPage(),
+                      routes: [
+                        GoRoute(
+                          path: 'confidants',
+                          // parentNavigatorKey: _infoNavigatorKey,
+                          builder: (context, state) => const ConfidantsPage(),
+                        ),
+                        GoRoute(
+                          path: 'committees',
+                          // parentNavigatorKey: _infoNavigatorKey,
+                          builder: (context, state) => const GroupMembersPage(
+                            groupName: "committees",
+                          ),
+                        ),
+                        GoRoute(
+                          name: "group_members",
+                          path: 'groups/@:group_name/members',
+                          // parentNavigatorKey: _infoNavigatorKey,
+                          builder: (context, state) => GroupMembersPage(
+                            groupName: state.pathParameters["group_name"]!,
+                          ),
+                        ),
+                        GoRoute(
+                          path: 'societies',
+                          // parentNavigatorKey: _infoNavigatorKey,
+                          builder: (context, state) => const GroupMembersPage(
+                            groupName: "societies",
+                          ),
+                        ),
+                        GoRoute(
+                          path: 'board',
+                          builder: (context, state) => const GroupMembersPage(
+                            groupName: "boards",
+                          ),
+                        ),
+                      ]),
                   GoRoute(
                     path: '/api-debug',
                     builder: (context, state) => const APIDebugPage(),
@@ -358,12 +376,22 @@ GoRouter createRouter() {
                     path: '/management/groups',
                     builder: (context, state) => const GroupsPage(),
                   ),
+                    ]),
+
+                        GoRoute(
+                          name: "user_page",
+                          path: '/users/@:entity_name',
+                          // parentNavigatorKey: _infoNavigatorKey,
+                          builder: (context, state) => UserPage(
+                            entityName: state.pathParameters["entity_name"]!,
+                          ),
+                        ),
                 ]),
             // StatefulShellBranch(
             //     // navigatorKey: _eventSpecNavigatorKey,
             //     initialLocation: "/event/0",
             //     routes: <RouteBase>[
-                  
+
             //     ])
             // StatefulShellBranch(initialLocation: "/event/1", routes: <RouteBase>[
             //   GoRoute(

@@ -28,12 +28,16 @@ class Group extends Entity {
   
   Group({required this.data});
 
-  String? getLocalTitle(Locale loc) {
+  String getLocalTitle(Locale loc) {
     if (loc.languageCode == "nl") {
-      return titleNL;
+      return titleNL ?? groupName;
     }
 
-    return title;
+    return title ?? groupName;
+  }
+
+  String getLocalShortName(Locale loc) {
+    return getLocalTitle(loc);
   }
 
   // String getLocalEventName(BuildContext context) {

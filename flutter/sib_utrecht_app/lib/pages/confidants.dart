@@ -64,9 +64,11 @@ class _ConfidantsPageState extends State<ConfidantsPage> {
     //     appBar: AppBar(title: Text("Groups")),
     //     body: GroupsPageContents.fromProvider(groupsProvider));
     var provGroups = ResourcePoolAccess.of(context).pool.groupsProvider;
-    return WithSIBAppBar(
-        actions: const [],
-        child: ListenableBuilder(
+    return 
+    // WithSIBAppBar(
+    //     actions: const [],
+    //     child: 
+        ListenableBuilder(
             listenable: provGroups,
             builder: (context, _) {
               Group? v = provGroups.groups.firstWhereOrNull(
@@ -95,6 +97,6 @@ class _ConfidantsPageState extends State<ConfidantsPage> {
             // Column(children: [
             //   Expanded(child: GroupsPageContents.fromProvider(provGroups)),
             // ])),
-            ));
+            );
   }
 }

@@ -33,7 +33,7 @@ class GroupCard extends StatelessWidget {
         child: InkWell(
       onTap: () {
         // Navigator.pushNamed(context, "/group", arguments: group);
-        GoRouter.of(context).goNamed("group_members", 
+        GoRouter.of(context).pushNamed("group_members", 
           pathParameters: {"group_name": group.groupName}
         );        
       },

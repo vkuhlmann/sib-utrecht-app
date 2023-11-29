@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/api/events.dart';
+import 'package:sib_utrecht_app/view_model/annotated_user.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 
 import '../constants.dart';
@@ -10,7 +11,7 @@ class EventProvider with ChangeNotifier {
   final Future<CacherApiConnector>? apiConnector;
 
   final CachedProvider<Event> event;
-  final CachedProvider<List<String>> participants;
+  final CachedProvider<List<AnnotatedUser>> participants;
 
   EventProvider({
     required this.apiConnector,
@@ -21,7 +22,7 @@ class EventProvider with ChangeNotifier {
     cache: cachedEvent,
     obtain: (c) => Events(c).getEvent(eventId: eventId, includeImage: true),
   ),
-    participants = CachedProvider<List<String>>(
+    participants = CachedProvider<List<AnnotatedUser>>(
     obtain: (c) => Events(c).listParticipants(eventId: eventId),
   )
   {
