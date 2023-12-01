@@ -285,6 +285,9 @@ class EventPageContents extends StatelessWidget {
               }
 
               return [
+                Center(child: 
+      Container(constraints: const BoxConstraints(maxWidth: 700), child:
+                Column(children: [
                 EventHeader(event),
                 EventDescription(event),
                 EventThumbnail(event),
@@ -292,6 +295,7 @@ class EventPageContents extends StatelessWidget {
                 if (expectParticipants) ...[
                   EventParticipants(event, eventProvider: eventProvider)
                 ]
+              ])))
               ];
             }())
           ])),
@@ -345,7 +349,8 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
-    return ListenableBuilder(
+    return 
+    ListenableBuilder(
         listenable: Listenable.merge([_eventProvider, provEvents]),
         builder: (context, _) {
           log.fine("Building event page for event id ${widget.eventId}");

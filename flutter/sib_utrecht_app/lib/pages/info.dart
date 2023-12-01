@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/centered_page.dart';
 
 import '../globals.dart';
 import '../components/actions/sib_appbar.dart';
@@ -20,7 +21,7 @@ class _InfoPageState extends State<InfoPage> {
   @override
   Widget build(BuildContext context) {
     return //WithSIBAppBar(actions: const [], child:
-     Container(
+     CenteredPage(child: Container(
         alignment: Alignment.topCenter,
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
         child: CustomScrollView(slivers: [
@@ -111,7 +112,7 @@ class _InfoPageState extends State<InfoPage> {
                                 title: Text(AppLocalizations.of(context)!
                                     .management)))),
                       ])))
-        ]))
+        ])))
         //)
         ;
   }

@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/entity_icon.dart';
 import 'package:sib_utrecht_app/components/people/entity_tile.dart';
 import 'package:sib_utrecht_app/components/people/group_card.dart';
@@ -20,10 +21,12 @@ class UserPageContents extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SelectionArea(
-        child: CustomScrollView(
+        child: CenteredPageScroll(
       slivers: [
         SliverAppBar(
           // leading: EntityIcon(entity: user),
+          // leading: const SizedBox(),
+          automaticallyImplyLeading: false,
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

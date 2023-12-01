@@ -145,12 +145,13 @@ class WithSIBAppBar extends StatelessWidget {
       "/event/:event_id": "/",
       "/management": "/info",
       "/management/groups": "/management",
+      "/management/users": "/management",
       "/api-debug": "/management",
       "/info": "/",
       "/info/confidants": "/info",
-      // "/info/committees": "/info",
-      // "/info/committeees/:committee_id": "/info/committees",
-      // "/info/societies": "/info",
+      "/info/committees": "/info",
+      "/info/committeees/:committee_id": "/info/committees",
+      "/info/societies": "/info",
       "/info/board": "/info",
       "/feed": "/",
       "/": null
@@ -186,11 +187,6 @@ class WithSIBAppBar extends StatelessWidget {
             log.info("router canPop: ${router.canPop()}");
             log.info("GoRouter canPop: ${GoRouter.of(context).canPop()}");
 
-            if (backAddress != null) {
-              router.go(backAddress);
-              return;
-            }
-
             if (router.canPop()) {
               router.pop();
               return;
@@ -203,6 +199,11 @@ class WithSIBAppBar extends StatelessWidget {
 
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
+              return;
+            }
+
+            if (backAddress != null) {
+              router.go(backAddress);
               return;
             }
           },

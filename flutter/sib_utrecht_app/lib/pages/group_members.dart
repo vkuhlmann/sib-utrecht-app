@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/entity_card.dart';
 import 'package:sib_utrecht_app/view_model/entity_provider.dart';
 import 'package:sib_utrecht_app/view_model/group_members_provider.dart';
@@ -12,9 +13,6 @@ class GroupMembersPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return
-    // WithSIBAppBar(
-    //     actions: [],
-    //     child: 
         GroupMembersProvider(
             groupName: groupName,
             builder: (context, membersNames) {
@@ -28,7 +26,8 @@ class GroupMembersPage extends StatelessWidget {
                   builder: (context, members) => Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                       child: 
-                      CustomScrollView(slivers: [
+                      CenteredPageScroll(
+                      slivers: [
                         SliverPadding(padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
                         sliver:
                       SliverList.builder(

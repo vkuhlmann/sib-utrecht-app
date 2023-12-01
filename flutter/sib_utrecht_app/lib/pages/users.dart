@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
+import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/group_card.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/model/group.dart';
@@ -26,7 +27,7 @@ class UsersPageContents extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SelectionArea(
-        child: CustomScrollView(slivers: [
+        child: CenteredPageScroll(slivers: [
       SliverPadding(
           padding: const EdgeInsets.fromLTRB(10, 18, 10, 32),
           sliver: SliverList.list(children: 

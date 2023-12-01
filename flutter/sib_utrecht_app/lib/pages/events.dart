@@ -591,7 +591,9 @@ class _EventsPageState extends State<EventsPage> {
   Widget build(BuildContext context) {
     log.fine("Doing events page build");
 
-    return ListenableBuilder(
+    return 
+    
+    ListenableBuilder(
         listenable: calendar,
         builder: (context, child) {
           var loading = calendar.loading;
@@ -606,6 +608,7 @@ class _EventsPageState extends State<EventsPage> {
                 )
               ],
               child:
+              
               // Column(
               //     mainAxisAlignment: MainAxisAlignment.center,
               //     children: [
@@ -678,8 +681,14 @@ class _EventsPageState extends State<EventsPage> {
                                   // ),
                                   SliverList.list(
                                     children: [
-                                      events["2_pastWeek"] ?? const SizedBox(),
-                                      events["1_past"] ?? const SizedBox(),
+                                      Center(child: 
+      Container(constraints: const BoxConstraints(maxWidth: 700), child:
+                                      events["2_pastWeek"] ?? const SizedBox()
+      )),
+                                      Center(child: 
+      Container(constraints: const BoxConstraints(maxWidth: 700), child:
+                                      events["1_past"] ?? const SizedBox()
+      )),
                                     ],
                                   ),
                                   SliverToBoxAdapter(
@@ -687,17 +696,26 @@ class _EventsPageState extends State<EventsPage> {
                                       child: Padding(
                                           padding: const EdgeInsets.fromLTRB(
                                               0, 0, 0, 32),
-                                          child: events["3_upcomingWeek"] ??
-                                              const SizedBox())),
+                                          child: 
+                                          Center(child: 
+      Container(constraints: const BoxConstraints(maxWidth: 700), child:
+                                          events["3_upcomingWeek"] ??
+                                              const SizedBox())))),
                                   // SliverToBoxAdapter(
                                   //   child: Center(child: Text("After upcoming week"))
                                   // ),
 
                                   SliverList.list(
                                     children: [
-                                      events["4_nextWeek"] ?? const SizedBox(),
-                                      events["5_future"] ?? const SizedBox(),
-                                      events["6_ongoing"] ?? const SizedBox(),
+                                      Center(child: 
+      Container(constraints: const BoxConstraints(maxWidth: 700), child:
+      events["4_nextWeek"] ?? const SizedBox())),
+                                      Center(child: 
+      Container(constraints: const BoxConstraints(maxWidth: 700), child:
+                                      events["5_future"] ?? const SizedBox())),
+                                      Center(child: 
+      Container(constraints: const BoxConstraints(maxWidth: 700), child:
+      events["6_ongoing"] ?? const SizedBox())),
                                     ],
                                   ),
                                   SliverToBoxAdapter(
