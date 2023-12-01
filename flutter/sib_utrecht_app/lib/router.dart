@@ -7,7 +7,7 @@ import 'package:sib_utrecht_app/components/dual_screen-1.0.4/lib/dual_screen.dar
 import 'package:sib_utrecht_app/pages/confidants.dart';
 import 'package:sib_utrecht_app/pages/group_members.dart';
 import 'package:sib_utrecht_app/pages/groups.dart';
-import 'package:sib_utrecht_app/pages/user_page.dart';
+import 'package:sib_utrecht_app/pages/user.dart';
 import 'package:sib_utrecht_app/pages/users.dart';
 
 import 'shell.dart';
@@ -232,7 +232,11 @@ GoRouter createRouter() {
                         );
                       },
                       routes: [
-                        GoRoute(
+                        Route(
+                            path: '/event/new',
+                            builder: (context, state) =>
+                                const EventEditPage(eventId: null)),
+                        Route(
                             path: '/event/:event_id',
                             builder: (context, state) {
                               int? eventId;
@@ -259,7 +263,7 @@ GoRouter createRouter() {
                                   key: ValueKey("event/$eventId"));
                             },
                             routes: [
-                              GoRoute(
+                              Route(
                                   path: 'edit',
                                   name: "event_edit",
                                   builder: (context, state) {
@@ -376,14 +380,24 @@ GoRouter createRouter() {
                                 },
                               ),
                               Route(
-                                name: "group_members",
-                                path: 'groups/@:group_name/members',
-                                // parentNavigatorKey: _infoNavigatorKey,
-                                builder: (context, state) => GroupMembersPage(
-                                  groupName:
-                                      state.pathParameters["group_name"]!,
-                                ),
-                              ),
+                                  name: "group",
+                                  path: 'groups/@:group_name',
+                                  builder: (context, state) => GroupMembersPage(
+                                        groupName:
+                                            state.pathParameters["group_name"]!,
+                                      ),
+                                  routes: [
+                                    Route(
+                                      name: "group_members",
+                                      path: 'members',
+                                      // parentNavigatorKey: _infoNavigatorKey,
+                                      builder: (context, state) =>
+                                          GroupMembersPage(
+                                        groupName:
+                                            state.pathParameters["group_name"]!,
+                                      ),
+                                    ),
+                                  ]),
                               Route(
                                 path: 'societies',
                                 // parentNavigatorKey: _infoNavigatorKey,

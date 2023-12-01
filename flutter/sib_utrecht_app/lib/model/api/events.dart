@@ -32,14 +32,27 @@ class Events {
     var raw = await apiConnector.get("/events/$eventId/participants");
 
     return (raw["data"]["participants"] as Iterable<dynamic>)
-                .map((e) => AnnotatedUser(user: 
+                .map((e) {
+                //   var entityData = {
+                //   "long_name": e["name"],
+                //   "short_name": e["name_first"] ?? User.truncateUserName(e["name"])
+                // };
+
+                // if (e["entity"] != null) {
+                //   // entityData.addAll(e["entity"]);
+                //   entityData = (e["entity"] as Map).map((key, value) => MapEntry(key as String, value))
+                // }
+
+
+                return AnnotatedUser(user: 
                 User.fromJson(
-                  e["entity"] ??
-                {
+                  e["entity"] ??{
                   "long_name": e["name"],
                   "short_name": e["name_first"] ?? User.truncateUserName(e["name"])
-                }),
-                comment: e["comment"] as String?)
+                }
+                ),
+                comment: e["comment"] as String?);
+                }
                 )
                 //e["name"] as String)
                 .toList();

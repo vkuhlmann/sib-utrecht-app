@@ -1,7 +1,7 @@
 #!/run/current-system/sw/bin/bash
 
 set -e
-flutter build web --release --web-renderer canvaskit --base-href '/v0.2.0/' --output 'build/web-release'
+flutter build web --release --web-renderer canvaskit --base-href '/v0.2.version/' --output 'build/web-release'
 #cp -r build/web-release/* /mnt/vincent-bucket3/sib-utrecht-app/cloudfront/development/
-rclone sync build/web-release 'vincent-aws:vincent-bucket3/sib-utrecht-app/cloudfront/v0.2.0' --checksum -v
+rclone sync build/web-release 'vincent-aws:vincent-bucket3/sib-utrecht-app/cloudfront/v0.2.version' --checksum -v
 

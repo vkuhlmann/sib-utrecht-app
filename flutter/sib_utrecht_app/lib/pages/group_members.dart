@@ -20,8 +20,8 @@ class GroupMembersPage extends StatelessWidget {
                 return const Center(child: Text("No members found"));
               }
 
-              return EntityProvider(
-                  entityNames:
+              return EntityProvider.Multiplexed(
+                  query:
                       membersNames.map((e) => e['entity'] as String).toList(),
                   builder: (context, members) => Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),

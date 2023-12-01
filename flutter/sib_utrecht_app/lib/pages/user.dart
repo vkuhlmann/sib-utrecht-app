@@ -27,34 +27,35 @@ class UserPageContents extends StatelessWidget {
           // leading: EntityIcon(entity: user),
           // leading: const SizedBox(),
           automaticallyImplyLeading: false,
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              EntityIcon(entity: user),
-              const SizedBox(width: 16),
-              Text(user.longName)]),
+          title: Row(mainAxisSize: MainAxisSize.min, children: [
+            EntityIcon(entity: user),
+            const SizedBox(width: 16),
+            Text(user.longName)
+          ]),
           pinned: true,
           expandedHeight: 200,
           // stretch: true,
-          flexibleSpace: 
-          // FlexibleSpaceBar(
-          //   background: Container(
-          //     // color: Colors.blue[800],
-          //   child: Center(child: 
-            LayoutBuilder(builder: (context, constraints) =>
-            Center(child: ScaleTransition(
-              scale: AlwaysStoppedAnimation(constraints.maxHeight / 60),
-              child: EntityIcon(entity: user),
-            ))
-            // ))
-            
-              // child: Center(child:
-            // EntityIcon(entity: user)))
-              // background: Image.network(
-              //   user.photoUrl,
-              //   fit: BoxFit.cover,
-              // ),
-              ),
+          flexibleSpace:
+              // FlexibleSpaceBar(
+              //   background: Container(
+              //     // color: Colors.blue[800],
+              //   child: Center(child:
+              LayoutBuilder(
+                  builder: (context, constraints) => Center(
+                          child: ScaleTransition(
+                        scale:
+                            AlwaysStoppedAnimation(constraints.maxHeight / 60),
+                        child: EntityIcon(entity: user),
+                      ))
+                  // ))
+
+                  // child: Center(child:
+                  // EntityIcon(entity: user)))
+                  // background: Image.network(
+                  //   user.photoUrl,
+                  //   fit: BoxFit.cover,
+                  // ),
+                  ),
         ),
         SliverToBoxAdapter(
           child: UserCard(user: user),
@@ -107,13 +108,11 @@ class _UserPageState extends State<UserPage> {
     //     body: GroupsPageContents.fromProvider(groupsProvider));
     // var provGroups = ResourcePoolAccess.of(context).pool.groupsProvider;
     return
-    // WithSIBAppBar(
-    //     actions: const [],
-    //     child: 
-        UserProvider(
-            entityNames: [widget.entityName],
-            builder: (context, users) => UserPageContents(user: users[0]))
-            // )
-            ;
+        // WithSIBAppBar(
+        //     actions: const [],
+        //     child:
+        UserProvider.Multiplexed(
+            query: [widget.entityName],
+            builder: (context, users) => UserPageContents(user: users[0]));
   }
 }

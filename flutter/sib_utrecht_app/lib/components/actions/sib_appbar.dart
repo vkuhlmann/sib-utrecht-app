@@ -263,7 +263,7 @@ class WithSIBAppBar extends StatelessWidget {
         appBar: AppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             leading: (showBackButton && suppression?.suppressBackbutton != true)
-                ? buildBackButton()
+                ? Center(child: buildBackButton())
                 : null,
             title: suppression?.suppressTitle == true
                 ? null

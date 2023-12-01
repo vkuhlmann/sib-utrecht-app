@@ -32,7 +32,6 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
 
 
   CachedProviderT({
-    // required this.connector, 
     required this.getFresh, required this.getCached,
     required this.postProcess
   }) {

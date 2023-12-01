@@ -11,8 +11,8 @@ class Users {
   Future<User> getUser({required String entityName}) async {
     var raw = await (await apiConnector).get("/users/@$entityName");
 
-    return User.fromJson((raw["data"]["user"] as Map)
-        .map<String, dynamic>((key, value) => MapEntry(key, value)));
+    return User.fromJson(raw["data"]["user"] as Map);
+        // .map<String, dynamic>((key, value) => MapEntry(key, value)));
   }
 
   // Future<List<Map>> listMembers({required String groupName}) async {

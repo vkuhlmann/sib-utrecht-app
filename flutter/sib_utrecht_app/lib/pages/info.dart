@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/components/centered_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../globals.dart';
 import '../components/actions/sib_appbar.dart';
@@ -78,9 +79,14 @@ class _InfoPageState extends State<InfoPage> {
                               child: ListTile(
                                 title: Text(AppLocalizations.of(context)!
                                     .confidentialAdvisers)))),
-                        Card(child: ListTile(title: Text(
+                        Card(child:
+                        InkWell(
+                          onTap: () {
+                            launchUrl(Uri.parse("https://sib-utrecht.nl"));
+                          },
+                          child: ListTile(title: Text(
                             // "Over SIB"
-                            AppLocalizations.of(context)!.aboutSIB))),
+                            AppLocalizations.of(context)!.openSIBWebsite)))),
                         Card(
                             child: InkWell(
                                 onTap: () {

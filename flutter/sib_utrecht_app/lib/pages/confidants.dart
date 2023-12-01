@@ -83,8 +83,8 @@ class _ConfidantsPageState extends State<ConfidantsPage> {
                   groupName: "confidants",
                   builder: (context, members) =>
                       // Text("Members are ${members.map((m) => m["entity"] as String).toList().join(", ")}")
-                      UserProvider(
-                          entityNames: members
+                      UserProvider.Multiplexed(
+                          query: members
                               .map((m) => m["entity"] as String)
                               .toList(),
                           builder: (context, users) =>

@@ -1,7 +1,7 @@
 import 'package:sib_utrecht_app/model/entity.dart';
 
 class User extends Entity {
-  final Map<String, dynamic> data;
+  final Map data;
 
   String get entityName => data["entity_name"];
   String get shortName => (
@@ -47,8 +47,8 @@ class User extends Entity {
   //   return getLocalEventNameFromLoc(Localizations.localeOf(context));
   // }
 
-  static User fromJson(Map<String, dynamic> json) {
-    var vals = json;
+  static User fromJson(Map json) {
+    Map vals = json;
     // vals["start"] = vals["start"] ?? vals["event_start"];
     // vals["end"] = vals["end"] ?? vals["event_end"];
     // vals["name"] = vals["name"] ?? vals["event_name"];
@@ -64,8 +64,9 @@ class User extends Entity {
       }
 
       vals.addAll(
-        (vals["details"] as Map).map((key, value)
-        => MapEntry(key as String, value))
+        vals["details"] as Map
+        // (vals["details"] as Map).map((key, value)
+        // => MapEntry(key as String, value))
       );
     }
     // if (vals["start"] == null) {
