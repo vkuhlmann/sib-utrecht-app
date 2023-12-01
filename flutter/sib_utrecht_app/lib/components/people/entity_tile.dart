@@ -17,7 +17,7 @@ class EntityTile extends StatelessWidget {
 
     final ent = entity;
     if (ent is User) {
-      caption = Text(ent.shortName);
+      caption = Text(ent.shortNameUnique, overflow: TextOverflow.ellipsis,);
 
       // return Column(children: [
       //   EntityIcon(entity: entity),

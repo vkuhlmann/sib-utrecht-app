@@ -58,7 +58,8 @@ class EventHeader extends StatelessWidget {
       if (event.location != null)
         Card(
             child: ListTile(
-                title: Text("${AppLocalizations.of(context)!.eventLocation}: ${event.location.toString()}"))),
+                title: Text(
+                    "${AppLocalizations.of(context)!.eventLocation}: ${event.location.toString()}"))),
 
       Card(
           child: ListTile(
@@ -150,13 +151,13 @@ class EventParticipants extends StatelessWidget {
   const EventParticipants(this.event, {Key? key, required this.eventProvider})
       : super(key: key);
 
-  Widget buildParticipant(BuildContext context, AnnotatedUser participant) {
-    return EntityTile(entity: participant);
-    // return Card(
-    //     child: ListTile(
-    //         title: Text(participant.user.name),
-    //         subtitle: Text(participant.user.email)));
-  }
+  // Widget buildParticipant(BuildContext context, AnnotatedUser participant) {
+  //   return EntityTile(entity: participant);
+  //   // return Card(
+  //   //     child: ListTile(
+  //   //         title: Text(participant.user.name),
+  //   //         subtitle: Text(participant.user.email)));
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -194,13 +195,23 @@ class EventParticipants extends StatelessWidget {
                 child: Text(
                     AppLocalizations.of(context)!.eventNoParticipantsYet))),
       if (participantsCached != null && participantsCached.isNotEmpty)
-        ...participantsCached.map<Widget>((e) => Padding(
-            padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
-            child:
-            //Card(child: ListTile(title: Text(e)))
-            EntityTile(entity: e)
-            )),
-      const SizedBox(height: 32),
+        Padding(
+            padding: const EdgeInsets.fromLTRB(10, 16, 10, 32),
+            child: Wrap(
+                // crossAxisCount: 6,
+                // shrinkWrap: true,
+                spacing: 10,
+                children: [
+                  ...participantsCached.map<Widget>((e) =>
+                      // Padding(
+                      //       padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
+                      // child:
+                      //Card(child: ListTile(title: Text(e)))
+                      // Card(child:
+                      SizedBox(
+                          width: 96, height: 80, child: EntityTile(entity: e))),
+                  const SizedBox(height: 32),
+                ]))
     ]);
   }
 }

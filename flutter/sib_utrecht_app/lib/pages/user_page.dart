@@ -59,6 +59,9 @@ class UserPageContents extends StatelessWidget {
         SliverToBoxAdapter(
           child: Center(child: EntityTile(entity: user)),
         ),
+        SliverToBoxAdapter(
+          child: Center(child: Text(user.entityName)),
+        ),
         const SliverToBoxAdapter(
             child: SizedBox(
                 // color: Colors.blue[100],

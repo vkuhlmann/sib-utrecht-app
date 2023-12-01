@@ -7,13 +7,13 @@ class User extends Entity {
   String get shortName => (
     data["short_name"]
     ?? data["short_name_unique"]
-    ?? data["long_name"]
+    ?? truncateUserName(data["long_name"])
     ?? entityName
   );
   String get shortNameUnique => (
     data["short_name_unique"]
     ?? data["short_name"]
-    ?? data["long_name"]
+    ?? truncateUserName(data["long_name"])
     ?? entityName
   );
   String get longName => (
@@ -24,6 +24,16 @@ class User extends Entity {
   );
   // String? get titleNL => data["titleNL"] ?? data["title"];
   User({required this.data});
+
+  static String? truncateUserName(String? n) {
+    if (n == null) {
+      return null;
+    }
+    if (n.length > 15) {
+      return "${n.substring(0, 13)}…";
+    }
+    return n;
+  }
 
   // String? getLocalTitle(Locale loc) {
   //   if (loc.languageCode == "nl") {

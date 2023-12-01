@@ -8,8 +8,9 @@ import 'package:sib_utrecht_app/model/user.dart';
 
 class UserCard extends StatelessWidget {
   final User user;
+  final String? role;
 
-  const UserCard({Key? key, required this.user}) : super(key: key);
+  const UserCard({Key? key, required this.user, this.role}) : super(key: key);
 
   Widget buildContactOption(BuildContext context, String type, dynamic value) {
     Icon? icon = {
@@ -56,6 +57,13 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String subtitle = user.entityName;
+
+    if (role != null) {
+      subtitle += " ($role)";
+    }
+
+
     return Card(
         child: InkWell(
             onTap: () {
@@ -70,7 +78,7 @@ class UserCard extends StatelessWidget {
                 //   child: Text(user.shortName[0]),
                 // ),
                 title: Text(user.longName),
-                subtitle: Text(user.entityName),
+                subtitle: Text(subtitle),
               ),
               ...((user.data["profile"]?["contact"] as List?)
                       ?.map((cont) => (cont as Map).entries.first)

@@ -33,9 +33,11 @@ class Events {
 
     return (raw["data"]["participants"] as Iterable<dynamic>)
                 .map((e) => AnnotatedUser(user: 
-                User.fromJson({
+                User.fromJson(
+                  e["entity"] ??
+                {
                   "long_name": e["name"],
-                  "short_name": e["name_first"] ?? e["name"]
+                  "short_name": e["name_first"] ?? User.truncateUserName(e["name"])
                 }),
                 comment: e["comment"] as String?)
                 )

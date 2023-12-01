@@ -5,8 +5,9 @@ import 'package:sib_utrecht_app/model/group.dart';
 
 class GroupCard extends StatelessWidget {
   final Group group;
+  final String? role;
 
-  const GroupCard({Key? key, required this.group}) : super(key: key);
+  const GroupCard({Key? key, required this.group, this.role}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

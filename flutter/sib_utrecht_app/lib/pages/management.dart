@@ -50,7 +50,13 @@ class ManagementPage extends StatelessWidget {
                 });
               },
             ),
-          )
+          ),
+          Card(
+              child: InkWell(
+                  child: const ListTile(title: Text("Users")),
+                  onTap: () {
+                    router.go("/management/users");
+                  })),
         ]));
   }
 }

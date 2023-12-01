@@ -8,6 +8,7 @@ import 'package:sib_utrecht_app/pages/confidants.dart';
 import 'package:sib_utrecht_app/pages/group_members.dart';
 import 'package:sib_utrecht_app/pages/groups.dart';
 import 'package:sib_utrecht_app/pages/user_page.dart';
+import 'package:sib_utrecht_app/pages/users.dart';
 
 import 'shell.dart';
 import 'globals.dart';
@@ -371,6 +372,10 @@ GoRouter createRouter() {
                   GoRoute(
                     path: '/management',
                     builder: (context, state) => const ManagementPage(),
+                  ),
+                  GoRoute(
+                    path: '/management/users',
+                    builder: (context, state) => const UsersPage(),
                   ),
                   GoRoute(
                     path: '/management/groups',

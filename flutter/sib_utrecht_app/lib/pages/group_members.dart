@@ -26,13 +26,17 @@ class GroupMembersPage extends StatelessWidget {
                   entityNames:
                       membersNames.map((e) => e['entity'] as String).toList(),
                   builder: (context, members) => Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                      child: ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                      child: 
+                      CustomScrollView(slivers: [
+                        SliverPadding(padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
+                        sliver:
+                      SliverList.builder(
                         itemCount: members.length,
                         itemBuilder: (context, index) {
                           return Padding(
                               padding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
-                              child: EntityCard(entity: members[index])
+                              child: EntityCard(entity: members[index], role: membersNames[index]["role"] as String?)
                               //  ListTile(
                               //   leading: CircleAvatar(
                               //     child: Text(members[index]['entity']?[0] ?? "N/A"),
@@ -42,7 +46,7 @@ class GroupMembersPage extends StatelessWidget {
 
                               );
                         },
-                      )));
+                      ))])));
             });
   }
 }
