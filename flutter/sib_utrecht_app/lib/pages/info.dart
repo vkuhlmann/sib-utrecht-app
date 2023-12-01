@@ -19,7 +19,7 @@ class _InfoPageState extends State<InfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WithSIBAppBar(actions: const [], child:
+    return //WithSIBAppBar(actions: const [], child:
      Container(
         alignment: Alignment.topCenter,
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
@@ -31,13 +31,30 @@ class _InfoPageState extends State<InfoPage> {
             // const Card(child: ListTile(title: Text("Genootschappen"))),
             Card(
                 child:
-                    ListTile(title: Text(AppLocalizations.of(context)!.board))),
+                InkWell(
+                  onTap:() {
+                    router.go("/info/board");
+                  },
+                  child: 
+                    ListTile(title: Text(AppLocalizations.of(context)!.board)))),
             Card(
-                child: ListTile(
-                    title: Text(AppLocalizations.of(context)!.committees))),
+                child:
+                InkWell(
+                  onTap:() {
+                    router.go("/info/committees");
+                  },
+                  child:
+                ListTile(
+                    title: Text(AppLocalizations.of(context)!.committees)))),
             Card(
-                child: ListTile(
-                    title: Text(AppLocalizations.of(context)!.societies))),
+                child: 
+                InkWell(
+                  onTap:() {
+                    router.go("/info/societies");
+                  },
+                  child:
+                ListTile(
+                    title: Text(AppLocalizations.of(context)!.societies)))),
           ])),
           SliverFillRemaining(
               hasScrollBody: false,
@@ -52,9 +69,14 @@ class _InfoPageState extends State<InfoPage> {
                         //         ListTile(title: Text("Vertrouwenspersonen"))),
                         // const Card(child: ListTile(title: Text("Over SIB"))),
                         Card(
-                            child: ListTile(
+                            child: 
+                            InkWell(
+                              onTap:() {
+                                router.go("/info/confidants");
+                              },
+                              child: ListTile(
                                 title: Text(AppLocalizations.of(context)!
-                                    .confidentialAdvisers))),
+                                    .confidentialAdvisers)))),
                         Card(child: ListTile(title: Text(
                             // "Over SIB"
                             AppLocalizations.of(context)!.aboutSIB))),
@@ -64,7 +86,7 @@ class _InfoPageState extends State<InfoPage> {
                                   showAboutDialog(
                                       context: context,
                                       applicationName: "SIB-Utrecht",
-                                      applicationVersion: "0.1.6");
+                                      applicationVersion: "0.2.0");
                                 },
                                 child: ListTile(title: Text(
                                     // "Over app"
@@ -89,6 +111,8 @@ class _InfoPageState extends State<InfoPage> {
                                 title: Text(AppLocalizations.of(context)!
                                     .management)))),
                       ])))
-        ])));
+        ]))
+        //)
+        ;
   }
 }

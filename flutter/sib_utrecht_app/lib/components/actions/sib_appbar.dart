@@ -144,8 +144,14 @@ class WithSIBAppBar extends StatelessWidget {
     String? backAddress = {
       "/event/:event_id": "/",
       "/management": "/info",
+      "/management/groups": "/management",
       "/api-debug": "/management",
       "/info": "/",
+      "/info/confidants": "/info",
+      // "/info/committees": "/info",
+      // "/info/committeees/:committee_id": "/info/committees",
+      // "/info/societies": "/info",
+      "/info/board": "/info",
       "/feed": "/",
       "/": null
     }[routerState.fullPath];

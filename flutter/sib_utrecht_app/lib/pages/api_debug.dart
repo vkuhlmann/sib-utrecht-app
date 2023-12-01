@@ -84,7 +84,7 @@ class _APIDebugPageState extends State<APIDebugPage> {
         //     title: const Text("API Debug"),
         //   ),
         //   body:
-        WithSIBAppBar(actions: const [], child: 
+        // WithSIBAppBar(actions: const [], child: 
         Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
             child: ListView(children: [
@@ -166,6 +166,6 @@ class _APIDebugPageState extends State<APIDebugPage> {
                 },
               ),
               const SizedBox(height: 16)
-            ])));
+            ]));
   }
 }

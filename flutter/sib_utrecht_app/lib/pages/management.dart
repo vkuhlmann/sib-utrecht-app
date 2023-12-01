@@ -9,7 +9,8 @@ class ManagementPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WithSIBAppBar(actions: const [], child:
+    return 
+    // WithSIBAppBar(actions: const [], child:
     Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(children: [
@@ -19,10 +20,12 @@ class ManagementPage extends StatelessWidget {
                   onTap: () {
                     router.go("/api-debug");
                   })),
-          const Card(
+          Card(
               child: InkWell(
-            onTap: null,
-            child: ListTile(title: Text("Groups")),
+            onTap: () {
+              router.go("/management/groups");
+            },
+            child: const ListTile(title: Text("Groups")),
           )),
           Card(
               child: InkWell(
@@ -47,7 +50,13 @@ class ManagementPage extends StatelessWidget {
                 });
               },
             ),
-          )
-        ])));
+          ),
+          Card(
+              child: InkWell(
+                  child: const ListTile(title: Text("Users")),
+                  onTap: () {
+                    router.go("/management/users");
+                  })),
+        ]));
   }
 }

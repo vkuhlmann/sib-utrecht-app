@@ -4,11 +4,13 @@ import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/view_model/events_provider.dart';
+import 'package:sib_utrecht_app/view_model/groups_provider.dart';
 import 'package:sib_utrecht_app/log.dart';
 
 class ResourcePool {
   Future<CacherApiConnector>? connector;
   EventsProvider? _eventsProvider;
+  GroupsProvider? _groupsProvider;
 
   EventsProvider get eventsProvider {
     var val = _eventsProvider ?? EventsProvider();
@@ -17,6 +19,16 @@ class ResourcePool {
       val.setApiConnector(conn);
     }
     _eventsProvider = val;
+    return val;
+  }
+
+  GroupsProvider get groupsProvider {
+    var val = _groupsProvider ?? GroupsProvider();
+    var conn = connector;
+    if (conn != null) {
+      val.setApiConnector(conn);
+    }
+    _groupsProvider = val;
     return val;
   }
 
