@@ -12,17 +12,7 @@ class Users {
     var raw = await (await apiConnector).get("/users/@$entityName");
 
     return User.fromJson(raw["data"]["user"] as Map);
-        // .map<String, dynamic>((key, value) => MapEntry(key, value)));
   }
-
-  // Future<List<Map>> listMembers({required String groupName}) async {
-  //   var raw = await apiConnector.get("/groups/@$groupName/members");
-
-  //   return (raw["data"]["memberships"] as Iterable<dynamic>)
-  //       .map((e) => (e as Map<dynamic, dynamic>))
-  //       // .map((e) => e["name"] as String)
-  //       .toList();
-  // }
 
   Future<List<User>> list() async {
     var raw = await (await apiConnector).get("/users");

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sib_utrecht_app/model/api_connector_cache.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:uuid/uuid.dart';
@@ -9,7 +8,6 @@ import 'package:flutter/material.dart';
 import '../log.dart';
 import '../constants.dart';
 import '../model/login_state.dart';
-import 'api_connector.dart';
 
 class LoginManager extends ChangeNotifier {
   late FlutterSecureStorage storage;
@@ -213,34 +211,6 @@ class LoginManager extends ChangeNotifier {
       authorizeUrl
     );
   }
-
-  // Future<void> _initiateLogin() async {
-  //   var uuid = const Uuid();
-  //   final String appName = "sib-utrecht-app_${uuid.v4().substring(0, 6)}";
-
-  //   // Uri authorize_url = Uri.parse(
-  //   //     "$AUTHORIZE_APP_URL?app_name=$appName"
-  //   //     "&success_url=https%3A%2F%2Fvkuhlmann.com"
-  //   // );
-
-  //   Map<String, dynamic> queryParams = {
-  //     "app_name": appName,
-  //   };
-
-  //   if (canLoginByRedirect) {
-  //     queryParams["success_url"] =
-  //         Uri.base.replace(fragment: "/authorize").toString();
-  //   }
-
-  //   Uri authorizeUrl = Uri.https(Uri.parse(authorizeAppUrl).authority,
-  //       Uri.parse(authorizeAppUrl).path, queryParams);
-
-  //   log.info("Authorize url: $authorizeUrl");
-
-  //   if (!await launchUrl(authorizeUrl)) {
-  //     throw Exception("Could not launch url");
-  //   }
-  // }
 
   Future<LoginState> logout() {
     return setActiveProfile(null);

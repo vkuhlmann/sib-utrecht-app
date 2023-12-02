@@ -57,18 +57,19 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String subtitle = user.entityName;
+    String subtitle = user.entityName ?? "";
 
     if (role != null) {
       subtitle += " ($role)";
     }
 
+    String? entityName = user.entityName;
 
     return Card(
         child: InkWell(
-            onTap: () {
+            onTap: entityName == null ? null : () {
               GoRouter.of(context).pushNamed("user_page",
-                  pathParameters: {"entity_name": user.entityName});
+                  pathParameters: {"entity_name": entityName});
             },
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

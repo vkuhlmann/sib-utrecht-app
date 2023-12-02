@@ -4,4 +4,5 @@
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 
-Client? getCorsClient({required bool withCredentials}) => BrowserClient()..withCredentials = withCredentials;
+Client? getCorsClient({required bool withCredentials}) =>
+    BrowserClient()..withCredentials = withCredentials;

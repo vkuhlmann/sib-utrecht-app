@@ -1,28 +1,25 @@
+import 'dart:ui';
+
+import 'package:go_router/go_router.dart';
+import 'package:sib_utrecht_app/globals.dart';
 import 'package:sib_utrecht_app/model/entity.dart';
 
 class User extends Entity {
   final Map data;
 
-  String get entityName => data["entity_name"];
-  String get shortName => (
-    data["short_name"]
-    ?? data["short_name_unique"]
-    ?? truncateUserName(data["long_name"])
-    ?? entityName
-  );
-  String get shortNameUnique => (
-    data["short_name_unique"]
-    ?? data["short_name"]
-    ?? truncateUserName(data["long_name"])
-    ?? entityName
-  );
-  String get longName => (
-    data["long_name"]
-    ?? data["short_name_unique"]
-    ?? data["short_name"]
-    ?? entityName
-  );
-  // String? get titleNL => data["titleNL"] ?? data["title"];
+  String? get entityName => data["entity_name"];
+  String get shortName => (data["short_name"] ??
+      data["short_name_unique"] ??
+      truncateUserName(data["long_name"]) ??
+      entityName);
+  String get shortNameUnique => (data["short_name_unique"] ??
+      data["short_name"] ??
+      truncateUserName(data["long_name"]) ??
+      entityName);
+  String get longName => (data["long_name"] ??
+      data["short_name_unique"] ??
+      data["short_name"] ??
+      entityName);
   User({required this.data});
 
   static String? truncateUserName(String? n) {
@@ -35,26 +32,8 @@ class User extends Entity {
     return n;
   }
 
-  // String? getLocalTitle(Locale loc) {
-  //   if (loc.languageCode == "nl") {
-  //     return titleNL;
-  //   }
-
-  //   return title;
-  // }
-
-  // String getLocalEventName(BuildContext context) {
-  //   return getLocalEventNameFromLoc(Localizations.localeOf(context));
-  // }
-
   static User fromJson(Map json) {
     Map vals = json;
-    // vals["start"] = vals["start"] ?? vals["event_start"];
-    // vals["end"] = vals["end"] ?? vals["event_end"];
-    // vals["name"] = vals["name"] ?? vals["event_name"];
-    // vals["slug"] = vals["slug"] ?? vals["event_slug"];
-    // vals["publish_date"] = vals["publish_date"] ?? vals["post_date_gmt"];
-    // vals["modified"] = vals["modified"] ?? vals["post_modified_gmt"];
 
     if (vals["details"] != null) {
       for (var entry in (vals["details"] as Map).entries) {
@@ -63,16 +42,29 @@ class User extends Entity {
         }
       }
 
-      vals.addAll(
-        vals["details"] as Map
-        // (vals["details"] as Map).map((key, value)
-        // => MapEntry(key as String, value))
-      );
+      vals.addAll(vals["details"] as Map);
     }
-    // if (vals["start"] == null) {
-    //   throw Exception("Event start is null for event ${vals["event_id"]}");
-    // }
 
     return User(data: json);
+  }
+
+  @override
+  String getLocalLongName(Locale loc) {
+    return longName;
+  }
+
+  @override
+  String getLocalShortName(Locale loc) {
+    return shortName;
+  }
+
+  @override
+  String? get profilePage {
+    String? name = entityName;
+    if (name == null) {
+      return null;
+    }
+    return router
+        .namedLocation("user_page", pathParameters: {"entity_name": name});
   }
 }

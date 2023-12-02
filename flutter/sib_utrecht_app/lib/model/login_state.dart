@@ -1,4 +1,3 @@
-
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 
 class LoginState {

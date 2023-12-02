@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/components/people/entity_icon.dart';
 import 'package:sib_utrecht_app/model/entity.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/model/user.dart';
+import 'package:sib_utrecht_app/view_model/annotated_user.dart';
+import 'package:badges/badges.dart' as badges;
 
 class EntityTile extends StatelessWidget {
   final Entity entity;
@@ -12,11 +15,15 @@ class EntityTile extends StatelessWidget {
   Widget getCaption() {
     final ent = entity;
     if (ent is User) {
-      return Text(ent.shortNameUnique, overflow: TextOverflow.ellipsis,);
+      return Text(
+        ent.shortNameUnique,
+        overflow: TextOverflow.ellipsis,
+      );
     }
     if (ent is Group) {
-      return Builder(builder: (context) =>
-        Text(ent.getLocalTitle(Localizations.localeOf(context))));
+      return Builder(
+          builder: (context) =>
+              Text(ent.getLocalTitle(Localizations.localeOf(context))));
     }
 
     return const Text("Unknown");
@@ -24,10 +31,85 @@ class EntityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget icon = EntityIcon(entity: entity);
+    final ent = entity;
+
+    String? comment;
+    if (ent is AnnotatedUser && ent.comment?.isNotEmpty == true) {
+      comment = ent.comment;
+    }
+
+    if (comment != null) {
+      // icon = Tooltip(
+      //     message: ent.comment!,
+      //     child: icon);
+      icon = Tooltip(
+          message: comment,
+          verticalOffset: 48,
+          triggerMode: TooltipTriggerMode.longPress,
+          child: badges.Badge(
+              badgeContent:
+                  const Icon(Icons.comment, size: 16, color: Colors.white),
+              badgeStyle: const badges.BadgeStyle(
+                  padding: EdgeInsets.all(4),
+                  shape: badges.BadgeShape.circle,
+                  badgeColor: Color.fromARGB(255, 185, 84, 0),
+                  elevation: 0),
+              position: badges.BadgePosition.bottomEnd(bottom: 0),
+              child: icon));
+    }
+
     return Column(children: [
-        EntityIcon(entity: entity),
-        const SizedBox(height: 4,),
-        getCaption(),
-      ]);
+      Padding(
+          padding: const EdgeInsets.all(8),
+          child: GestureDetector(
+              onTap: () {
+                String? profilePage = ent.profilePage;
+
+                showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                          title: Text(entity.getLocalLongName(
+                              Localizations.localeOf(context))),
+                          // content: Text("Entity: ${entity.runtimeType}\n\n${entity.toString()}"),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (comment != null)
+                                Align(
+                                    alignment: AlignmentDirectional.centerStart,
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text("Comment:"),
+                                          Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      8, 0, 8, 32),
+                                              child: Text(comment))
+                                        ])),
+                              if (profilePage != null)
+                                FilledButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      GoRouter.of(context).go(profilePage);
+                                    },
+                                    child: const Text("Open profile")),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text("Close"))
+                          ],
+                        ));
+              },
+              child: icon)),
+      // const SizedBox(height: 3,),
+      getCaption(),
+    ]);
   }
 }

@@ -39,10 +39,6 @@ class Event {
     return eventName;
   }
 
-  // String getLocalEventName(BuildContext context) {
-  //   return getLocalEventNameFromLoc(Localizations.localeOf(context));
-  // }
-
   static Event fromJson(Map<String, dynamic> json) {
     var vals = json;
     vals["start"] = vals["start"] ?? vals["event_start"];
