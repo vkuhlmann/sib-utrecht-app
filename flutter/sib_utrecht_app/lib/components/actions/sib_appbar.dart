@@ -279,7 +279,8 @@ class WithSIBAppBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 16),
                       // Text(widget.title),
-                      const Text("SIB-Utrecht (Bèta)")
+                      const Expanded(child: Align(alignment: Alignment.centerLeft, child: 
+                      Text("SIB-Utrecht (Bèta)", overflow: TextOverflow.ellipsis,))),
                       // const Spacer(),
                     ],
                   ),

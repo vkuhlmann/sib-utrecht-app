@@ -1,13 +1,6 @@
-import 'dart:async';
-import 'dart:math';
-import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
-import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_list.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider.dart';
@@ -15,8 +8,6 @@ import 'package:sib_utrecht_app/view_model/event/week_chunker.dart';
 
 import '../globals.dart';
 
-import '../utils.dart';
-import '../components/api_access.dart';
 import '../view_model/event/annotated_event.dart';
 import '../view_model/async_patch.dart';
 import '../components/event/event_group.dart';

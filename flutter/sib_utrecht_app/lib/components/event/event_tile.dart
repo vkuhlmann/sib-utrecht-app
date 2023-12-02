@@ -140,9 +140,12 @@ class _EventTileState extends State<EventTile> {
             padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
             child: Row(children: [
               WeekdayIndicator(event: widget.event),
-              SizedBox(
-                  width: 80,
-                  child: dayMonth == null
+              Padding(padding: const EdgeInsets.fromLTRB(5, 0, 5, 0), child:
+              Container(constraints: const BoxConstraints(minWidth: 55), child:
+              // SizedBox(
+              //     width: 70,
+              //     child: 
+                  dayMonth == null
                       ? const SizedBox()
                       : Container(
                           alignment: Alignment.center,
@@ -150,7 +153,7 @@ class _EventTileState extends State<EventTile> {
                           margin: const EdgeInsets.all(5),
                           child: 
                           Text(dayMonth)
-                              )),
+                              ))),
               Expanded(
                   child: Container(
                       alignment: Alignment.centerLeft,
@@ -162,7 +165,9 @@ class _EventTileState extends State<EventTile> {
                         children: [
                         Text(widget.event.getLocalEventName(Localizations.localeOf(context))),
                         if (infoLine.isNotEmpty)
-                          Text(infoLine, style: const TextStyle(color: Colors.grey, fontSize: 12))
+                          Text(infoLine, style: TextStyle(color:
+                          Theme.of(context).brightness == Brightness.light ? Colors.grey[600] : Colors.grey[400],
+                          fontSize: 12))
                       ])
                       )),
               if (placement?.isContinuation != true)

@@ -7,6 +7,7 @@ import 'package:sib_utrecht_app/components/dual_screen-1.0.4/lib/dual_screen.dar
 import 'package:sib_utrecht_app/pages/confidants.dart';
 import 'package:sib_utrecht_app/pages/group_members.dart';
 import 'package:sib_utrecht_app/pages/groups.dart';
+import 'package:sib_utrecht_app/pages/home.dart';
 import 'package:sib_utrecht_app/pages/user.dart';
 import 'package:sib_utrecht_app/pages/users.dart';
 
@@ -198,7 +199,13 @@ GoRouter createRouter() {
                 routes: <RouteBase>[
                   GoRoute(
                     path: '/',
-                    builder: (context, state) => const EventsPage(),
+                    builder: (context, state) => const HomePage(),
+                    routes: [
+                      GoRoute(
+                        path: 'events',
+                        builder: (context, state) => const EventsPage(),
+                      ),
+                    ]
                   ),
                   ShellRoute(
                       builder: (context, state, child) {
