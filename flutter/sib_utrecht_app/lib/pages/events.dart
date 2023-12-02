@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
-import 'package:sib_utrecht_app/model/api_connector_http.dart';
+import 'package:sib_utrecht_app/pages/home.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_list.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider.dart';
 import 'package:sib_utrecht_app/view_model/event/week_chunker.dart';
@@ -74,62 +73,6 @@ class _EventsPageState extends State<EventsPage> {
                         children: entry.elements))
                     .toList()))));
   }
-
-  Widget buildLoginPrompt(BuildContext context) => Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(children: [
-        FilledButton(
-            onPressed: () {
-              router.go("/login?immediate=true");
-            },
-            style: (Theme.of(context).filledButtonTheme.style ??
-                    FilledButton.styleFrom())
-                .copyWith(
-                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4)))),
-            child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text("Log in",
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ))))
-      ]));
-
-  Widget buildInProgress(
-          BuildContext context, AsyncSnapshot<void> calendarLoadSnapshot) =>
-      FutureBuilderPatched(
-          future: ResourcePoolAccess.of(context).pool.connector,
-          builder: (context, snapshot) {
-            var data = snapshot.data;
-
-            if (data != null &&
-                data.base is HTTPApiConnector &&
-                (data.base as HTTPApiConnector).user == null) {
-              return buildLoginPrompt(context);
-            }
-
-            if (calendarLoadSnapshot.connectionState ==
-                ConnectionState.waiting) {
-              return const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()));
-            }
-
-            // if (calendarLoadSnapshot.hasError) {
-            //   return Padding(
-            //       padding: const EdgeInsets.all(32),
-            //       child: Center(
-            //           child: Text(
-            //               "Error loading events: ${calendarLoadSnapshot.error}")));
-            // }
-
-            // return const SizedBox();
-            return const Center(child: Text("No events"));
-
-            // return Center(child: Text(calendarLoadSnapshot.connectionState.toString()));
-
-            // return Center(child: Text(calendarLoadSnapshot.hasData.toString()));
-          });
 
   Widget buildContents(BuildContext context,
           {required Map<RelativeWeek, Widget> events,
@@ -208,7 +151,7 @@ class _EventsPageState extends State<EventsPage> {
             builder: (calendarLoadContext, calendarLoadSnapshot) {
               if (calendar.events.isEmpty) {
                 return Center(
-                    child: buildInProgress(
+                    child: HomePage.buildInProgress(
                         calendarLoadContext, calendarLoadSnapshot));
               }
 

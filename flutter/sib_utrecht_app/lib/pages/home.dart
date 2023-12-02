@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -110,12 +108,116 @@ class HomePageContents extends StatelessWidget {
                             .toList())))
           ]));
 
+  Widget buildFurtherEventsCard(BuildContext context) {
+    var future = superGroups[RelativeWeek.future] ?? [];
+    var lastWeek = superGroups[RelativeWeek.lastWeek] ?? [];
+
+    return Card(
+        child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Stack(children: [
+              Opacity(
+                  opacity: 0.8,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Text(future.first.title(context),
+                        //     style: Theme.of(context)
+                        //         .textTheme
+                        //         .titleMedium
+                        //         ?.copyWith(
+                        //             // fontStyle: FontStyle.italic
+                        //             // fontFeatures: [const FontFeature.enable('smcp')]
+                        //             )),
+                        Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: future.first.elements.map((e) {
+                              var formattedDate = DateFormat.MMMMEEEEd(
+                                      Localizations.localeOf(context)
+                                          .toString())
+                                  .format(e.placement!.date);
+
+                              return Text(
+                                "$formattedDate: ${e.getLocalEventName(Localizations.localeOf(context))}",
+                              );
+                            }).toList()),
+                        const SizedBox(height: 16),
+                        if (lastWeek.isNotEmpty)
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Last week",
+                                    style: TextStyle(
+                                        fontStyle: FontStyle.italic,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.light
+                                            ? Colors.grey[600]
+                                            : Colors.grey[400])),
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: lastWeek.first.elements.map((e) {
+                                      var formattedDate = DateFormat.MMMMEEEEd(
+                                              Localizations.localeOf(context)
+                                                  .toString())
+                                          .format(e.placement!.date);
+
+                                      return Text(
+                                        "$formattedDate: ${e.getLocalEventName(Localizations.localeOf(context))}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                                color: Theme.of(context)
+                                                            .brightness ==
+                                                        Brightness.light
+                                                    ? Colors.grey[600]
+                                                    : Colors.grey[400]),
+                                      );
+                                    }).toList()),
+                              ]),
+                        const SizedBox(height: 24)
+                      ])),
+              // const SizedBox(height: 16),
+              Positioned(
+                  bottom: 0,
+                  right: 10,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      GoRouter.of(context).go("/events");
+                    },
+                    style: ButtonStyle(
+                      // backgroundColor: MaterialStateProperty.all(
+                      //     Theme.of(context)
+                      //         .colorScheme
+                      //         .surfaceVariant),
+                      backgroundColor: MaterialStateProperty.all(
+                          Theme.of(context).colorScheme.onInverseSurface),
+                      foregroundColor: MaterialStateProperty.all(
+                          Theme.of(context).colorScheme.secondary),
+                      // foregroundColor: MaterialStateProperty.all(
+                      //     Theme.of(context)
+                      //         .colorScheme
+                      //         .inverseSurface),
+                    ),
+                    child: const Text(
+                      "See all events",
+                      // style: Theme.of(context)
+                      //     .textTheme
+                      //     .bodyMedium
+                      //     ?.copyWith(
+                      //         color: Theme.of(context)
+                      //             .colorScheme
+                      //             .secondary),
+                    ),
+                  ))
+            ])));
+  }
+
   @override
   Widget build(BuildContext context) {
     var upcomingWeek = superGroups[RelativeWeek.upcomingWeek] ?? [];
     var nextWeek = superGroups[RelativeWeek.nextWeek] ?? [];
-    var future = superGroups[RelativeWeek.future] ?? [];
-    var lastWeek = superGroups[RelativeWeek.lastWeek] ?? [];
 
     return CenteredPageScroll(slivers: [
       SliverToBoxAdapter(
@@ -151,133 +253,10 @@ class HomePageContents extends StatelessWidget {
             ...nextWeek.map((e) => buildSecondaryCard(context, e)),
 
           // Future
-          if (future.isNotEmpty)
-            Row(children: [
-              Expanded(
-                  child: Card(
-                      child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Stack(children: [
-                            Opacity(
-                                opacity: 0.8,
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Text(future.first.title(context),
-                                      //     style: Theme.of(context)
-                                      //         .textTheme
-                                      //         .titleMedium
-                                      //         ?.copyWith(
-                                      //             // fontStyle: FontStyle.italic
-                                      //             // fontFeatures: [const FontFeature.enable('smcp')]
-                                      //             )),
-                                      Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children:
-                                              future.first.elements.map((e) {
-                                            var formattedDate =
-                                                DateFormat.MMMMEEEEd(
-                                                        Localizations.localeOf(
-                                                                context)
-                                                            .toString())
-                                                    .format(e.placement!.date);
-
-                                            return Text(
-                                              "$formattedDate: ${e.getLocalEventName(Localizations.localeOf(context))}",
-                                            );
-                                          }).toList()),
-                                      const SizedBox(height: 16),
-                                      if (lastWeek.isNotEmpty)
-                                        Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text("Last week",
-                                                  style: TextStyle(
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                      color: Theme.of(context)
-                                                                          .brightness ==
-                                                                      Brightness
-                                                                          .light
-                                                                  ? Colors
-                                                                      .grey[600]
-                                                                  : Colors.grey[
-                                                                      400])),
-                                              Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: lastWeek
-                                                      .first.elements
-                                                      .map((e) {
-                                                    var formattedDate = DateFormat
-                                                            .MMMMEEEEd(Localizations
-                                                                    .localeOf(
-                                                                        context)
-                                                                .toString())
-                                                        .format(
-                                                            e.placement!.date);
-
-                                                    return Text(
-                                                      "$formattedDate: ${e.getLocalEventName(Localizations.localeOf(context))}",
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall
-                                                          ?.copyWith(
-                                                              color: Theme.of(context)
-                                                                          .brightness ==
-                                                                      Brightness
-                                                                          .light
-                                                                  ? Colors
-                                                                      .grey[600]
-                                                                  : Colors.grey[
-                                                                      400]),
-                                                    );
-                                                  }).toList()),
-                                            ]),
-                                      const SizedBox(height: 24)
-                                    ])),
-                            // const SizedBox(height: 16),
-                            Positioned(
-                                bottom: 0,
-                                right: 10,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    GoRouter.of(context).go("/events");
-                                  },
-                                  style: ButtonStyle(
-                                    // backgroundColor: MaterialStateProperty.all(
-                                    //     Theme.of(context)
-                                    //         .colorScheme
-                                    //         .surfaceVariant),
-                                    backgroundColor: MaterialStateProperty.all(
-                                        Theme.of(context)
-                                            .colorScheme
-                                            .onInverseSurface),
-                                    foregroundColor: MaterialStateProperty.all(
-                                        Theme.of(context)
-                                            .colorScheme
-                                            .secondary),
-                                    // foregroundColor: MaterialStateProperty.all(
-                                    //     Theme.of(context)
-                                    //         .colorScheme
-                                    //         .inverseSurface),
-                                  ),
-                                  child: const Text(
-                                    "See all events",
-                                    // style: Theme.of(context)
-                                    //     .textTheme
-                                    //     .bodyMedium
-                                    //     ?.copyWith(
-                                    //         color: Theme.of(context)
-                                    //             .colorScheme
-                                    //             .secondary),
-                                  ),
-                                ))
-                          ])))),
-            ]),
+          // if (future.isNotEmpty)
+          Row(children: [
+            Expanded(child: buildFurtherEventsCard(context)),
+          ]),
           const SizedBox(height: 48),
         ],
       ))
@@ -300,7 +279,7 @@ class HomePageContents extends StatelessWidget {
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
-  Widget buildLoginPrompt(BuildContext context) => Padding(
+  static Widget buildLoginPrompt(BuildContext context) => Padding(
       padding: const EdgeInsets.all(32),
       child: Column(children: [
         FilledButton(
@@ -320,7 +299,7 @@ class HomePage extends StatelessWidget {
                         ))))
       ]));
 
-  Widget buildInProgress(
+  static Widget buildInProgress(
           BuildContext context, AsyncSnapshot<void> calendarLoadSnapshot) =>
       FutureBuilderPatched(
           future: ResourcePoolAccess.of(context).pool.connector,

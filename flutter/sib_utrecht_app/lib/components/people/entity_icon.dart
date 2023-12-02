@@ -14,12 +14,20 @@ class EntityIcon extends StatelessWidget {
     if (ent is User) {
       return CircleAvatar(
         backgroundColor: Colors.red[900],
-        child: Text(ent.shortName[0]),
+        radius: 28,
+        child: 
+        SelectionContainer.disabled(child:
+        Text(ent.shortName[0], style: const TextStyle(color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.normal),
+        )),
       );
     }
     if (ent is Group) {
       return CircleAvatar(
-        child: Text(ent.getLocalShortName(Localizations.localeOf(context))),
+        child: 
+        SelectionContainer.disabled(child:
+        Text(ent.getLocalShortName(Localizations.localeOf(context)))),
       );
     }
     

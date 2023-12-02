@@ -4,9 +4,6 @@ import 'package:sib_utrecht_app/model/group.dart';
 class Groups {
   final APIConnector apiConnector;
 
-  // List<dynamic>? _bookings;
-  // Set<int>? _bookingsSet;
-
   Groups(this.apiConnector);
 
   Future<Group> getGroup({required String groupName}) async {
@@ -21,7 +18,6 @@ class Groups {
 
     return (raw["data"]["memberships"] as Iterable<dynamic>)
         .map((e) => (e as Map<dynamic, dynamic>))
-        // .map((e) => e["name"] as String)
         .toList();
   }
 

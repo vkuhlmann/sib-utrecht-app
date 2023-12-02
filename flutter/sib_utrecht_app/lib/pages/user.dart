@@ -64,7 +64,7 @@ class UserPageContents extends StatelessWidget {
           child: Center(child: EntityTile(entity: user)),
         ),
         SliverToBoxAdapter(
-          child: Center(child: Text(user.entityName)),
+          child: Center(child: Text(user.entityName ?? "Missing entity name")),
         ),
         const SliverToBoxAdapter(
             child: SizedBox(

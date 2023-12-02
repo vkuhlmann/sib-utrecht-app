@@ -94,7 +94,6 @@ class HTTPApiConnector extends APIConnector {
     return obj;
   }
 
-
   @override
   Future<Map> get(String url) async {
     log.info("Doing GET on $url");
