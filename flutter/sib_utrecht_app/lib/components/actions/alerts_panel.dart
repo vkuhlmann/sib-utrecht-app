@@ -82,10 +82,10 @@ class _AlertsPanelState extends State<AlertsPanel> {
             return;
           }
 
-          log.info("Adding dismissed message");
+          // log.info("Adding dismissed message");
           setState(() => widget.controller.dismissedMessages.add(msg));
 
-          log.info("Dismissed messages: ${widget.controller.dismissedMessages}");
+          // log.info("Dismissed messages: ${widget.controller.dismissedMessages}");
           allowedCallbackIdentities.remove(callbackIdentity);
         });
       });

@@ -2,20 +2,15 @@ import 'dart:async';
 import "package:collection/collection.dart";
 import 'package:flutter/foundation.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
-import 'package:sib_utrecht_app/view_model/events_provider.dart';
-// import 'package:intl/intl.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/model/event.dart';
+import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
+import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
+import 'package:sib_utrecht_app/view_model/event/event_placement.dart';
+import 'package:sib_utrecht_app/view_model/event/events_provider.dart';
 
-import '../model/event.dart';
-import '../view_model/event_participation.dart';
-import '../view_model/event_placement.dart';
-import '../log.dart';
-
-import 'annotated_event.dart';
 
 class EventsCalendarList with ChangeNotifier {
   List<AnnotatedEvent> events = [];
-  // final Future<void> Function(APIConnector?, int, bool) _setEventRegistration;
 
   ActionFeedback feedback;
   final EventsProvider eventsProvider;
@@ -25,8 +20,6 @@ class EventsCalendarList with ChangeNotifier {
 
   EventsCalendarList({required this.eventsProvider, required this.feedback}) {
     eventsProvider.addListener(_reprocessCached);
-    // _eventsProvider.addListener(_reprocessCached);
-    // _bookingsProvider.addListener(_reprocessCached);
 
     _reprocessCached();
   }
@@ -68,40 +61,11 @@ class EventsCalendarList with ChangeNotifier {
           date: i == startDay ? event.start : i, isContinuation: i != startDay);
       yield AnnotatedEvent(
           event: event, participation: participation, placement: placement
-          // ValueKey(("eventsItem", event.eventId, i)),
           );
     }
-
-    // EventsItem(
-    //   date: e.end,
-    //   key: ValueKey(e.eventId),
-    //   event: e,
-    //   isParticipating:
-    //       bookingsProvider.cached?.contains(e.eventId) == true,
-    //   isDirty: bookingsProvider.cached == null ||
-    //       _dirtyBookState.contains(e.eventId),
-    //   setParticipating: (value) =>
-    //       scheduleEventRegistration(e.eventId, value));
   }
 
   void _reprocessCached() {
-    log.fine("Reassembling data for events calendar list");
-    // if (_bookingsProvider.cachedId > _dirtyStateSequence) {
-    //   _dirtyStateSequence = _bookingsProvider.cachedId;
-    //   _dirtyBookState = {};
-    // }
-
-    // var cachedEvents = _eventsProvider.cached;
-    // if (cachedEvents == null) {
-    //   if (events.isNotEmpty) {
-    //     events = [];
-    //     notifyListeners();
-    //   }
-    //   return;
-    // }
-
-    // log.fine("Bookings are: ${_bookingsProvider.cached}");
-
     events =
       eventsProvider.events
         .map((v) => placeEvent(v, feedback))
@@ -109,10 +73,6 @@ class EventsCalendarList with ChangeNotifier {
         .sortedBy((AnnotatedEvent e) => e.placement?.date ?? e.end ?? e.start)
         // .map(buildItem)
         .toList();
-
-    // log.fine("Events are now: ${events
-    // .where((e) => e.placement?.date.isAfter(DateTime(2023, 11, 10)) == true)
-    // .map((e) => e.participation?.isParticipating)}");
 
     notifyListeners();
   }

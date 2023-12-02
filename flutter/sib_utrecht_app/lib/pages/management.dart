@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/centered_page.dart';
+import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 
 import '../globals.dart';
 
@@ -11,6 +13,7 @@ class ManagementPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return 
     // WithSIBAppBar(actions: const [], child:
+    CenteredPage(child: 
     Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(children: [
@@ -18,12 +21,12 @@ class ManagementPage extends StatelessWidget {
               child: InkWell(
                   child: const ListTile(title: Text("API requests")),
                   onTap: () {
-                    router.go("/api-debug");
+                    router.push("/api-debug");
                   })),
           Card(
               child: InkWell(
             onTap: () {
-              router.go("/management/groups");
+              router.push("/management/groups");
             },
             child: const ListTile(title: Text("Groups")),
           )),
@@ -31,7 +34,7 @@ class ManagementPage extends StatelessWidget {
               child: InkWell(
                   child: const ListTile(title: Text("New event")),
                   onTap: () {
-                    router.go("/event/new/edit");
+                    router.go("/event/new");
                   })),
           Card(
             child: InkWell(
@@ -55,8 +58,8 @@ class ManagementPage extends StatelessWidget {
               child: InkWell(
                   child: const ListTile(title: Text("Users")),
                   onTap: () {
-                    router.go("/management/users");
+                    router.push("/management/users");
                   })),
-        ]));
+        ])));
   }
 }

@@ -214,33 +214,33 @@ class _EventEditPageState extends State<EventEditPage> {
 
   Widget buildEventForm() => Builder(
       builder: (context) => Column(children: [
-            Card(
-                child: ListTile(
+            // Card(
+            //     child: 
+                ListTile(
                     title: TextField(
               controller: _nameController,
               onChanged: onFieldChanged,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(), labelText: 'Event name'),
-            ))),
-            Card(
-                child: ListTile(
+            )),
+            ListTile(
                     title: TextField(
               controller: _nameNLController,
               onChanged: onFieldChanged,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(), labelText: 'Event name NL'),
-            ))),
-            Card(
-                child: ListTile(
+            )),
+            const SizedBox(height: 16),
+            ListTile(
                     title: TextField(
               controller: _locationController,
               onChanged: onFieldChanged,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Event location (optional)'),
-            ))),
-            Card(
-                child: ListTile(
+            )),
+            const SizedBox(height: 16),
+            ListTile(
               subtitle: TextField(
                 controller: _startController,
                 onChanged: onFieldChanged,
@@ -248,9 +248,8 @@ class _EventEditPageState extends State<EventEditPage> {
                     border: OutlineInputBorder(),
                     labelText: 'Event start (e.g. "2024-01-01 00:00:00")'),
               ),
-            )),
-            Card(
-                child: ListTile(
+            ),
+            ListTile(
               subtitle: TextField(
                 controller: _endController,
                 onChanged: onFieldChanged,
@@ -258,27 +257,30 @@ class _EventEditPageState extends State<EventEditPage> {
                     border: OutlineInputBorder(),
                     labelText: 'Event end (optional)'),
               ),
-            )),
-            Card(
-                child: ListTile(
-                    title: Text(AppLocalizations.of(context)!.eventDescription),
+            ),
+            const SizedBox(height: 32),
+            ListTile(
+                    // title: Text(AppLocalizations.of(context)!.eventDescription),
                     subtitle: TextField(
                         controller: _descriptionController,
                         onChanged: onFieldChanged,
-                        maxLines: null))),
-            Card(
-                child: ListTile(
+                        decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Description'),
+                        maxLines: null)),
+             const SizedBox(height: 32),
+             ListTile(
                     title: TextField(
               controller: _signupLinkController,
               onChanged: onFieldChanged,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Sign-up link (optional)'),
-            ))),
+            )),
+
 
             if (!acceptBeta || eventId == null)
-              Card(
-                  child: ListTile(
+              ListTile(
                       leading: Checkbox(
                           value: acceptBeta,
                           onChanged: (val) {
@@ -287,7 +289,7 @@ class _EventEditPageState extends State<EventEditPage> {
                             });
                           }),
                       title: const Text(
-                          "I understand this event will only show in the app, not on the website."))),
+                          "I understand this event will only show in the app, not on the website.")),
 
             const SizedBox(
               height: 32,
@@ -364,9 +366,9 @@ class _EventEditPageState extends State<EventEditPage> {
                   return const CircularProgressIndicator();
                 }
 
-                if (snapshot.hasData) {
-                  return Text(snapshot.data.toString());
-                }
+                // if (snapshot.hasData) {
+                //   return Text(snapshot.data.toString());
+                // }
 
                 return const SizedBox();
               },

@@ -8,9 +8,8 @@ import 'package:sib_utrecht_app/model/bookings.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/api/events.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
-import 'package:sib_utrecht_app/view_model/event_participation.dart';
+import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 
-import '../log.dart';
 
 class EventsProvider with ChangeNotifier {
   final CachedProvider<List<Event>> _eventsProvider =
@@ -143,20 +142,10 @@ class EventsProvider with ChangeNotifier {
   }
 
   void refresh() {
-    // var conn = _apiConnector;
-    // if (conn != null) {
-    //   loading = _doLoad(conn);
-    // }
-
-    log.info("Refreshing calendar");
     _eventsProvider.invalidate(doRefresh: true);
     _bookingsProvider.invalidate(doRefresh: true);
 
     loading = Future.wait([_eventsProvider.loading, _bookingsProvider.loading]);
-    // loading = Future.delayed(const Duration(milliseconds: 1500)).then((value) {
-    //   throw Exception("Dit is een test");
-    // });
-    log.fine("Events calendar loading is now $loading");
     notifyListeners();
   }
 

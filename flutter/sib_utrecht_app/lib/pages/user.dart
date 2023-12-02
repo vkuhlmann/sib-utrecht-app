@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/entity_icon.dart';
 import 'package:sib_utrecht_app/components/people/entity_tile.dart';
 import 'package:sib_utrecht_app/components/people/group_card.dart';
@@ -20,38 +21,41 @@ class UserPageContents extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SelectionArea(
-        child: CustomScrollView(
+        child: CenteredPageScroll(
       slivers: [
         SliverAppBar(
           // leading: EntityIcon(entity: user),
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              EntityIcon(entity: user),
-              const SizedBox(width: 16),
-              Text(user.longName)]),
+          // leading: const SizedBox(),
+          automaticallyImplyLeading: false,
+          title: Row(mainAxisSize: MainAxisSize.min, children: [
+            EntityIcon(entity: user),
+            const SizedBox(width: 16),
+            Text(user.longName)
+          ]),
           pinned: true,
           expandedHeight: 200,
           // stretch: true,
-          flexibleSpace: 
-          // FlexibleSpaceBar(
-          //   background: Container(
-          //     // color: Colors.blue[800],
-          //   child: Center(child: 
-            LayoutBuilder(builder: (context, constraints) =>
-            Center(child: ScaleTransition(
-              scale: AlwaysStoppedAnimation(constraints.maxHeight / 60),
-              child: EntityIcon(entity: user),
-            ))
-            // ))
-            
-              // child: Center(child:
-            // EntityIcon(entity: user)))
-              // background: Image.network(
-              //   user.photoUrl,
-              //   fit: BoxFit.cover,
-              // ),
-              ),
+          flexibleSpace:
+              // FlexibleSpaceBar(
+              //   background: Container(
+              //     // color: Colors.blue[800],
+              //   child: Center(child:
+              LayoutBuilder(
+                  builder: (context, constraints) => Center(
+                          child: ScaleTransition(
+                        scale:
+                            AlwaysStoppedAnimation(constraints.maxHeight / 60),
+                        child: EntityIcon(entity: user),
+                      ))
+                  // ))
+
+                  // child: Center(child:
+                  // EntityIcon(entity: user)))
+                  // background: Image.network(
+                  //   user.photoUrl,
+                  //   fit: BoxFit.cover,
+                  // ),
+                  ),
         ),
         SliverToBoxAdapter(
           child: UserCard(user: user),
@@ -104,13 +108,11 @@ class _UserPageState extends State<UserPage> {
     //     body: GroupsPageContents.fromProvider(groupsProvider));
     // var provGroups = ResourcePoolAccess.of(context).pool.groupsProvider;
     return
-    // WithSIBAppBar(
-    //     actions: const [],
-    //     child: 
-        UserProvider(
-            entityNames: [widget.entityName],
-            builder: (context, users) => UserPageContents(user: users[0]))
-            // )
-            ;
+        // WithSIBAppBar(
+        //     actions: const [],
+        //     child:
+        UserProvider.Multiplexed(
+            query: [widget.entityName],
+            builder: (context, users) => UserPageContents(user: users[0]));
   }
 }

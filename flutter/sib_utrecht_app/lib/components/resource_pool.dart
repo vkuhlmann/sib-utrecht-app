@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
-import 'package:sib_utrecht_app/view_model/events_provider.dart';
+import 'package:sib_utrecht_app/view_model/event/events_provider.dart';
 import 'package:sib_utrecht_app/view_model/groups_provider.dart';
 import 'package:sib_utrecht_app/log.dart';
 

@@ -3,18 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sib_utrecht_app/components/actions/action_provider.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/people/entity_tile.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/signup_indicator.dart';
-import 'package:sib_utrecht_app/model/entity.dart';
-import 'package:sib_utrecht_app/view_model/annotated_event.dart';
-import 'package:sib_utrecht_app/view_model/annotated_user.dart';
-import 'package:sib_utrecht_app/view_model/event_participation.dart';
-import 'package:sib_utrecht_app/view_model/event_provider.dart';
+import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
+import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
+import 'package:sib_utrecht_app/view_model/event/event_provider.dart';
 
 import '../globals.dart';
 import '../utils.dart';
@@ -202,7 +199,7 @@ class EventParticipants extends StatelessWidget {
                 // shrinkWrap: true,
                 spacing: 10,
                 children: [
-                  ...participantsCached.map<Widget>((e) =>
+                  ...participantsCached.sortedBy((element) => element.shortNameUnique).map<Widget>((e) =>
                       // Padding(
                       //       padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
                       // child:
@@ -285,6 +282,9 @@ class EventPageContents extends StatelessWidget {
               }
 
               return [
+                Center(child: 
+      Container(constraints: const BoxConstraints(maxWidth: 700), child:
+                Column(children: [
                 EventHeader(event),
                 EventDescription(event),
                 EventThumbnail(event),
@@ -292,6 +292,7 @@ class EventPageContents extends StatelessWidget {
                 if (expectParticipants) ...[
                   EventParticipants(event, eventProvider: eventProvider)
                 ]
+              ])))
               ];
             }())
           ])),
@@ -345,7 +346,8 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
-    return ListenableBuilder(
+    return 
+    ListenableBuilder(
         listenable: Listenable.merge([_eventProvider, provEvents]),
         builder: (context, _) {
           log.fine("Building event page for event id ${widget.eventId}");

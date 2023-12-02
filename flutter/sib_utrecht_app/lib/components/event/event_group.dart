@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import "package:collection/collection.dart";
 
 import '../../utils.dart';
-import '../../view_model/annotated_event.dart';
+import '../../view_model/event/annotated_event.dart';
 
 import '../../pages/events.dart';
 

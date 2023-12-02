@@ -49,6 +49,7 @@
   "confidentialAdvisers": "Confidential advisers",
   "aboutSIB": "About SIB",
   "aboutApp": "About this app",
+  "openSIBWebsite": "Open SIB website",
 
   "loginStep1": "Step 1: Create a new application password",
   "loginStep2": "Step 2: Enter application password",

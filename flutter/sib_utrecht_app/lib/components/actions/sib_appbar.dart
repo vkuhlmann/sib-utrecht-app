@@ -145,12 +145,13 @@ class WithSIBAppBar extends StatelessWidget {
       "/event/:event_id": "/",
       "/management": "/info",
       "/management/groups": "/management",
+      "/management/users": "/management",
       "/api-debug": "/management",
       "/info": "/",
       "/info/confidants": "/info",
-      // "/info/committees": "/info",
-      // "/info/committeees/:committee_id": "/info/committees",
-      // "/info/societies": "/info",
+      "/info/committees": "/info",
+      "/info/committeees/:committee_id": "/info/committees",
+      "/info/societies": "/info",
       "/info/board": "/info",
       "/feed": "/",
       "/": null
@@ -186,11 +187,6 @@ class WithSIBAppBar extends StatelessWidget {
             log.info("router canPop: ${router.canPop()}");
             log.info("GoRouter canPop: ${GoRouter.of(context).canPop()}");
 
-            if (backAddress != null) {
-              router.go(backAddress);
-              return;
-            }
-
             if (router.canPop()) {
               router.pop();
               return;
@@ -203,6 +199,11 @@ class WithSIBAppBar extends StatelessWidget {
 
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
+              return;
+            }
+
+            if (backAddress != null) {
+              router.go(backAddress);
               return;
             }
           },
@@ -262,7 +263,7 @@ class WithSIBAppBar extends StatelessWidget {
         appBar: AppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             leading: (showBackButton && suppression?.suppressBackbutton != true)
-                ? buildBackButton()
+                ? Center(child: buildBackButton())
                 : null,
             title: suppression?.suppressTitle == true
                 ? null
@@ -278,7 +279,8 @@ class WithSIBAppBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 16),
                       // Text(widget.title),
-                      const Text("SIB-Utrecht (Bèta)")
+                      const Expanded(child: Align(alignment: Alignment.centerLeft, child: 
+                      Text("SIB-Utrecht (Bèta)", overflow: TextOverflow.ellipsis,))),
                       // const Spacer(),
                     ],
                   ),

@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/group_card.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/people/user_card.dart';
@@ -28,7 +29,7 @@ class ConfidantsPageContents extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SelectionArea(
-        child: CustomScrollView(
+        child: CenteredPageScroll(
       slivers: [
         SliverPadding(
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -82,8 +83,8 @@ class _ConfidantsPageState extends State<ConfidantsPage> {
                   groupName: "confidants",
                   builder: (context, members) =>
                       // Text("Members are ${members.map((m) => m["entity"] as String).toList().join(", ")}")
-                      UserProvider(
-                          entityNames: members
+                      UserProvider.Multiplexed(
+                          query: members
                               .map((m) => m["entity"] as String)
                               .toList(),
                           builder: (context, users) =>
