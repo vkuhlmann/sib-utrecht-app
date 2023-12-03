@@ -10,9 +10,12 @@ import 'package:sib_utrecht_app/components/people/entity_tile.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/signup_indicator.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
-import 'package:sib_utrecht_app/view_model/event/event_provider.dart';
+import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
+import 'package:sib_utrecht_app/view_model/event_participants_provider.dart';
+import 'package:sib_utrecht_app/view_model/event_provider.dart';
 
 import '../globals.dart';
 import '../utils.dart';
@@ -127,7 +130,7 @@ class EventDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (description, _) =
-        EventProvider.extractDescriptionAndThumbnail(event);
+        EventProviderNotifier.extractDescriptionAndThumbnail(event);
 
     return Card(
         child: ListTile(
@@ -142,34 +145,37 @@ class EventDescription extends StatelessWidget {
   }
 }
 
-
 class EventPageContents extends StatelessWidget {
-  final EventProvider eventProvider;
+  // final EventProviderNotifier eventProvider;
   final EventParticipation? eventParticipation;
 
-  final AnnotatedEvent? event;
-  final bool expectParticipants;
+  final AnnotatedEvent event;
+  // final bool expectParticipants;
 
-  EventPageContents(this.eventProvider,
-      {Key? key, required this.eventParticipation, required this.event})
-      : expectParticipants = eventProvider.doesExpectParticipants(),
+  const EventPageContents(
+      //this.eventProvider,
+      {Key? key,
+      required this.eventParticipation,
+      required this.event})
+      :
+        // expectParticipants = eventProvider.doesExpectParticipants(),
         super(key: key);
 
-  static EventPageContents fromProvider(EventProvider eventProvider,
-      {Key? key, EventParticipation? eventParticipation}) {
-    var cachedEvent = eventProvider.event.cached;
-    AnnotatedEvent? event;
-    if (cachedEvent != null) {
-      event = AnnotatedEvent(
-        event: cachedEvent,
-        participation: eventParticipation,
-        participants: eventProvider.participants.cached,
-      );
-    }
+  // static EventPageContents fromProvider(EventProviderNotifier eventProvider,
+  //     {Key? key, EventParticipation? eventParticipation}) {
+  //   var cachedEvent = eventProvider.event.cached;
+  //   AnnotatedEvent? event;
+  //   if (cachedEvent != null) {
+  //     event = AnnotatedEvent(
+  //       event: cachedEvent,
+  //       participation: eventParticipation,
+  //       participants: eventProvider.participants.cached,
+  //     );
+  //   }
 
-    return EventPageContents(eventProvider,
-        eventParticipation: eventParticipation, event: event);
-  }
+  //   return EventPageContents(eventProvider,
+  //       eventParticipation: eventParticipation, event: event);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -186,43 +192,52 @@ class EventPageContents extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           sliver: SliverList.list(children: [
             const SizedBox(height: 20),
-            if (eventProvider.event.cached == null)
-              FutureBuilderPatched(
-                  future: eventProvider.event.loading,
-                  builder: (eventContext, eventSnapshot) {
-                    if (eventSnapshot.hasError) {
-                      return Padding(
-                          padding: const EdgeInsets.all(32),
-                          child:
-                              Center(child: formatError(eventSnapshot.error)));
-                    }
-                    if (eventSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(child: CircularProgressIndicator()));
-                    }
+            // if (eventProvider.event.cached == null)
+            //   FutureBuilderPatched(
+            //       future: eventProvider.event.loading,
+            //       builder: (eventContext, eventSnapshot) {
+            //         if (eventSnapshot.hasError) {
+            //           return Padding(
+            //               padding: const EdgeInsets.all(32),
+            //               child:
+            //                   Center(child: formatError(eventSnapshot.error)));
+            //         }
+            //         if (eventSnapshot.connectionState ==
+            //             ConnectionState.waiting) {
+            //           return const Padding(
+            //               padding: EdgeInsets.all(32),
+            //               child: Center(child: CircularProgressIndicator()));
+            //         }
 
-                    return const SizedBox();
-                  }),
+            //         return const SizedBox();
+            //       }),
             ...(() {
-              final AnnotatedEvent? event = this.event;
-              if (event == null) {
-                return [];
-              }
+              // final AnnotatedEvent? event = this.event;
+              // if (event == null) {
+              //   return [];
+              // }
 
               return [
-                Center(child: 
-      Container(constraints: const BoxConstraints(maxWidth: 700), child:
-                Column(children: [
-                EventHeader(event),
-                EventDescription(event),
-                EventThumbnail(event),
-                const SizedBox(height: 32),
-                if (expectParticipants) ...[
-                  EventParticipants(event, eventProvider: eventProvider)
-                ]
-              ])))
+                Center(
+                    child: Container(
+                        constraints: const BoxConstraints(maxWidth: 700),
+                        child: Column(children: [
+                          EventHeader(event),
+                          EventDescription(event),
+                          EventThumbnail(event),
+                          const SizedBox(height: 32),
+                          EventParticipantsProvider(
+                              eventId: event.eventId,
+                              builder: (context, participants) {
+                                // if ()
+                                return EventParticipants(event,
+                                    participants: participants);
+
+                                // if (expectParticipants) ...[
+                                //   EventParticipants(event, eventProvider: eventProvider)
+                                // ]
+                              })
+                        ])))
               ];
             }())
           ])),
@@ -232,7 +247,7 @@ class EventPageContents extends StatelessWidget {
 
 class _EventPageState extends State<EventPage> {
   final AlertsPanelController _alertsPanelController = AlertsPanelController();
-  late EventProvider _eventProvider;
+  late EventProviderNotifier _eventProvider;
 
   @override
   void initState() {
@@ -247,7 +262,7 @@ class _EventPageState extends State<EventPage> {
     _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
         component: "participants", status: "done", data: {}));
 
-    _eventProvider = EventProvider(
+    _eventProvider = EventProviderNotifier(
         eventId: widget.eventId, apiConnector: null, cachedEvent: null);
   }
 
@@ -259,15 +274,17 @@ class _EventPageState extends State<EventPage> {
       log.info(
           "Event page: API connector changed from ${_eventProvider.apiConnector} "
           " to $apiConnector, reloading event data");
-      _eventProvider = EventProvider(
+
+      var cachedEv = ResourcePoolAccess.of(context)
+          .pool
+          .eventsProvider
+          .events
+          .firstWhereOrNull((element) => element.eventId == widget.eventId);
+
+      _eventProvider = EventProviderNotifier(
           eventId: widget.eventId,
           apiConnector: apiConnector,
-          cachedEvent: ResourcePoolAccess.of(context)
-              .pool
-              .eventsProvider
-              .events
-              .firstWhereOrNull(
-                  (element) => element.eventId == widget.eventId));
+          cachedEvent: cachedEv == null ? null : FetchResult(cachedEv, null));
     }
 
     super.didChangeDependencies();
@@ -276,58 +293,70 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
-    return 
-    ListenableBuilder(
-        listenable: Listenable.merge([_eventProvider, provEvents]),
-        builder: (context, _) {
-          log.fine("Building event page for event id ${widget.eventId}");
+    return WithSIBAppBar(
+        actions: const [],
+        child: EventProvider.Single(
+            query: widget.eventId,
+            builder: (context, event) {
+              // ListenableBuilder(
+              //     listenable: Listenable.merge([_eventProvider, provEvents]),
+              //     builder: (context, _) {
+              log.fine("Building event page for event id ${widget.eventId}");
 
-          var prov = _eventProvider;
-          var cachedEvent = prov.event.cached;
+              // var prov = _eventProvider;
+              // var cachedEvent = prov.event.cached;
 
-          EventParticipation? participation;
-          if (cachedEvent != null) {
-            participation = provEvents.getMeParticipation(cachedEvent,
-                feedback: ActionFeedback(
-                  sendConfirm: (m) =>
-                      ActionFeedback.sendConfirmToast(context, m),
-                  sendError: (m) => ActionFeedback.showErrorDialog(context, m),
-                ));
-          }
+              EventParticipation? participation;
+              // if (event != null) {
+              participation = provEvents.getMeParticipation(event,
+                  feedback: ActionFeedback(
+                    sendConfirm: (m) =>
+                        ActionFeedback.sendConfirmToast(context, m),
+                    sendError: (m) =>
+                        ActionFeedback.showErrorDialog(context, m),
+                  ));
+              // }
 
-          return WithSIBAppBar(
-              actions: [
-                ActionRefreshButton(
-                    refreshFuture: Future.wait([
-                      _eventProvider.event.loading,
-                      if (prov.doesExpectParticipants())
-                        _eventProvider.participants.loading
-                    ]).then((_) => DateTime.now()),
-                    triggerRefresh: _eventProvider.refresh)
-              ],
-              child: Column(children: [
+              return
+                  // WithSIBAppBar(
+                  //     actions: [
+                  //       ActionRefreshButton(
+                  //           refreshFuture: Future.wait([
+                  //             _eventProvider.event.loading,
+                  //             if (prov.doesExpectParticipants())
+                  //               _eventProvider.participants.loading
+                  //           ]).then((_) => DateTime.now()),
+                  //           triggerRefresh: _eventProvider.refresh)
+                  //     ],
+                  //     child:
+                  Column(children: [
                 Expanded(
-                    child: EventPageContents.fromProvider(prov,
+                    child: EventPageContents(
+                        event: AnnotatedEvent(
+                          event: event,
+                          participation: participation,
+                          // participants: eventProvider.participants.cached,
+                        ),
                         eventParticipation: participation)),
-                AlertsPanel(
-                    controller: _alertsPanelController,
-                    loadingFutures: [
-                      AlertsFutureStatus(
-                          component: "details",
-                          future: _eventProvider.event.loading,
-                          data: {
-                            "isRefreshing": _eventProvider.event.cached != null
-                          }),
-                      if (prov.doesExpectParticipants())
-                        AlertsFutureStatus(
-                            component: "participants",
-                            future: _eventProvider.participants.loading,
-                            data: {
-                              "isRefreshing":
-                                  _eventProvider.participants.cached != null
-                            })
-                    ])
-              ]));
-        });
+                // AlertsPanel(
+                //     controller: _alertsPanelController,
+                //     loadingFutures: [
+                //       AlertsFutureStatus(
+                //           component: "details",
+                //           future: _eventProvider.event.loading,
+                //           data: {
+                //             "isRefreshing": _eventProvider.event.cached != null
+                //           }),
+                //       if (prov.doesExpectParticipants())
+                //         AlertsFutureStatus(
+                //             component: "participants",
+                //             future: _eventProvider.participants.loading,
+                //             data: {
+                //               "isRefreshing":
+                //                   _eventProvider.participants.cached != null
+                //             })
+                //     ])
+              ]);
+            }));
   }
 }

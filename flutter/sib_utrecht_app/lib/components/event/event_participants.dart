@@ -2,17 +2,16 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/people/entity_tile.dart';
-import 'package:sib_utrecht_app/utils.dart';
-import 'package:sib_utrecht_app/view_model/async_patch.dart';
+import 'package:sib_utrecht_app/view_model/annotated_user.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
-import 'package:sib_utrecht_app/view_model/event/event_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EventParticipants extends StatelessWidget {
   final AnnotatedEvent event;
-  final EventProvider eventProvider;
+  // final EventProviderNotifier eventProvider;
+  final List<AnnotatedUser> participants;
 
-  const EventParticipants(this.event, {Key? key, required this.eventProvider})
+  const EventParticipants(this.event, {Key? key, required this.participants})
       : super(key: key);
 
   // Widget buildParticipant(BuildContext context, AnnotatedUser participant) {
@@ -30,35 +29,35 @@ class EventParticipants extends StatelessWidget {
     //     sliver: SliverList(
     //         delegate: SliverChildListDelegate([
 
-    var participantsCached = event.participants;
+    // var participantsCached = event.participants;
 
     return Column(children: [
       Card(
           child: ListTile(
               title: Text(
-                  "${AppLocalizations.of(context)!.eventParticipants} (${eventProvider.participants.cached?.length ?? 'n/a'}):"))),
-      if (participantsCached == null)
-        FutureBuilderPatched(
-            future: eventProvider.participants.loading,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Center(child: formatError(snapshot.error)));
-              }
+                  "${AppLocalizations.of(context)!.eventParticipants} (${participants.length ?? 'n/a'}):"))),
+      // if (participantsCached == null)
+      //   FutureBuilderPatched(
+      //       future: eventProvider.participants.loading,
+      //       builder: (context, snapshot) {
+      //         if (snapshot.hasError) {
+      //           return Padding(
+      //               padding: const EdgeInsets.all(16),
+      //               child: Center(child: formatError(snapshot.error)));
+      //         }
 
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              return const SizedBox();
-            }),
-      if (participantsCached == [])
+      //         if (snapshot.connectionState == ConnectionState.waiting) {
+      //           return const Center(child: CircularProgressIndicator());
+      //         }
+      //         return const SizedBox();
+      //       }),
+      if (participants == [])
         Padding(
             padding: const EdgeInsets.all(16),
             child: Center(
                 child: Text(
                     AppLocalizations.of(context)!.eventNoParticipantsYet))),
-      if (participantsCached != null && participantsCached.isNotEmpty)
+      if (participants.isNotEmpty)
         Padding(
             padding: const EdgeInsets.fromLTRB(10, 16, 10, 32),
             child: Wrap(
@@ -67,7 +66,7 @@ class EventParticipants extends StatelessWidget {
                 runSpacing: 10,
                 spacing: 2,
                 children: [
-                  ...participantsCached.sortedBy((element) => element.shortNameUnique).map<Widget>((e) =>
+                  ...participants.sortedBy((element) => element.shortNameUnique).map<Widget>((e) =>
                       // Padding(
                       //       padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
                       // child:

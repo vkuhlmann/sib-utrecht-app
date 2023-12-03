@@ -1,5 +1,7 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
@@ -11,14 +13,18 @@ class MultiplexedProvider<T, U> extends StatefulWidget {
   final List<T> query;
   final CachedProvider<U> Function(T) obtainProvider;
   final Widget Function(BuildContext context, List<U> data) builder;
+  // final Widget Function(BuildContext context, Future<U> data)? loadingBuilder;
 
   const MultiplexedProvider(
-      {Key? key, required this.query, required this.obtainProvider,
+      {Key? key,
+      required this.query,
+      required this.obtainProvider,
       required this.builder})
       : super(key: key);
 
   @override
-  State<MultiplexedProvider<T, U>> createState() => _MultiplexedProviderState<T, U>();
+  State<MultiplexedProvider<T, U>> createState() =>
+      _MultiplexedProviderState<T, U>();
 }
 
 class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
@@ -72,7 +78,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
     // }
 
     if (!listEquals(widget.query, oldWidget.query)) {
-      log.info("[Provider] query changed from ${oldWidget.query} to ${widget.query}");
+      log.info(
+          "[Provider] query changed from ${oldWidget.query} to ${widget.query}");
       initData();
     }
   }
@@ -106,11 +113,23 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
   @override
   Widget build(BuildContext context) {
-    return
-    ListenableBuilder(
+    return ListenableBuilder(
         listenable: Listenable.merge(data),
-        builder: (context, _) =>
-        FutureBuilderPatched(
+        builder: (context, _) => ActionEmitter(
+            refreshFuture: Future.wait(data.map((e) => e.loading)).then(
+                (value) =>
+                    value
+                        .map((a) => a.timestamp)
+                        .toList()
+                        .whereNotNull()
+                        .minOrNull ??
+                    DateTime.now()),
+            triggerRefresh: () {
+              for (var element in data) {
+                element.invalidate();
+              }
+            },
+            child: FutureBuilderPatched(
               future: Future.wait(data.map((e) => e.loading)),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -122,7 +141,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
                 if (cachedVals.contains(null)) {
                   log.info("[Provider] cached contains null");
-                  
+
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
@@ -130,9 +149,9 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
                   return const Center(child: Text('Data missing'));
                 }
 
-                return widget.builder(
-                    context, cachedVals.map((v) => v!).toList());
+                return widget.builder(context,
+                    cachedVals.whereNotNull().map((v) => v.value).toList());
               },
-            ));
+            )));
   }
 }

@@ -5,17 +5,18 @@ import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/api/events.dart';
 import 'package:sib_utrecht_app/view_model/annotated_user.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
 
 
-class EventProvider with ChangeNotifier {
+class EventProviderNotifier with ChangeNotifier {
   final Future<CacherApiConnector>? apiConnector;
 
   final CachedProvider<Event> event;
   final CachedProvider<List<AnnotatedUser>> participants;
 
-  EventProvider({
+  EventProviderNotifier({
     required this.apiConnector,
-    Event? cachedEvent,
+    FetchResult<Event>? cachedEvent,
     required int eventId
   }) 
   : event = CachedProvider<Event>(
@@ -55,7 +56,7 @@ class EventProvider with ChangeNotifier {
 
 
   bool doesExpectParticipants() {
-    Event? eventCached = event.cached;
+    Event? eventCached = event.cached?.value;
 
     if (eventCached != null) {
       var signupType = eventCached.signupType;
@@ -65,7 +66,7 @@ class EventProvider with ChangeNotifier {
       }
     }
 
-    var cachedParticipants = participants.cached;
+    var cachedParticipants = participants.cached?.value;
 
     if (cachedParticipants != null && cachedParticipants.isNotEmpty) {
       return true;

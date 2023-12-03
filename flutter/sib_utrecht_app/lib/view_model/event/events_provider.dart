@@ -42,7 +42,7 @@ class EventsProvider with ChangeNotifier {
   }
 
   bool? isMeParticipating(int eventId) {
-    return _bookingsProvider.cached?.contains(eventId);
+    return _bookingsProvider.cached?.value.contains(eventId);
   }
 
   bool isMeBookingDirty(int eventId) {
@@ -108,7 +108,7 @@ class EventsProvider with ChangeNotifier {
 
     // log.fine("Bookings are: ${_bookingsProvider.cached}");
 
-    events = cachedEvents
+    events = cachedEvents.value
         // .map((v) => placeEvent(v, feedback))
         // .flattened
         // .sortedBy((AnnotatedEvent e) => e.placement?.date ?? e.end ?? e.start)

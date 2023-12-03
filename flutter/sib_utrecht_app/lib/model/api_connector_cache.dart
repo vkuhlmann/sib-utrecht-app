@@ -1,5 +1,6 @@
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:hive/hive.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
 
 class CacheMissException implements Exception {
   final String message;
@@ -26,16 +27,29 @@ class CacheApiConnector extends APIConnector {
     throw CacheMissException("No caching available for DELETE operations");
   }
 
-  @override
-  Future<Map> get(String url) async {
+  Future<FetchResult<Map>> getWithFetchResult(String url) async {
     var box = await boxFuture;
-    Map? res = box.get(getKeyName(url))?["response"];
+    Map? res = box.get(getKeyName(url));
+    Map? response = res?["response"];
+    int? time = res?["time"];
+    // Map? res = box.get(getKeyName(url))?["response"];
 
-    if (res == null) {
+    if (response == null) {
       throw CacheMissException("Cache miss for $url");
     }
 
-    return res;
+
+    DateTime? timestamp;
+    if (time != null) {
+      timestamp = DateTime.fromMillisecondsSinceEpoch(time);
+    }
+
+    return FetchResult(response, timestamp);
+  }
+
+  @override
+  Future<Map> get(String url) async {
+    return (await getWithFetchResult(url)).value;
   }
 
   String getKeyName(String url) {

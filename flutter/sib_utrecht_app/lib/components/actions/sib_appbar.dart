@@ -1,8 +1,11 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/components/actions/action_provider.dart';
+import 'package:sib_utrecht_app/components/actions/action_refresh.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/actions/appbar_suppression.dart';
 
 import '/globals.dart';
@@ -15,6 +18,7 @@ class WithSIBAppBar extends StatelessWidget {
   final List<Widget> actions;
   final Widget child;
   final bool showBackButton;
+  
   // final ActionsController actionsCollection = ActionsController();
 
   const WithSIBAppBar(
@@ -259,7 +263,10 @@ class WithSIBAppBar extends StatelessWidget {
     //     builder: (context) => ListenableBuilder(
     //         listenable: ActionProvider.of(context).controller,
     //         builder: (context, child) =>
-    return Scaffold(
+    return
+      ActionSubscriptionBuilder(builder:
+      (context, actionSubscriptions) =>
+     Scaffold(
         appBar: AppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             leading: (showBackButton && suppression?.suppressBackbutton != true)
@@ -285,11 +292,24 @@ class WithSIBAppBar extends StatelessWidget {
                     ],
                   ),
             actions: [
+              if (actionSubscriptions.isNotEmpty)
+                ActionRefreshButton(
+                    refreshFuture: Future.wait(
+                      actionSubscriptions.map((e) => e.refreshFuture)
+                      .whereNotNull()
+                    ).then((list) => list.min),
+                    triggerRefresh: () {
+                      for (var element in actionSubscriptions) {
+                        element.triggerRefresh();
+                      }
+                    }),
+                // const Icon(Icons.more_vert),
+                Text("${actionSubscriptions.length}"),
               // ...ActionProvider.of(context).controller.widgets,
               ...actions,
               if (suppression?.suppressMenu != true) buildLoginIcon(context)
             ]),
-        body: child);
+        body: child));
     // child: child)))
   }
 }
