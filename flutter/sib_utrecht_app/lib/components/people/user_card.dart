@@ -18,14 +18,15 @@ class UserCard extends StatelessWidget {
       "email": const Icon(Icons.email),
     }[type];
 
-    Widget title = Text(value.toString());
+    Widget title = Text(value.toString(), overflow: TextOverflow.ellipsis,);
 
     if (type == "email" || type == "e-mail") {
       String email = value as String;
 
       title = Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          title,
+          Flexible(child: title),
           Padding(
             padding: const EdgeInsets.only(left: 4.0),
             child: IconButton(

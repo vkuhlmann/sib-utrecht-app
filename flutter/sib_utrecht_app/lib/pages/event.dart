@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/event/event_participants.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
@@ -295,68 +296,70 @@ class _EventPageState extends State<EventPage> {
     var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
     return WithSIBAppBar(
         actions: const [],
-        child: EventProvider.Single(
-            query: widget.eventId,
-            builder: (context, event) {
-              // ListenableBuilder(
-              //     listenable: Listenable.merge([_eventProvider, provEvents]),
-              //     builder: (context, _) {
-              log.fine("Building event page for event id ${widget.eventId}");
+        child: ActionSubscriptionAggregator(
+            child: EventProvider.Single(
+                query: widget.eventId,
+                builder: (context, event) {
+                  // ListenableBuilder(
+                  //     listenable: Listenable.merge([_eventProvider, provEvents]),
+                  //     builder: (context, _) {
+                  log.fine(
+                      "Building event page for event id ${widget.eventId}");
 
-              // var prov = _eventProvider;
-              // var cachedEvent = prov.event.cached;
+                  // var prov = _eventProvider;
+                  // var cachedEvent = prov.event.cached;
 
-              EventParticipation? participation;
-              // if (event != null) {
-              participation = provEvents.getMeParticipation(event,
-                  feedback: ActionFeedback(
-                    sendConfirm: (m) =>
-                        ActionFeedback.sendConfirmToast(context, m),
-                    sendError: (m) =>
-                        ActionFeedback.showErrorDialog(context, m),
-                  ));
-              // }
+                  EventParticipation? participation;
+                  // if (event != null) {
+                  participation = provEvents.getMeParticipation(event,
+                      feedback: ActionFeedback(
+                        sendConfirm: (m) =>
+                            ActionFeedback.sendConfirmToast(context, m),
+                        sendError: (m) =>
+                            ActionFeedback.showErrorDialog(context, m),
+                      ));
+                  // }
 
-              return
-                  // WithSIBAppBar(
-                  //     actions: [
-                  //       ActionRefreshButton(
-                  //           refreshFuture: Future.wait([
-                  //             _eventProvider.event.loading,
-                  //             if (prov.doesExpectParticipants())
-                  //               _eventProvider.participants.loading
-                  //           ]).then((_) => DateTime.now()),
-                  //           triggerRefresh: _eventProvider.refresh)
-                  //     ],
-                  //     child:
-                  Column(children: [
-                Expanded(
-                    child: EventPageContents(
-                        event: AnnotatedEvent(
-                          event: event,
-                          participation: participation,
-                          // participants: eventProvider.participants.cached,
-                        ),
-                        eventParticipation: participation)),
-                // AlertsPanel(
-                //     controller: _alertsPanelController,
-                //     loadingFutures: [
-                //       AlertsFutureStatus(
-                //           component: "details",
-                //           future: _eventProvider.event.loading,
-                //           data: {
-                //             "isRefreshing": _eventProvider.event.cached != null
-                //           }),
-                //       if (prov.doesExpectParticipants())
-                //         AlertsFutureStatus(
-                //             component: "participants",
-                //             future: _eventProvider.participants.loading,
-                //             data: {
-                //               "isRefreshing":
-                //                   _eventProvider.participants.cached != null
-                //             })
-                //     ])
-              ]);
-            }));
+                  return
+                      // WithSIBAppBar(
+                      //     actions: [
+                      //       ActionRefreshButton(
+                      //           refreshFuture: Future.wait([
+                      //             _eventProvider.event.loading,
+                      //             if (prov.doesExpectParticipants())
+                      //               _eventProvider.participants.loading
+                      //           ]).then((_) => DateTime.now()),
+                      //           triggerRefresh: _eventProvider.refresh)
+                      //     ],
+                      //     child:
+                      Column(children: [
+                    Expanded(
+                        child: EventPageContents(
+                            event: AnnotatedEvent(
+                              event: event,
+                              participation: participation,
+                              // participants: eventProvider.participants.cached,
+                            ),
+                            eventParticipation: participation)),
+                    // AlertsPanel(
+                    //     controller: _alertsPanelController,
+                    //     loadingFutures: [
+                    //       AlertsFutureStatus(
+                    //           component: "details",
+                    //           future: _eventProvider.event.loading,
+                    //           data: {
+                    //             "isRefreshing": _eventProvider.event.cached != null
+                    //           }),
+                    //       if (prov.doesExpectParticipants())
+                    //         AlertsFutureStatus(
+                    //             component: "participants",
+                    //             future: _eventProvider.participants.loading,
+                    //             data: {
+                    //               "isRefreshing":
+                    //                   _eventProvider.participants.cached != null
+                    //             })
+                    //     ])
+                  ]);
+                })));
   }
 }

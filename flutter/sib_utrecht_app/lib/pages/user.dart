@@ -111,8 +111,8 @@ class _UserPageState extends State<UserPage> {
         // WithSIBAppBar(
         //     actions: const [],
         //     child:
-        UserProvider.Multiplexed(
-            query: [widget.entityName],
-            builder: (context, users) => UserPageContents(user: users[0]));
+        UserProvider.Single(
+            query: widget.entityName,
+            builder: (context, user) => UserPageContents(user: user));
   }
 }

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -170,6 +171,76 @@ class _ActionSubscriptionBuilderState extends State<ActionSubscriptionBuilder> {
       removeSubscription: removeSubscription,
       child: widget.builder(context, subscriptions),
     );
+  }
+}
+
+class ActionSubscriptionAggregator extends StatefulWidget {
+  final Widget child;
+
+  const ActionSubscriptionAggregator({Key? key, required this.child})
+      : super(key: key);
+
+  @override
+  State<ActionSubscriptionAggregator> createState() =>
+      _ActionSubscriptionAggregatorState();
+}
+
+class _ActionSubscriptionAggregatorState
+    extends State<ActionSubscriptionAggregator> {
+  List<ActionEmission> subscriptions = [];
+  // ActionEmission? emission;
+
+  Future<DateTime>? refreshFuture;
+
+  void triggerRefresh() {
+    for (var a in subscriptions) {
+      a.triggerRefresh();
+    }
+  }
+
+  void setEmission() {
+    var subs = subscriptions.map((e) => e.refreshFuture).whereNotNull();
+
+    if (subs.isEmpty) {
+      setState(() {
+        refreshFuture = null;
+      });
+      return;
+    }
+
+    setState(() {
+      refreshFuture = Future.wait(subs).then((list) => list.min);
+    });
+  }
+
+  void addSubscription(ActionEmission subscription) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        subscriptions.add(subscription);
+        setEmission();
+      });
+    });
+  }
+
+  void removeSubscription(ActionEmission subscription) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        subscriptions.remove(subscription);
+        setEmission();
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionEmitter(
+        refreshFuture: refreshFuture,
+        triggerRefresh: triggerRefresh,
+        child: ActionSubscriber(
+          addSubscription: addSubscription,
+          removeSubscription: removeSubscription,
+          child: widget.child,
+        ));
   }
 }
 

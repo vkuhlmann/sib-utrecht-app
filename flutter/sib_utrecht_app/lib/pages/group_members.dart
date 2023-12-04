@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/entity_card.dart';
@@ -12,8 +13,8 @@ class GroupMembersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return
-        GroupMembersProvider(
+    return ActionSubscriptionAggregator(
+        child: GroupMembersProvider(
             groupName: groupName,
             builder: (context, membersNames) {
               if (membersNames.isEmpty) {
@@ -25,27 +26,30 @@ class GroupMembersPage extends StatelessWidget {
                       membersNames.map((e) => e['entity'] as String).toList(),
                   builder: (context, members) => Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                      child: 
-                      CenteredPageScroll(
-                      slivers: [
-                        SliverPadding(padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
-                        sliver:
-                      SliverList.builder(
-                        itemCount: members.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
-                              child: EntityCard(entity: members[index], role: membersNames[index]["role"] as String?)
-                              //  ListTile(
-                              //   leading: CircleAvatar(
-                              //     child: Text(members[index]['entity']?[0] ?? "N/A"),
-                              //   ),
-                              //   title: Text(members[index]['entity'] ?? "N/A"),
-                              // )
+                      child: CenteredPageScroll(slivers: [
+                        SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
+                            sliver: SliverList.builder(
+                              itemCount: members.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(0, 6, 0, 6),
+                                    child: EntityCard(
+                                        entity: members[index],
+                                        role: membersNames[index]["role"]
+                                            as String?)
+                                    //  ListTile(
+                                    //   leading: CircleAvatar(
+                                    //     child: Text(members[index]['entity']?[0] ?? "N/A"),
+                                    //   ),
+                                    //   title: Text(members[index]['entity'] ?? "N/A"),
+                                    // )
 
-                              );
-                        },
-                      ))])));
-            });
+                                    );
+                              },
+                            ))
+                      ])));
+            }));
   }
 }

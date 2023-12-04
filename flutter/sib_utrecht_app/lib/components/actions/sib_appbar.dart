@@ -18,12 +18,12 @@ class WithSIBAppBar extends StatelessWidget {
   final List<Widget> actions;
   final Widget child;
   final bool showBackButton;
-  
+
   // final ActionsController actionsCollection = ActionsController();
 
   const WithSIBAppBar(
       {Key? key,
-      required this.actions,
+      this.actions = const [],
       required this.child,
       this.showBackButton = true})
       : super(key: key);
@@ -263,53 +263,54 @@ class WithSIBAppBar extends StatelessWidget {
     //     builder: (context) => ListenableBuilder(
     //         listenable: ActionProvider.of(context).controller,
     //         builder: (context, child) =>
-    return
-      ActionSubscriptionBuilder(builder:
-      (context, actionSubscriptions) =>
-     Scaffold(
-        appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            leading: (showBackButton && suppression?.suppressBackbutton != true)
-                ? Center(child: buildBackButton())
-                : null,
-            title: suppression?.suppressTitle == true
-                ? null
-                : Row(
-                    // crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      // buildBackButton(),
-                      Image.asset(
-                        'assets/sib_logo_64.png',
-                        fit: BoxFit.contain,
-                        height: 40,
-                        filterQuality: FilterQuality.medium,
-                      ),
-                      const SizedBox(width: 16),
-                      // Text(widget.title),
-                      const Expanded(child: Align(alignment: Alignment.centerLeft, child: 
-                      Text("SIB-Utrecht (Bèta)", overflow: TextOverflow.ellipsis,))),
-                      // const Spacer(),
-                    ],
-                  ),
-            actions: [
-              if (actionSubscriptions.isNotEmpty)
-                ActionRefreshButton(
-                    refreshFuture: Future.wait(
-                      actionSubscriptions.map((e) => e.refreshFuture)
-                      .whereNotNull()
-                    ).then((list) => list.min),
-                    triggerRefresh: () {
-                      for (var element in actionSubscriptions) {
-                        element.triggerRefresh();
-                      }
-                    }),
+
+    return ActionSubscriptionBuilder(builder: (context, actionSubscriptions) {
+      var refreshFuture = actionSubscriptions.lastOrNull?.refreshFuture;
+
+      return Scaffold(
+          appBar: AppBar(
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              leading:
+                  (showBackButton && suppression?.suppressBackbutton != true)
+                      ? Center(child: buildBackButton())
+                      : null,
+              title: suppression?.suppressTitle == true
+                  ? null
+                  : Row(
+                      // crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        // buildBackButton(),
+                        Image.asset(
+                          'assets/sib_logo_64.png',
+                          fit: BoxFit.contain,
+                          height: 40,
+                          filterQuality: FilterQuality.medium,
+                        ),
+                        const SizedBox(width: 16),
+                        // Text(widget.title),
+                        const Expanded(
+                            child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  "SIB-Utrecht (Bèta)",
+                                  overflow: TextOverflow.ellipsis,
+                                ))),
+                        // const Spacer(),
+                      ],
+                    ),
+              actions: [
+                if (refreshFuture != null)
+                  ActionRefreshButton(
+                      refreshFuture: refreshFuture,
+                      triggerRefresh: actionSubscriptions.lastOrNull?.triggerRefresh ?? () {}),
                 // const Icon(Icons.more_vert),
-                Text("${actionSubscriptions.length}"),
-              // ...ActionProvider.of(context).controller.widgets,
-              ...actions,
-              if (suppression?.suppressMenu != true) buildLoginIcon(context)
-            ]),
-        body: child));
+                // Text("${actionSubscriptions.length}"),
+                // ...ActionProvider.of(context).controller.widgets,
+                ...actions,
+                if (suppression?.suppressMenu != true) buildLoginIcon(context)
+              ]),
+          body: child);
+    });
     // child: child)))
   }
 }
