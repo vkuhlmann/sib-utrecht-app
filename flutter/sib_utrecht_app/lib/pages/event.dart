@@ -99,7 +99,7 @@ class EventHeader extends StatelessWidget {
                 ])
               ])
           ]))),
-      if (event.participation?.isActive == true)
+      if (event.participation?.isActive == true && event.participation?.isParticipating == false)
         // Card(
         //     child: ListTile(
         //         title:

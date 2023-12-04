@@ -13,7 +13,8 @@ class EntityIcon extends StatelessWidget {
     final ent = entity;
     if (ent is User) {
       return CircleAvatar(
-        backgroundColor: Colors.red[900],
+        backgroundColor: Theme.of(context).brightness == Brightness.light ?
+        Colors.red[400] : Colors.red[900],
         radius: 28,
         child: 
         SelectionContainer.disabled(child:
