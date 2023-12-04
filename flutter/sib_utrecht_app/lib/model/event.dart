@@ -130,7 +130,7 @@ class Event {
     }
 
     description = description.replaceAll(
-        RegExp("^(\r|\n|<br */>|<br *>)*", multiLine: false), "");
+        RegExp("^(<strong></strong>)?(\r|\n|<br */>|<br *>)*", multiLine: false), "");
 
     return (description.isEmpty ? null : description, thumbnail);
   }

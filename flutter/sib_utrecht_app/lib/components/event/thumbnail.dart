@@ -32,7 +32,8 @@ class EventThumbnail extends StatelessWidget {
                         return Text(AppLocalizations.of(context)!.eventNoImage);
                       }
                       try {
-                        return Center(
+                        return Align(
+                            alignment: Alignment.centerLeft,
                             child: InkWell(
                                 onTap: () {
                                   router.pushNamed("event_image_dialog",

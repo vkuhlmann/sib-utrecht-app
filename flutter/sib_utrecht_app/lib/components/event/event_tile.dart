@@ -133,7 +133,7 @@ class _EventTileState extends State<EventTile> {
 
     return InkWell(
         onTap: () {
-          GoRouter.of(context).go("/event/${widget.event.eventId}");
+          GoRouter.of(context).push("/event/${widget.event.eventId}");
         },
         child: Container(
             alignment: Alignment.centerLeft,
