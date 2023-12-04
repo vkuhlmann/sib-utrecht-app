@@ -9,6 +9,7 @@ class UserProvider {
   static Widget Multiplexed({query, builder}) => MultiplexedProvider<String, User>(
       query: query,
       builder: builder,
+      errorTitle: (loc) => loc.couldNotLoad(loc.dataUsers),
       obtainProvider: (q) => CachedProvider(
             obtain: (c) => Users(c).getUser(entityName: q),
           ));
@@ -19,6 +20,7 @@ class UserProvider {
       SingleProvider(
           query: query,
           builder: builder,
+          errorTitle: (loc) => loc.couldNotLoad(loc.dataUser),
           obtainProvider: (String q) => CachedProvider(
                 obtain: (c) => Users(c).getUser(entityName: q),
               ));

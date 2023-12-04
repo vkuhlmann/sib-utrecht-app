@@ -8,18 +8,21 @@ import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MultiplexedProvider<T, U> extends StatefulWidget {
   final List<T> query;
   final CachedProvider<U> Function(T) obtainProvider;
   final Widget Function(BuildContext context, List<U> data) builder;
+  final String Function(AppLocalizations) errorTitle;
   // final Widget Function(BuildContext context, Future<U> data)? loadingBuilder;
 
   const MultiplexedProvider(
       {Key? key,
       required this.query,
       required this.obtainProvider,
-      required this.builder})
+      required this.builder,
+      required this.errorTitle})
       : super(key: key);
 
   @override
@@ -133,7 +136,32 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
               future: Future.wait(data.map((e) => e.loading)),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return formatError(snapshot.error);
+                  return Center(
+                      child: Container(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Card(
+                                child: ListTile(
+                                    title: Row(
+                                        children: [
+                                          const Icon(Icons.error,
+                                              color: Colors.red),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                              child: Text(
+                                                  widget.errorTitle(
+                                                      AppLocalizations.of(
+                                                          context)!),
+                                                  maxLines: 4,
+                                                  overflow:
+                                                      TextOverflow.ellipsis))
+                                        ]),
+                                    subtitle: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            32, 8, 8, 8),
+                                        child: formatError(snapshot.error))),
+                              ))));
                 }
 
                 var cachedVals = data.map((e) => e.cached).toList();

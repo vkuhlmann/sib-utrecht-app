@@ -15,8 +15,8 @@ import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
-import 'package:sib_utrecht_app/view_model/event_participants_provider.dart';
-import 'package:sib_utrecht_app/view_model/event_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/event_participants_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/event_provider.dart';
 
 import '../globals.dart';
 import '../utils.dart';
@@ -130,8 +130,7 @@ class EventDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (description, _) =
-        EventProviderNotifier.extractDescriptionAndThumbnail(event);
+    final (description, _) = event.extractDescriptionAndThumbnail();
 
     return Card(
         child: ListTile(

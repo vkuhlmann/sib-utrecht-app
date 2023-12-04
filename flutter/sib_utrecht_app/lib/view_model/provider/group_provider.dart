@@ -9,6 +9,7 @@ class GroupProvider {
   static Widget Multiplexed({query, builder}) => MultiplexedProvider(
       query: query,
       builder: builder,
+      errorTitle: (loc) => loc.couldNotLoad(loc.dataGroups),
       obtainProvider: (String q) => CachedProvider(
             obtain: (c) => Groups(c).getGroup(groupName: q),
           ));
@@ -19,6 +20,7 @@ class GroupProvider {
       SingleProvider(
           query: query,
           builder: builder,
+          errorTitle: (loc) => loc.couldNotLoad(loc.dataGroup),
           obtainProvider: (String q) => CachedProvider(
                 obtain: (c) => Groups(c).getGroup(groupName: q),
               ));

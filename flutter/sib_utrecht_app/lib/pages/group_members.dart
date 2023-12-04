@@ -3,8 +3,8 @@ import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/entity_card.dart';
-import 'package:sib_utrecht_app/view_model/entity_provider.dart';
-import 'package:sib_utrecht_app/view_model/group_members_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/entity_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/group_members_provider.dart';
 
 class GroupMembersPage extends StatelessWidget {
   final String groupName;

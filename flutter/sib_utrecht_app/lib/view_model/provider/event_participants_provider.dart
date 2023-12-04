@@ -11,6 +11,7 @@ Widget EventParticipantsProvider(
     SingleProvider(
       query: eventId,
       builder: builder,
+      errorTitle: (loc) => loc.couldNotLoad(loc.dataParticipants),
       obtainProvider: (int q) => CachedProvider(
         obtain: (c) => Events(c).listParticipants(eventId: q),
       ),

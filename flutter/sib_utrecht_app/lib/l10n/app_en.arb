@@ -79,6 +79,18 @@
     "description": "Message displayed when a component is refreshing"
   },
 
+  "dataUser": "user",
+  "dataUsers": "users",
+  "dataEvent": "activity",
+  "dataEvents": "activities",
+  "dataBooking": "booking",
+  "dataBookings": "bookings",
+  "dataGroup": "group",
+  "dataGroups": "groups",
+  "dataMembers": "members",
+  "dataParticipants": "participants",
+  "dataEntity": "user or group",
+
   "couldNotLoad": "Could not load {componentsString}:",
   "@couldNotLoad": {
     "type": "text",

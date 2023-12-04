@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sib_utrecht_app/constants.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/api/events.dart';
@@ -55,60 +54,4 @@ class EventProviderNotifier with ChangeNotifier {
   }
 
 
-  bool doesExpectParticipants() {
-    Event? eventCached = event.cached?.value;
-
-    if (eventCached != null) {
-      var signupType = eventCached.signupType;
-
-      if (signupType == "api") {
-        return true;
-      }
-    }
-
-    var cachedParticipants = participants.cached?.value;
-
-    if (cachedParticipants != null && cachedParticipants.isNotEmpty) {
-      return true;
-    }
-
-    return false;
-  }
-
-  static (String?, Map?) extractDescriptionAndThumbnail(Event event) {
-    String description = ((event.data["post_content"] ??
-            event.data["description"] ??
-            "") as String)
-        .replaceAll("\r\n\r\n", "<br/><br/>");
-    Map? thumbnail = event.data["thumbnail"];
-
-    if (thumbnail != null &&
-        thumbnail["url"] != null &&
-        !(thumbnail["url"] as String).startsWith("http")) {
-      thumbnail["url"] = "$wordpressUrl/${thumbnail["url"]}";
-    }
-
-    if (thumbnail == null && description.contains("<img")) {
-      final img = RegExp("<img[^>]+src=\"(?<url>[^\"]+)\"[^>]*>")
-          .firstMatch(description);
-
-      if (img != null) {
-        thumbnail = {"url": img.namedGroup("url")};
-        // description = description.replaceAll(img.group(0)!, "");
-        description = description.replaceFirst(img.group(0)!, "");
-      }
-    }
-
-    if (thumbnail != null &&
-        thumbnail["url"] != null &&
-        (thumbnail["url"] as String).startsWith("http://sib-utrecht.nl/")) {
-      thumbnail["url"] = (thumbnail["url"] as String)
-          .replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
-    }
-
-    description = description.replaceAll(
-        RegExp("^(\r|\n|<br */>|<br *>)*", multiLine: false), "");
-
-    return (description.isEmpty ? null : description, thumbnail);
-  }
 }

@@ -14,7 +14,7 @@ class EventThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (_, thumbnail) = EventProviderNotifier.extractDescriptionAndThumbnail(event);
+    final (_, thumbnail) = event.extractDescriptionAndThumbnail();
 
     return Card(
         child: WillPopScope(

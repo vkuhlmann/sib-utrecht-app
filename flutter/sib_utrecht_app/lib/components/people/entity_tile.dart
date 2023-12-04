@@ -40,9 +40,6 @@ class EntityTile extends StatelessWidget {
     }
 
     if (comment != null) {
-      // icon = Tooltip(
-      //     message: ent.comment!,
-      //     child: icon);
       icon = Tooltip(
           message: comment,
           verticalOffset: 48,
@@ -102,10 +99,15 @@ class EntityTile extends StatelessWidget {
                     ],
                   ));
         },
-        child: Column(children: [
-          Padding(padding: const EdgeInsets.all(8), child: icon),
-          // const SizedBox(height: 3,),
-          getCaption(),
-        ]));
+        child: SizedBox(
+            width: 90,
+            height: 100,
+            child: Container(
+                color: Colors.transparent,
+                child: Column(children: [
+              Padding(padding: const EdgeInsets.all(8), child: icon),
+              // const SizedBox(height: 3,),
+              getCaption(),
+            ]))));
   }
 }
