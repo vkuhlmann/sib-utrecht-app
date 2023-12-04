@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/entity_icon.dart';
 import 'package:sib_utrecht_app/components/people/entity_tile.dart';
 import 'package:sib_utrecht_app/components/people/group_card.dart';
 import 'package:sib_utrecht_app/components/people/user_card.dart';
 import 'package:sib_utrecht_app/model/group.dart';
-import 'package:sib_utrecht_app/view_model/group_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/group_provider.dart';
 
 class GroupAppBar extends StatelessWidget {
   final Group group;
@@ -38,7 +39,7 @@ class GroupPage extends StatelessWidget {
   const GroupPage({Key? key, required this.entityName}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => GroupProvider.Single(
+  Widget build(BuildContext context) => ActionSubscriptionAggregator(child: GroupProvider.Single(
       query: entityName,
       builder: (context, group) => SelectionArea(
               child: CenteredPageScroll(
@@ -56,5 +57,5 @@ class GroupPage extends StatelessWidget {
                 }, child: const Text("See members"))
               ])),
             ],
-          )));
+          ))));
 }

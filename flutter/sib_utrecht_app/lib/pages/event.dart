@@ -3,23 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/event/event_participants.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
-import 'package:sib_utrecht_app/components/people/entity_tile.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/signup_indicator.dart';
+import 'package:sib_utrecht_app/utils.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
-import 'package:sib_utrecht_app/view_model/event/event_provider.dart';
+import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
+import 'package:sib_utrecht_app/view_model/provider/event_participants_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/event_provider.dart';
 
 import '../globals.dart';
-import '../utils.dart';
-import '../view_model/async_patch.dart';
 import '../components/actions/alerts_panel.dart';
 import '../components/api_access.dart';
-import '../components/actions/action_refresh.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({Key? key, required this.eventId}) : super(key: key);
@@ -61,39 +62,86 @@ class EventHeader extends StatelessWidget {
 
       Card(
           child: ListTile(
-              title: Wrap(children: [
-        SizedBox(
-            width: 80,
-            child: Text("${AppLocalizations.of(context)!.eventStarts}: ")),
-        Wrap(children: [
-          SizedBox(
-              width: 260,
-              child: Text(DateFormat.yMMMMEEEEd(
-                      Localizations.localeOf(context).toString())
-                  .format(event.start))),
-          // const SizedBox(width: 20),
-          Text(DateFormat.Hm(Localizations.localeOf(context).toString())
-              .format(event.start))
-        ])
-      ]))),
-      if (eventEnd != null)
-        Card(
-            child: ListTile(
-                title: Wrap(children: [
-          SizedBox(
-              width: 80,
-              child: Text("${AppLocalizations.of(context)!.eventEnds}: ")),
-          Wrap(children: [
-            SizedBox(
-                width: 260,
-                child: Text(DateFormat.yMMMMEEEEd(
-                        Localizations.localeOf(context).toString())
-                    .format(eventEnd))),
-            // const SizedBox(width: 20),
-            Text(DateFormat.Hm(Localizations.localeOf(context).toString())
-                .format(eventEnd))
-          ])
-        ]))),
+              title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+            Wrap(children: [
+              SizedBox(
+                  width: 80,
+                  child:
+                      Text("${AppLocalizations.of(context)!.eventStarts}: ")),
+              Wrap(children: [
+                SizedBox(
+                    width: 260,
+                    child: Text(DateFormat.yMMMMEEEEd(
+                            Localizations.localeOf(context).toString())
+                        .format(event.start))),
+                // const SizedBox(width: 20),
+                Text(DateFormat.Hm(Localizations.localeOf(context).toString())
+                    .format(event.start))
+              ]),
+            ]),
+            if (eventEnd != null)
+              Wrap(children: [
+                SizedBox(
+                    width: 80,
+                    child:
+                        Text("${AppLocalizations.of(context)!.eventEnds}: ")),
+                Wrap(children: [
+                  SizedBox(
+                      width: 260,
+                      child: Text(DateFormat.yMMMMEEEEd(
+                              Localizations.localeOf(context).toString())
+                          .format(eventEnd))),
+                  // const SizedBox(width: 20),
+                  Text(DateFormat.Hm(Localizations.localeOf(context).toString())
+                      .format(eventEnd))
+                ])
+              ])
+          ]))),
+      if (event.participation?.isActive == true)
+        // Card(
+        //     child: ListTile(
+        //         title:
+        Padding(
+            padding: const EdgeInsets.all(16),
+            child: FilledButton(
+                onPressed: () {
+                  var func = event.participation?.setParticipating;
+                  if (func == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Participation set function missing")));
+                    return;
+                  }
+
+                  try {
+                    func(true);
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            "Participation set function failed: ${formatErrorMsg(e.toString())}")));
+                    return;
+                  }
+                },
+                // child: Text("Sign up now!",
+                //     style: Theme.of(context).textTheme.headlineMedium),
+                style: (Theme.of(context).filledButtonTheme.style ??
+                        FilledButton.styleFrom())
+                    .copyWith(
+                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4)))),
+                child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text("Sign up now!",
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            )))))
+      //  Text("Sign up now!",
+      //     style: TextStyle(fontWeight: FontWeight.bold)))),
+
       // Table(columnWidths: const {
       //   0: IntrinsicColumnWidth(),
       //   1: FlexColumnWidth(),
@@ -126,8 +174,7 @@ class EventDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (description, _) =
-        EventProvider.extractDescriptionAndThumbnail(event);
+    final (description, _) = event.extractDescriptionAndThumbnail();
 
     return Card(
         child: ListTile(
@@ -142,89 +189,42 @@ class EventDescription extends StatelessWidget {
   }
 }
 
-
 class EventPageContents extends StatelessWidget {
-  final EventProvider eventProvider;
   final EventParticipation? eventParticipation;
+  final AnnotatedEvent event;
 
-  final AnnotatedEvent? event;
-  final bool expectParticipants;
-
-  EventPageContents(this.eventProvider,
+  const EventPageContents(
       {Key? key, required this.eventParticipation, required this.event})
-      : expectParticipants = eventProvider.doesExpectParticipants(),
-        super(key: key);
-
-  static EventPageContents fromProvider(EventProvider eventProvider,
-      {Key? key, EventParticipation? eventParticipation}) {
-    var cachedEvent = eventProvider.event.cached;
-    AnnotatedEvent? event;
-    if (cachedEvent != null) {
-      event = AnnotatedEvent(
-        event: cachedEvent,
-        participation: eventParticipation,
-        participants: eventProvider.participants.cached,
-      );
-    }
-
-    return EventPageContents(eventProvider,
-        eventParticipation: eventParticipation, event: event);
-  }
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // ActionProvider actionProvider = ActionProvider.of(context);
-    // actionProvider.controller.widgets.clear();
-    // actionProvider.controller.widgets.add(const Icon(Icons.abc));
-    // actionProvider.controller.widgets = [
-    //   const Icon(Icons.abc)
-    // ];
-
     return SelectionArea(
         child: CustomScrollView(slivers: [
       SliverPadding(
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           sliver: SliverList.list(children: [
             const SizedBox(height: 20),
-            if (eventProvider.event.cached == null)
-              FutureBuilderPatched(
-                  future: eventProvider.event.loading,
-                  builder: (eventContext, eventSnapshot) {
-                    if (eventSnapshot.hasError) {
-                      return Padding(
-                          padding: const EdgeInsets.all(32),
-                          child:
-                              Center(child: formatError(eventSnapshot.error)));
-                    }
-                    if (eventSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(child: CircularProgressIndicator()));
-                    }
+            Center(
+                child: Container(
+                    constraints: const BoxConstraints(maxWidth: 700),
+                    child: Column(children: [
+                      EventHeader(event),
+                      EventDescription(event),
+                      EventThumbnail(event),
+                      const SizedBox(height: 32),
+                      EventParticipantsProvider(
+                          eventId: event.eventId,
+                          builder: (context, participants) {
+                            // if ()
+                            return EventParticipants(event,
+                                participants: participants);
 
-                    return const SizedBox();
-                  }),
-            ...(() {
-              final AnnotatedEvent? event = this.event;
-              if (event == null) {
-                return [];
-              }
-
-              return [
-                Center(child: 
-      Container(constraints: const BoxConstraints(maxWidth: 700), child:
-                Column(children: [
-                EventHeader(event),
-                EventDescription(event),
-                EventThumbnail(event),
-                const SizedBox(height: 32),
-                if (expectParticipants) ...[
-                  EventParticipants(event, eventProvider: eventProvider)
-                ]
-              ])))
-              ];
-            }())
+                            // if (expectParticipants) ...[
+                            //   EventParticipants(event, eventProvider: eventProvider)
+                            // ]
+                          })
+                    ])))
           ])),
     ]));
   }
@@ -232,7 +232,7 @@ class EventPageContents extends StatelessWidget {
 
 class _EventPageState extends State<EventPage> {
   final AlertsPanelController _alertsPanelController = AlertsPanelController();
-  late EventProvider _eventProvider;
+  late EventProviderNotifier _eventProvider;
 
   @override
   void initState() {
@@ -247,7 +247,7 @@ class _EventPageState extends State<EventPage> {
     _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
         component: "participants", status: "done", data: {}));
 
-    _eventProvider = EventProvider(
+    _eventProvider = EventProviderNotifier(
         eventId: widget.eventId, apiConnector: null, cachedEvent: null);
   }
 
@@ -259,15 +259,17 @@ class _EventPageState extends State<EventPage> {
       log.info(
           "Event page: API connector changed from ${_eventProvider.apiConnector} "
           " to $apiConnector, reloading event data");
-      _eventProvider = EventProvider(
+
+      var cachedEv = ResourcePoolAccess.of(context)
+          .pool
+          .eventsProvider
+          .events
+          .firstWhereOrNull((element) => element.eventId == widget.eventId);
+
+      _eventProvider = EventProviderNotifier(
           eventId: widget.eventId,
           apiConnector: apiConnector,
-          cachedEvent: ResourcePoolAccess.of(context)
-              .pool
-              .eventsProvider
-              .events
-              .firstWhereOrNull(
-                  (element) => element.eventId == widget.eventId));
+          cachedEvent: cachedEv == null ? null : FetchResult(cachedEv, null));
     }
 
     super.didChangeDependencies();
@@ -276,58 +278,72 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
-    return 
-    ListenableBuilder(
-        listenable: Listenable.merge([_eventProvider, provEvents]),
-        builder: (context, _) {
-          log.fine("Building event page for event id ${widget.eventId}");
+    return WithSIBAppBar(
+        actions: const [],
+        child: ActionSubscriptionAggregator(
+            child: EventProvider.Single(
+                query: widget.eventId,
+                builder: (context, event) {
+                  // ListenableBuilder(
+                  //     listenable: Listenable.merge([_eventProvider, provEvents]),
+                  //     builder: (context, _) {
+                  log.fine(
+                      "Building event page for event id ${widget.eventId}");
 
-          var prov = _eventProvider;
-          var cachedEvent = prov.event.cached;
+                  // var prov = _eventProvider;
+                  // var cachedEvent = prov.event.cached;
 
-          EventParticipation? participation;
-          if (cachedEvent != null) {
-            participation = provEvents.getMeParticipation(cachedEvent,
-                feedback: ActionFeedback(
-                  sendConfirm: (m) =>
-                      ActionFeedback.sendConfirmToast(context, m),
-                  sendError: (m) => ActionFeedback.showErrorDialog(context, m),
-                ));
-          }
+                  EventParticipation? participation;
+                  // if (event != null) {
+                  participation = provEvents.getMeParticipation(event,
+                      feedback: ActionFeedback(
+                        sendConfirm: (m) =>
+                            ActionFeedback.sendConfirmToast(context, m),
+                        sendError: (m) =>
+                            ActionFeedback.showErrorDialog(context, m),
+                      ));
+                  // }
 
-          return WithSIBAppBar(
-              actions: [
-                ActionRefreshButton(
-                    refreshFuture: Future.wait([
-                      _eventProvider.event.loading,
-                      if (prov.doesExpectParticipants())
-                        _eventProvider.participants.loading
-                    ]).then((_) => DateTime.now()),
-                    triggerRefresh: _eventProvider.refresh)
-              ],
-              child: Column(children: [
-                Expanded(
-                    child: EventPageContents.fromProvider(prov,
-                        eventParticipation: participation)),
-                AlertsPanel(
-                    controller: _alertsPanelController,
-                    loadingFutures: [
-                      AlertsFutureStatus(
-                          component: "details",
-                          future: _eventProvider.event.loading,
-                          data: {
-                            "isRefreshing": _eventProvider.event.cached != null
-                          }),
-                      if (prov.doesExpectParticipants())
-                        AlertsFutureStatus(
-                            component: "participants",
-                            future: _eventProvider.participants.loading,
-                            data: {
-                              "isRefreshing":
-                                  _eventProvider.participants.cached != null
-                            })
-                    ])
-              ]));
-        });
+                  return
+                      // WithSIBAppBar(
+                      //     actions: [
+                      //       ActionRefreshButton(
+                      //           refreshFuture: Future.wait([
+                      //             _eventProvider.event.loading,
+                      //             if (prov.doesExpectParticipants())
+                      //               _eventProvider.participants.loading
+                      //           ]).then((_) => DateTime.now()),
+                      //           triggerRefresh: _eventProvider.refresh)
+                      //     ],
+                      //     child:
+                      Column(children: [
+                    Expanded(
+                        child: EventPageContents(
+                            event: AnnotatedEvent(
+                              event: event,
+                              participation: participation,
+                              // participants: eventProvider.participants.cached,
+                            ),
+                            eventParticipation: participation)),
+                    // AlertsPanel(
+                    //     controller: _alertsPanelController,
+                    //     loadingFutures: [
+                    //       AlertsFutureStatus(
+                    //           component: "details",
+                    //           future: _eventProvider.event.loading,
+                    //           data: {
+                    //             "isRefreshing": _eventProvider.event.cached != null
+                    //           }),
+                    //       if (prov.doesExpectParticipants())
+                    //         AlertsFutureStatus(
+                    //             component: "participants",
+                    //             future: _eventProvider.participants.loading,
+                    //             data: {
+                    //               "isRefreshing":
+                    //                   _eventProvider.participants.cached != null
+                    //             })
+                    //     ])
+                  ]);
+                })));
   }
 }

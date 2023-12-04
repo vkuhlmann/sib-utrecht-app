@@ -358,7 +358,7 @@ GoRouter createRouter() {
                 routes: <RouteBase>[
                   ShellRoute(
                       builder: (context, state, child) =>
-                          WithSIBAppBar(actions: [], child: child),
+                          WithSIBAppBar(actions: const [], child: child),
                       routes: [
                         Route(
                             path: '/info',

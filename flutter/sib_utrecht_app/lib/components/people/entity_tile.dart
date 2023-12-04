@@ -40,9 +40,6 @@ class EntityTile extends StatelessWidget {
     }
 
     if (comment != null) {
-      // icon = Tooltip(
-      //     message: ent.comment!,
-      //     child: icon);
       icon = Tooltip(
           message: comment,
           verticalOffset: 48,
@@ -59,57 +56,58 @@ class EntityTile extends StatelessWidget {
               child: icon));
     }
 
-    return Column(children: [
-      Padding(
-          padding: const EdgeInsets.all(8),
-          child: GestureDetector(
-              onTap: () {
-                String? profilePage = ent.profilePage;
+    return GestureDetector(
+        onTap: () {
+          String? profilePage = ent.profilePage;
 
-                showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                          title: Text(entity.getLocalLongName(
-                              Localizations.localeOf(context))),
-                          // content: Text("Entity: ${entity.runtimeType}\n\n${entity.toString()}"),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (comment != null)
-                                Align(
-                                    alignment: AlignmentDirectional.centerStart,
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text("Comment:"),
-                                          Padding(
-                                              padding:
-                                                  const EdgeInsets.fromLTRB(
-                                                      8, 0, 8, 32),
-                                              child: Text(comment))
-                                        ])),
-                              if (profilePage != null)
-                                FilledButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      GoRouter.of(context).go(profilePage);
-                                    },
-                                    child: const Text("Open profile")),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text("Close"))
-                          ],
-                        ));
-              },
-              child: icon)),
-      // const SizedBox(height: 3,),
-      getCaption(),
-    ]);
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: Text(entity
+                        .getLocalLongName(Localizations.localeOf(context))),
+                    // content: Text("Entity: ${entity.runtimeType}\n\n${entity.toString()}"),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (comment != null)
+                          Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("Comment:"),
+                                    Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            8, 0, 8, 32),
+                                        child: Text(comment))
+                                  ])),
+                        if (profilePage != null)
+                          FilledButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                GoRouter.of(context).go(profilePage);
+                              },
+                              child: const Text("Open profile")),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text("Close"))
+                    ],
+                  ));
+        },
+        child: SizedBox(
+            width: 90,
+            height: 100,
+            child: Container(
+                color: Colors.transparent,
+                child: Column(children: [
+              Padding(padding: const EdgeInsets.all(8), child: icon),
+              // const SizedBox(height: 3,),
+              getCaption(),
+            ]))));
   }
 }

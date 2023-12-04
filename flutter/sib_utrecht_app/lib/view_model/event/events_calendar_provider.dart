@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_list.dart';
@@ -26,8 +27,7 @@ class _EventsCalendarProviderState extends State<EventsCalendarProvider> {
           feedback: ActionFeedback(
             sendConfirm: (m) => ActionFeedback.sendConfirmToast(context, m),
             sendError: (m) => ActionFeedback.showErrorDialog(context, m),
-          )
-          );
+          ));
     });
   }
 
@@ -40,5 +40,8 @@ class _EventsCalendarProviderState extends State<EventsCalendarProvider> {
   @override
   Widget build(BuildContext context) => ListenableBuilder(
       listenable: calendar,
-      builder: (context, _) => widget.builder(context, calendar));
+      builder: (context, _) => ActionEmitter(
+          refreshFuture: calendar.loading?.then((_) => DateTime.now()),
+          triggerRefresh: calendar.refresh,
+          child: widget.builder(context, calendar)));
 }

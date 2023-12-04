@@ -10,7 +10,9 @@ class EntityProvider {
       MultiplexedProvider(
           query: query,
           builder: builder,
+          errorTitle: (loc) => loc.couldNotLoad(loc.dataEntity),
           obtainProvider: (String q) => CachedProvider(
                 obtain: (c) => Entities(c).getEntity(entityName: q),
-              ));
+              ),
+          );
 }

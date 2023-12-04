@@ -28,7 +28,7 @@ class GroupsProvider with ChangeNotifier {
       return;
     }
 
-    groups = cachedEvents;
+    groups = cachedEvents.value;
     notifyListeners();
   }
 

@@ -1,24 +1,33 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MultiplexedProvider<T, U> extends StatefulWidget {
   final List<T> query;
   final CachedProvider<U> Function(T) obtainProvider;
   final Widget Function(BuildContext context, List<U> data) builder;
+  final String Function(AppLocalizations) errorTitle;
+  // final Widget Function(BuildContext context, Future<U> data)? loadingBuilder;
 
   const MultiplexedProvider(
-      {Key? key, required this.query, required this.obtainProvider,
-      required this.builder})
+      {Key? key,
+      required this.query,
+      required this.obtainProvider,
+      required this.builder,
+      required this.errorTitle})
       : super(key: key);
 
   @override
-  State<MultiplexedProvider<T, U>> createState() => _MultiplexedProviderState<T, U>();
+  State<MultiplexedProvider<T, U>> createState() =>
+      _MultiplexedProviderState<T, U>();
 }
 
 class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
@@ -72,7 +81,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
     // }
 
     if (!listEquals(widget.query, oldWidget.query)) {
-      log.info("[Provider] query changed from ${oldWidget.query} to ${widget.query}");
+      log.info(
+          "[Provider] query changed from ${oldWidget.query} to ${widget.query}");
       initData();
     }
   }
@@ -106,15 +116,52 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
   @override
   Widget build(BuildContext context) {
-    return
-    ListenableBuilder(
+    return ListenableBuilder(
         listenable: Listenable.merge(data),
-        builder: (context, _) =>
-        FutureBuilderPatched(
+        builder: (context, _) => ActionEmitter(
+            refreshFuture: Future.wait(data.map((e) => e.loading)).then(
+                (value) =>
+                    value
+                        .map((a) => a.timestamp)
+                        .toList()
+                        .whereNotNull()
+                        .minOrNull ??
+                    DateTime.now()),
+            triggerRefresh: () {
+              for (var element in data) {
+                element.invalidate();
+              }
+            },
+            child: FutureBuilderPatched(
               future: Future.wait(data.map((e) => e.loading)),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return formatError(snapshot.error);
+                  return Center(
+                      child: Container(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Card(
+                                child: ListTile(
+                                    title: Row(
+                                        children: [
+                                          const Icon(Icons.error,
+                                              color: Colors.red),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                              child: Text(
+                                                  widget.errorTitle(
+                                                      AppLocalizations.of(
+                                                          context)!),
+                                                  maxLines: 4,
+                                                  overflow:
+                                                      TextOverflow.ellipsis))
+                                        ]),
+                                    subtitle: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            32, 8, 8, 8),
+                                        child: formatError(snapshot.error))),
+                              ))));
                 }
 
                 var cachedVals = data.map((e) => e.cached).toList();
@@ -122,7 +169,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
                 if (cachedVals.contains(null)) {
                   log.info("[Provider] cached contains null");
-                  
+
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
@@ -130,9 +177,9 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
                   return const Center(child: Text('Data missing'));
                 }
 
-                return widget.builder(
-                    context, cachedVals.map((v) => v!).toList());
+                return widget.builder(context,
+                    cachedVals.whereNotNull().map((v) => v.value).toList());
               },
-            ));
+            )));
   }
 }

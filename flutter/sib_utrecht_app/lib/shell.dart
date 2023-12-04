@@ -407,6 +407,7 @@ class _MyAppState extends State<MyApp> {
                   Locale('en', 'GB'),
                   Locale('nl', 'NL'),
                 ],
+                debugShowCheckedModeBanner: false,
                 // locale: Preferences.of(context).locale,
                 locale: isDutch == true
                     ? const Locale('nl', 'NL')
@@ -414,6 +415,6 @@ class _MyAppState extends State<MyApp> {
                 themeMode: useDarkTheme == null
                     ? ThemeMode.system
                     : (useDarkTheme ? ThemeMode.dark : ThemeMode.light),
-                debugShowCheckedModeBanner: true)));
+                )));
   }
 }

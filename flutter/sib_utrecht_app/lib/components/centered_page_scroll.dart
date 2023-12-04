@@ -5,9 +5,15 @@ import 'package:flutter/material.dart';
 class CenteredPageScroll extends StatelessWidget {
   final List<Widget> slivers;
   final double horizontalPadding;
+  final double anchor;
+  final Key? center;
 
   const CenteredPageScroll(
-      {Key? key, required this.slivers, this.horizontalPadding = 18})
+      {Key? key,
+      required this.slivers,
+      this.horizontalPadding = 18,
+      this.anchor = 0.0,
+      this.center})
       : super(key: key);
 
   @override
@@ -16,6 +22,8 @@ class CenteredPageScroll extends StatelessWidget {
         //   child: ConstrainedBox(
         //       constraints: const BoxConstraints(maxWidth: 700),
         child: CustomScrollView(
+            anchor: anchor,
+            center: center,
             slivers: slivers
                 .map<Widget>((e) =>
                     // SliverConstrainedCrossAxis(maxExtent: 700, sliver: e)
@@ -28,8 +36,9 @@ class CenteredPageScroll extends StatelessWidget {
                     SliverLayoutBuilder(builder: (context, constraints) {
                       // contraints.ma
                       // return SliverPadding(padding: EdgeInsets.fromLTRB(left, top, right, bottom),)
-                      double padding =
-                          max((constraints.crossAxisExtent - 700) / 2, horizontalPadding);
+                      double padding = max(
+                          (constraints.crossAxisExtent - 700) / 2,
+                          horizontalPadding);
 
                       return SliverPadding(
                         padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),

@@ -9,6 +9,7 @@ Widget GroupMembersProvider(
     SingleProvider(
       query: groupName,
       builder: builder,
+      errorTitle: (loc) => loc.couldNotLoad(loc.dataMembers),
       obtainProvider: (String q) => CachedProvider(
         obtain: (c) => Groups(c).listMembers(groupName: q),
       ),

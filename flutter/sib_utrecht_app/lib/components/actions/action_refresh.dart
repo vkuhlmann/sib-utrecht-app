@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:math';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/log.dart';
 import '../../view_model/async_patch.dart';
 
 // Contains code from https://www.kindacode.com/article/flutter-spinning-animation/
@@ -42,22 +45,37 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
     curve: Curves.linear,
   );
 
-  @override
-  void didUpdateWidget(covariant ActionRefreshButtonWithState oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.snapshot.connectionState != ConnectionState.waiting) {
-      if (_controller.isAnimating) {
-        _controller.duration = const Duration(milliseconds: 300);
-        _controller.forward();
-      }
-    }
-
+  void updateAnimation() {
     if (widget.snapshot.connectionState == ConnectionState.waiting) {
       _controller.duration = const Duration(seconds: 2);
       _controller.repeat();
+      return;
     }
 
+    if (!widget.isResultNew) {
+      _controller.reset();
+      return;
+    }
+
+    if (_controller.isAnimating) {
+      // Duration prevDur = _controller.duration!;
+
+      // (1 - _controller.value) * newDurationMs = 500
+      // newDurationMs = 500 / (1 - _controller.value)
+
+      // double speedUp = max(1, ((1 - _controller.value) * 500) / prevDur.inMilliseconds);
+
+      _controller.duration = const Duration(
+          // milliseconds: (500 / max(0.1, 1 - _controller.value)).floor(),);
+          milliseconds: 1000);
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ActionRefreshButtonWithState oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    updateAnimation();
     // var fut = widget.refreshFuture;
 
     // if (fut != )
@@ -71,12 +89,12 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
 
   @override
   Widget build(BuildContext context) {
-    Widget icon = Center(child: RotationTransition(
-          turns: _animation,
-          child: const Icon(Icons.refresh, size: 24)));
+    Widget icon = Center(
+        child: RotationTransition(
+            turns: _animation, child: const Icon(Icons.refresh, size: 24)));
 
     // if (widget.snapshot.connectionState == ConnectionState.waiting) {
-    //   icon 
+    //   icon
     // }
 
     // if (widget.snapshot.hasError) {
@@ -91,61 +109,60 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
     //   ]);
     // }
     if (widget.snapshot.hasError) {
-      icon = 
-      OverflowBox(
-        maxWidth: 38,
-        maxHeight: 38,
-        child: Stack(children: [
-        icon,
-        // const Positioned(
-        //     top: 0,
-        //     right: 1,
-        //     // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
-        //     child: Icon(Icons.error, color: Colors.red, size: 14)
-        //     )
-        const Positioned(
-              bottom: 4,
-              left: 4,
-              // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
-              // child: Icon(Icons.check, color: Colors.green, size: 18)
-              // child: Icon(Icons.check_circle, color: Colors.green, size: 18)
-              child: CircleAvatar(
-                backgroundColor: Colors.red,
-                radius: 8,
-                child: Icon(Icons.close, color: Colors.white, size: 12)
-              )
-              )
-      ]));
+      log.warning(
+          "Error in ActionRefreshButtonWithState: ${widget.snapshot.error}");
+
+      icon = OverflowBox(
+          maxWidth: 38,
+          maxHeight: 38,
+          child: Stack(children: [
+            icon,
+            // const Positioned(
+            //     top: 0,
+            //     right: 1,
+            //     // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
+            //     child: Icon(Icons.error, color: Colors.red, size: 14)
+            //     )
+            const Positioned(
+                bottom: 4,
+                left: 4,
+                // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
+                // child: Icon(Icons.check, color: Colors.green, size: 18)
+                // child: Icon(Icons.check_circle, color: Colors.green, size: 18)
+                child: CircleAvatar(
+                    backgroundColor: Colors.red,
+                    radius: 8,
+                    child: Icon(Icons.close, color: Colors.white, size: 12)))
+          ]));
     }
 
-    if (widget.snapshot.connectionState == ConnectionState.done
-    && !widget.snapshot.hasError) {
+    if (widget.snapshot.connectionState == ConnectionState.done &&
+        !widget.snapshot.hasError) {
       if (widget.isResultNew) {
         icon = OverflowBox(
-        maxWidth: 38,
-        maxHeight: 38,
-        child: Stack(children: [
-          icon,
-          const Positioned(
-              bottom: 4,
-              left: 4,
-              // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
-              // child: Icon(Icons.check, color: Colors.green, size: 18)
-              // child: Icon(Icons.check_circle, color: Colors.green, size: 18)
-              child: CircleAvatar(
-                backgroundColor: Colors.green,
-                radius: 8,
-                child: Icon(Icons.check, color: Colors.white, size: 12)
-              )
-              )
-        ]));
+            maxWidth: 38,
+            maxHeight: 38,
+            child: Stack(children: [
+              icon,
+              const Positioned(
+                  bottom: 4,
+                  left: 4,
+                  // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
+                  // child: Icon(Icons.check, color: Colors.green, size: 18)
+                  // child: Icon(Icons.check_circle, color: Colors.green, size: 18)
+                  child: CircleAvatar(
+                      backgroundColor: Colors.green,
+                      radius: 8,
+                      child: Icon(Icons.check, color: Colors.white, size: 12)))
+            ]));
       }
     }
 
-    return IconButton(onPressed: () {
-      widget.triggerRefresh();
-    }, icon: SizedBox(height: 24, width: 24, child: icon));
-    
+    return IconButton(
+        onPressed: () {
+          widget.triggerRefresh();
+        },
+        icon: SizedBox(height: 24, width: 24, child: icon));
 
     // return IconButton(
     //     onPressed: () {
@@ -162,14 +179,33 @@ class _ActionRefreshButtonState extends State<ActionRefreshButton>
   @override
   Widget build(BuildContext context) {
     return FutureBuilderPatched(
-        future: widget.refreshFuture, 
-        builder: (context, snapshot) =>
-        FutureBuilderPatched(future: 
-        widget.refreshFuture?.whenComplete(() => Future.delayed(const Duration(seconds: 10))),
-        builder: (delayContext, delaySnapshot) => 
-        ActionRefreshButtonWithState(
-            snapshot: snapshot,
-            isResultNew: delaySnapshot.connectionState == ConnectionState.waiting,
-            triggerRefresh: widget.triggerRefresh)));
+        future: widget.refreshFuture,
+        builder: (context, snapshot) => FutureBuilderPatched(
+            future: widget.refreshFuture?.then((value) async {
+              // if (value.isAfter(DateTime.now().subtract(const Duration(seconds: 30)))) {
+              //   return Future.delayed(const Duration(seconds: 10));
+              // }
+
+              DateTime noveltyExpiration =
+                  value.add(const Duration(seconds: 10));
+              log.info("Novelty expiration: $noveltyExpiration");
+
+              DateTime now = DateTime.now();
+              if (noveltyExpiration.isAfter(now)) {
+                await Future.delayed(noveltyExpiration.difference(now));
+              }
+              // return Future.delayed([
+              //   Duration.zero, noveltyExpiration.difference(DateTime.now())
+              // ].max);
+            }).catchError((error, stackTrace) async {
+              await Future.delayed(const Duration(seconds: 10));
+            }),
+            // whenComplete(() => Future.delayed(const Duration(seconds: 10))),
+            builder: (delayContext, delaySnapshot) =>
+                ActionRefreshButtonWithState(
+                    snapshot: snapshot,
+                    isResultNew: delaySnapshot.connectionState ==
+                        ConnectionState.waiting,
+                    triggerRefresh: widget.triggerRefresh)));
   }
 }

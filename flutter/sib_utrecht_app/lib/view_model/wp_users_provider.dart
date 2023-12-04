@@ -89,7 +89,7 @@ class _WPUsersProviderState extends State<WPUsersProvider> {
             }
 
             var cached = content.cached;
-            log.info("[WPUsersProvider] cached.length: ${cached?.length}");
+            log.info("[WPUsersProvider] cached.length: ${cached?.value.length}");
 
             if (cached == null) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -99,7 +99,7 @@ class _WPUsersProviderState extends State<WPUsersProvider> {
               return const Center(child: Text('No data'));
             }
 
-            return widget.builder(context, cached);
+            return widget.builder(context, cached.value);
           }),
     );
   }

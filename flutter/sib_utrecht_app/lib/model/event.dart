@@ -1,4 +1,8 @@
 import 'dart:ui';
+import 'dart:core';
+
+import 'package:sib_utrecht_app/constants.dart';
+import 'package:sib_utrecht_app/log.dart';
 
 class Event {
   final Map<String, dynamic> data;
@@ -65,5 +69,69 @@ class Event {
     }
 
     return Event(data: json);
+  }
+
+  String? processThumbnailUrl(String? url) {
+    if (url == null) {
+      return null;
+    }
+
+    if (!url.startsWith("http")) {
+      url = "$wordpressUrl/$url";
+    }
+
+    if (url.startsWith("http://sib-utrecht.nl/")) {
+      url = url.replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
+    }
+
+    log.info("Processing thumbnail url: $url");
+    if (url.startsWith("https://sib-utrecht.nl/wp-content/uploads/")) {
+      RegExp exp = RegExp(r"-\d+x\d+(\.[a-zA-Z]{1,4})$");
+      url = url.replaceFirstMapped(exp, (match) => match.group(1) ?? "");
+    }
+
+    log.info("Final thumbnail url: $url");
+    return url;
+  }
+
+  (String?, Map?) extractDescriptionAndThumbnail() {
+    String description = ((data["post_content"] ??
+            data["description"] ??
+            "") as String)
+        .replaceAll("\r\n\r\n", "<br/><br/>");
+    Map? thumbnail = data["thumbnail"];
+
+    // if (thumbnail != null &&
+    //     thumbnail["url"] != null &&
+    //     !(thumbnail["url"] as String).startsWith("http")) {
+    //   thumbnail["url"] = "$wordpressUrl/${thumbnail["url"]}";
+    // }
+
+    if (thumbnail == null && description.contains("<img")) {
+      final img = RegExp("<img[^>]+src=\"(?<url>[^\"]+)\"[^>]*>")
+          .firstMatch(description);
+
+      if (img != null) {
+        thumbnail = {"url": img.namedGroup("url")};
+        // description = description.replaceAll(img.group(0)!, "");
+        description = description.replaceFirst(img.group(0)!, "");
+      }
+    }
+
+    // if (thumbnail != null &&
+    //     thumbnail["url"] != null &&
+    //     (thumbnail["url"] as String).startsWith("http://sib-utrecht.nl/")) {
+    //   thumbnail["url"] = (thumbnail["url"] as String)
+    //       .replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
+    // }
+
+    if (thumbnail != null && thumbnail["url"] != null) {
+      thumbnail["url"] = processThumbnailUrl(thumbnail["url"]);
+    }
+
+    description = description.replaceAll(
+        RegExp("^(<strong></strong>)?(\r|\n|<br */>|<br *>)*", multiLine: false), "");
+
+    return (description.isEmpty ? null : description, thumbnail);
   }
 }

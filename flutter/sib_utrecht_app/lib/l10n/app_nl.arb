@@ -79,8 +79,20 @@
     },
     "description": "Message displayed when a component is refreshing"
   },
+
+  "dataUser": "gebruiker",
+  "dataUsers": "gebruikers",
+  "dataEvent": "activiteit",
+  "dataEvents": "activiteiten",
+  "dataBooking": "boeking",
+  "dataBookings": "boekingen",
+  "dataGroup": "groep",
+  "dataGroups": "groepen",
+  "dataMembers": "leden",
+  "dataParticipants": "deelnemers",
+  "dataEntity": "gebruiker of groep",
   
-  "couldNotLoad": "Kan {componentsString} niet laden:",
+  "couldNotLoad": "Fout bij het laden van {componentsString}:",
   "@couldNotLoad": {
     "type": "text",
     "placeholders": {

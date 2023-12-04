@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/centered_page.dart';
 import 'package:sib_utrecht_app/components/people/group_card.dart';
@@ -58,7 +59,7 @@ class _GroupsPageState extends State<GroupsPage> {
     //     appBar: AppBar(title: Text("Groups")),
     //     body: GroupsPageContents.fromProvider(groupsProvider));
     var provGroups = ResourcePoolAccess.of(context).pool.groupsProvider;
-    return
+    return ActionSubscriptionAggregator(child:
     CenteredPage(child: 
      ListenableBuilder(
       listenable: provGroups,
@@ -67,7 +68,7 @@ class _GroupsPageState extends State<GroupsPage> {
       Column(children: [
         Expanded(child: GroupsPageContents.fromProvider(provGroups)),
       ]),
-    ));
+    )));
   }
 }
 

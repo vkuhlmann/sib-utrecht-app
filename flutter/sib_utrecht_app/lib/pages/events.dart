@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/pages/home.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_list.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider.dart';
 import 'package:sib_utrecht_app/view_model/event/week_chunker.dart';
+import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
 import '../globals.dart';
 
@@ -80,6 +82,64 @@ class _EventsPageState extends State<EventsPage> {
       Stack(fit: StackFit.expand, children: [
         Positioned.fill(
           child: CustomScrollView(anchor: 0.1, center: _center, slivers: [
+            // ...(events[RelativeWeek.lastWeek] ?? []).map((e) => SliverToBoxAdapter(
+            //     key: ValueKey(("lastWeek", e.eventId)),
+            //     child: EventsPage.buildItem(e))),
+            // SliverToBoxAdapter(
+            //     child: SizedBox(
+            //   height: MediaQuery.sizeOf(context).height * 0.8,
+            // )),
+            // SliverList.builder( itemCount: 30, itemBuilder: (context, i) => SliverStickyHeader(
+            //             header: Container(
+            //               height: 60.0,
+            //               color: Colors.lightBlue,
+            //               padding: EdgeInsets.symmetric(horizontal: 16.0),
+            //               alignment: Alignment.centerLeft,
+            //               child: Text(
+            //                 'Header #0',
+            //                 style: const TextStyle(color: Colors.white),
+            //               ),
+            //             ),
+            //             sliver: SliverList(
+            //               delegate: SliverChildBuilderDelegate(
+            //                 (context, i) => ListTile(
+            //                   leading: CircleAvatar(
+            //                     child: Text('0'),
+            //                   ),
+            //                   title: Text('List tile #$i'),
+            //                 ),
+            //                 childCount: 4,
+            //               ),
+            //             ),
+            //           ),),
+            // Builder(
+            //   builder: (context) => FutureBuilderPatched(
+            //       future: Future.value(null),
+            //       builder: ((context, snapshot) => SliverStickyHeader(
+            //             header: Container(
+            //               height: 60.0,
+            //               color: Colors.lightBlue,
+            //               padding: EdgeInsets.symmetric(horizontal: 16.0),
+            //               alignment: Alignment.centerLeft,
+            //               child: Text(
+            //                 'Header #0',
+            //                 style: const TextStyle(color: Colors.white),
+            //               ),
+            //             ),
+            //             sliver: SliverList(
+            //               delegate: SliverChildBuilderDelegate(
+            //                 (context, i) => ListTile(
+            //                   leading: CircleAvatar(
+            //                     child: Text('0'),
+            //                   ),
+            //                   title: Text('List tile #$i'),
+            //                 ),
+            //                 childCount: 4,
+            //               ),
+            //             ),
+            //           ))),
+            // ),
+
             SliverList.list(
               children: [
                 Center(
@@ -124,29 +184,66 @@ class _EventsPageState extends State<EventsPage> {
             SliverToBoxAdapter(
                 child: SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.2,
-            ))
+            )),
+            // Builder(
+            //   builder: (context) => FutureBuilderPatched(
+            //       future: Future.value(null),
+            //       builder: ((context, snapshot) => SliverStickyHeader(
+            //             header: Container(
+            //               height: 60.0,
+            //               color: Colors.lightBlue,
+            //               padding: EdgeInsets.symmetric(horizontal: 16.0),
+            //               alignment: Alignment.centerLeft,
+            //               child: Text(
+            //                 'Header #0',
+            //                 style: const TextStyle(color: Colors.white),
+            //               ),
+            //             ),
+            //             sliver: SliverList(
+            //               delegate: SliverChildBuilderDelegate(
+            //                 (context, i) => ListTile(
+            //                   leading: CircleAvatar(
+            //                     child: Text('0'),
+            //                   ),
+            //                   title: Text('List tile #$i'),
+            //                 ),
+            //                 childCount: 4,
+            //               ),
+            //             ),
+            //           ))),
+            // ),
+            // SliverToBoxAdapter(
+            //     child: SizedBox(
+            //   height: MediaQuery.sizeOf(context).height * 0.8,
+            // )),
           ]),
         ),
         Positioned(bottom: 10, left: 0, right: 0, child: bottomPanel)
       ]);
 
+  // https://pub.dev/packages/flutter_sticky_header
+
+// https://stackoverflow.com/questions/62184121/how-to-group-list-items-under-sticky-headers-in-flutter
+// https://github.com/Dimibe/grouped_list/blob/main/example/lib/chat_example.dart#L402
+
   @override
   Widget build(BuildContext context) {
     log.fine("Doing events page build");
 
-    return EventsCalendarProvider(builder: (context, calendar) {
-      var loading = calendar.loading;
-      return WithSIBAppBar(
-          showBackButton: false,
-          actions: [
-            ActionRefreshButton(
-              refreshFuture: loading?.then((_) => DateTime.now()),
-              triggerRefresh: () {
-                calendar.refresh();
-              },
-            )
-          ],
-          child: FutureBuilderPatched(
+    return WithSIBAppBar(
+        showBackButton: false,
+        // actions: [
+        //   ActionRefreshButton(
+        //     refreshFuture: loading?.then((_) => DateTime.now()),
+        //     triggerRefresh: () {
+        //       calendar.refresh();
+        //     },
+        //   )
+        // ],
+        child: ActionSubscriptionAggregator(
+            child: EventsCalendarProvider(builder: (context, calendar) {
+          var loading = calendar.loading;
+          return FutureBuilderPatched(
             future: calendar.loading,
             builder: (calendarLoadContext, calendarLoadSnapshot) {
               if (calendar.events.isEmpty) {
@@ -173,7 +270,7 @@ class _EventsPageState extends State<EventsPage> {
                               })
                       ]))));
             },
-          ));
-    });
+          );
+        })));
   }
 }
