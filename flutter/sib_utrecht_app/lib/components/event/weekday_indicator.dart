@@ -8,26 +8,31 @@ class WeekdayIndicator extends StatelessWidget {
 
   const WeekdayIndicator({Key? key, required this.event}) : super(key: key);
 
-  static const Color otherColor = Colors.pink;
+  // static Color otherColor = const HSLColor.fromAHSL(1.0, 291, 0.39, 0.49).toColor();
+  static const Color otherColor = Color.fromRGBO(159, 76, 174, 1); 
+  //Color.fromRGBO(156, 39, 176, 1);
 
   static final List<Color> weekdayColorsOrig = [
-    Colors.pink, // Monday
-    Colors.blue, // Tuesday
-    Colors.pink, // Wednesday
+    otherColor, // Monday
+    Colors.blue, 
+    // const Color.fromRGBO(76, 130, 174, 1),
+    // Tuesday
+    otherColor, // Wednesday
     Colors.green, // Thursday
-    Colors.pink, // Friday
-    Colors.pink, // Saturday
-    Colors.pink // Sunday
+    otherColor, // Friday
+    otherColor, // Saturday
+    otherColor // Sunday
   ];
 
   static final List<Color> weekdayColors = [
-    Colors.pink, // Monday
-    Colors.blue, // Tuesday
-    Colors.pink, // Wednesday
-    Colors.pink, // Thursday
+    otherColor, // Monday
+    // const Color.fromRGBO(76, 130, 174, 1), // Tuesday
+    Colors.blue,
+    otherColor, // Wednesday
+    otherColor, // Thursday
     Colors.green, // Friday
-    Colors.pink, // Saturday
-    Colors.pink // Sunday
+    otherColor, // Saturday
+    otherColor // Sunday
   ];
   
    //.map((e) => HSLColor.fromColor(e).withLightness(0.4).toColor()).toList();

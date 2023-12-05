@@ -37,7 +37,7 @@ class EventsProvider with ChangeNotifier {
     return EventParticipation.fromEvent(event,
         isParticipating: isMeParticipating(event.eventId) == true,
         setParticipating: (value) =>
-            setMeParticipating(event.eventId, value, feedback: feedback),
+            setMeParticipating(event, value, feedback: feedback),
         isDirty: isMeBookingDirty(event.eventId));
   }
 
@@ -52,9 +52,12 @@ class EventsProvider with ChangeNotifier {
 
   Future<void> _setMeParticipation(
       {required APIConnector? api,
-      required int eventId,
+      required Event event,
       required bool value,
       required ActionFeedback feedback}) async {
+        int eventId = event.eventId;
+        String eventName = event.eventName;
+
     if (value) {
       Map res;
       try {
@@ -65,10 +68,10 @@ class EventsProvider with ChangeNotifier {
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
 
         if (isSuccess) {
-          feedback.sendConfirm("Registered for event $eventId");
+          feedback.sendConfirm("Registered for $eventName");
         }
       } catch (e) {
-        feedback.sendError("Failed to register for event $eventId: \n$e");
+        feedback.sendError("Failed to register for $eventName: \n$e");
       }
     }
 
@@ -81,11 +84,11 @@ class EventsProvider with ChangeNotifier {
         assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
 
         if (isSuccess) {
-          feedback.sendConfirm("Cancelled registration for event $eventId");
+          feedback.sendConfirm("Cancelled registration for $eventName");
         }
       } catch (e) {
         feedback
-            .sendError("Failed to cancel registration for event $eventId: $e");
+            .sendError("Failed to cancel registration for $eventName: $e");
       }
     }
   }
@@ -151,13 +154,15 @@ class EventsProvider with ChangeNotifier {
 
   void loadEarlier() {}
 
-  void setMeParticipating(int eventId, bool value,
+  void setMeParticipating(Event event, bool value,
       {bool initiateRefresh = true, required ActionFeedback feedback}) {
+    int eventId = event.eventId;
+
     _dirtyStateSequence = _bookingsProvider.firstValidId;
     _dirtyBookState.add(eventId);
 
     var fut = Future.value(_apiConnector).then((conn) => _setMeParticipation(
-        api: conn, eventId: eventId, value: value, feedback: feedback));
+        api: conn, event: event, value: value, feedback: feedback));
     _pendingMutations.add(fut);
 
     notifyListeners();

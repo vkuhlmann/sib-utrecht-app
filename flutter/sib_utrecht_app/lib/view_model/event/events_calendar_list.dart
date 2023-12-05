@@ -7,6 +7,7 @@ import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 import 'package:sib_utrecht_app/view_model/event/event_placement.dart';
 import 'package:sib_utrecht_app/view_model/event/events_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/event_provider.dart';
 
 
 class EventsCalendarList with ChangeNotifier {
@@ -31,12 +32,14 @@ class EventsCalendarList with ChangeNotifier {
   }
 
   Iterable<AnnotatedEvent> placeEvent(Event event, ActionFeedback feedback) sync* {
-    var participation = EventParticipation.fromEvent(event,
-        isParticipating:
-            eventsProvider.isMeParticipating(event.eventId) == true,
-        setParticipating: (value) => eventsProvider
-            .setMeParticipating(event.eventId, value, feedback: feedback),
-        isDirty: eventsProvider.isMeBookingDirty(event.eventId));
+    // var participation = EventParticipation.fromEvent(event,
+    //     isParticipating:
+    //         eventsProvider.isMeParticipating(event.eventId) == true,
+    //     setParticipating: (value) => eventsProvider
+    //         .setMeParticipating(event, value, feedback: feedback),
+    //     isDirty: eventsProvider.isMeBookingDirty(event.eventId));
+
+    var participation = eventsProvider.getMeParticipation(event, feedback: feedback);
 
     if (event.end != null && event.end!.difference(event.start).inDays > 10) {
       yield AnnotatedEvent(

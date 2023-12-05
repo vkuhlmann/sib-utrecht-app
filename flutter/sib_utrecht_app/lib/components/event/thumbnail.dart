@@ -6,7 +6,6 @@ import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/router.dart';
 
-
 class EventThumbnail extends StatelessWidget {
   final AnnotatedEvent event;
 
@@ -17,50 +16,50 @@ class EventThumbnail extends StatelessWidget {
     final (_, thumbnail) = event.extractDescriptionAndThumbnail();
 
     return Card(
-        child: WillPopScope(
-            onWillPop: () async {
-              log.info("Received onWillPop");
-              Navigator.pop(context);
-              return false;
-            },
-            child: ListTile(
-                title: Text(AppLocalizations.of(context)!.eventImage),
-                subtitle: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
-                    child: Builder(builder: (context) {
-                      if (thumbnail == null) {
-                        return Text(AppLocalizations.of(context)!.eventNoImage);
-                      }
-                      try {
-                        return Align(
-                            alignment: Alignment.centerLeft,
-                            child: InkWell(
-                                onTap: () {
-                                  router.pushNamed("event_image_dialog",
-                                      pathParameters: {
-                                        "event_id": event.eventId.toString()
-                                      },
-                                      queryParameters: {
-                                        "url": thumbnail["url"]
-                                      });
-                                },
-                                child: Container(
-                                    constraints: const BoxConstraints(
-                                        maxWidth: 400, maxHeight: 500),
-                                    child: Image.network(thumbnail["url"]))));
+        // child: WillPopScope(
+        //     onWillPop: () async {
+        //       log.info("Received onWillPop");
+        //       // Navigator.pop(context);
+        //       router.pop();
+        //       return false;
+        //     },
+        child: ListTile(
+            title: Text(AppLocalizations.of(context)!.eventImage),
+            subtitle: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+                child: Builder(builder: (context) {
+                  if (thumbnail == null) {
+                    return Text(AppLocalizations.of(context)!.eventNoImage);
+                  }
+                  try {
+                    return Align(
+                        alignment: Alignment.centerLeft,
+                        child: InkWell(
+                            onTap: () {
+                              router.pushNamed("event_image_dialog",
+                                  pathParameters: {
+                                    "event_id": event.eventId.toString()
+                                  },
+                                  queryParameters: {
+                                    "url": thumbnail["url"]
+                                  });
+                            },
+                            child: Container(
+                                constraints: const BoxConstraints(
+                                    maxWidth: 400, maxHeight: 500),
+                                child: Image.network(thumbnail["url"]))));
 
-                        // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
-                      } catch (e) {
-                        try {
-                          return Text("Error: ${thumbnail["error"]}");
-                        } catch (_) {
-                          return const Text("Error");
-                        }
-                      }
-                    })))));
+                    // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
+                  } catch (e) {
+                    try {
+                      return Text("Error: ${thumbnail["error"]}");
+                    } catch (_) {
+                      return const Text("Error");
+                    }
+                  }
+                }))));
   }
 }
-
 
 class ThumbnailImageDialog extends StatelessWidget {
   const ThumbnailImageDialog({Key? key, required this.url}) : super(key: key);
@@ -78,12 +77,11 @@ class ThumbnailImageDialog extends StatelessWidget {
                   children: [
                     Container(
                         constraints: const BoxConstraints.expand(),
-                        child: GestureDetector(
-                            onTap: () => Navigator.pop(context))),
+                        child: GestureDetector(onTap: () => router.pop())),
                     Container(
                         constraints: const BoxConstraints.expand(),
                         child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
+                            onTap: () => router.pop(),
                             child: Padding(
                                 padding: const EdgeInsets.all(32),
                                 child:
