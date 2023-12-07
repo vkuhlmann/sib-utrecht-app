@@ -47,10 +47,12 @@ class EntityTile extends StatelessWidget {
           child: badges.Badge(
               badgeContent:
                   const Icon(Icons.comment, size: 16, color: Colors.white),
-              badgeStyle: const badges.BadgeStyle(
-                  padding: EdgeInsets.all(4),
+              badgeStyle: badges.BadgeStyle(
+                  padding: const EdgeInsets.all(4),
                   shape: badges.BadgeShape.circle,
-                  badgeColor: Color.fromARGB(255, 185, 84, 0),
+                  badgeColor: (Theme.of(context).brightness == Brightness.light)
+                      ? const Color.fromARGB(255, 255, 155, 74)
+                      : const Color.fromARGB(255, 185, 84, 0),
                   elevation: 0),
               position: badges.BadgePosition.bottomEnd(bottom: 0),
               child: icon));
@@ -105,9 +107,9 @@ class EntityTile extends StatelessWidget {
             child: Container(
                 color: Colors.transparent,
                 child: Column(children: [
-              Padding(padding: const EdgeInsets.all(8), child: icon),
-              // const SizedBox(height: 3,),
-              getCaption(),
-            ]))));
+                  Padding(padding: const EdgeInsets.all(8), child: icon),
+                  // const SizedBox(height: 3,),
+                  getCaption(),
+                ]))));
   }
 }

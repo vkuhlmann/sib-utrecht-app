@@ -11,7 +11,7 @@ class CenteredPageScroll extends StatelessWidget {
   const CenteredPageScroll(
       {Key? key,
       required this.slivers,
-      this.horizontalPadding = 18,
+      this.horizontalPadding = 8,
       this.anchor = 0.0,
       this.center})
       : super(key: key);
@@ -37,7 +37,7 @@ class CenteredPageScroll extends StatelessWidget {
                       // contraints.ma
                       // return SliverPadding(padding: EdgeInsets.fromLTRB(left, top, right, bottom),)
                       double padding = max(
-                          (constraints.crossAxisExtent - 700) / 2,
+                          (constraints.crossAxisExtent - 500) / 2,
                           horizontalPadding);
 
                       return SliverPadding(

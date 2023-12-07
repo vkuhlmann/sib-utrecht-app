@@ -150,6 +150,10 @@ class _ActionSubscriptionBuilderState extends State<ActionSubscriptionBuilder> {
 
   void addSubscription(ActionEmission subscription) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         subscriptions.add(subscription);
       });
@@ -158,6 +162,10 @@ class _ActionSubscriptionBuilderState extends State<ActionSubscriptionBuilder> {
 
   void removeSubscription(ActionEmission subscription) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         subscriptions.remove(subscription);
       });
@@ -215,6 +223,9 @@ class _ActionSubscriptionAggregatorState
 
   void addSubscription(ActionEmission subscription) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         subscriptions.add(subscription);
         setEmission();
@@ -224,6 +235,9 @@ class _ActionSubscriptionAggregatorState
 
   void removeSubscription(ActionEmission subscription) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         subscriptions.remove(subscription);
         setEmission();

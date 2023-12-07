@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/globals.dart';
 import 'package:sib_utrecht_app/model/entity.dart';
 
@@ -20,6 +19,14 @@ class User extends Entity {
       data["short_name_unique"] ??
       data["short_name"] ??
       entityName);
+  String? get email => data["email"] ?? data["wp_user"]?["user_email"];
+  String? get pronouns => data["pronouns"];
+
+  String? get legalFirstName => data["legal_name"]?["first_name"];
+  String? get legalLastName => data["legal_name"]?["last_name"];
+
+  String get wpId => data["wp_id"] ?? data["wordpress_user_id"];
+
   User({required this.data});
 
   static String? truncateUserName(String? n) {
@@ -36,13 +43,19 @@ class User extends Entity {
     Map vals = json;
 
     if (vals["details"] != null) {
-      for (var entry in (vals["details"] as Map).entries) {
+      Map details = vals["details"];
+      details.remove("wp_user");
+
+      for (var entry in details.entries) {
         if ((vals[entry.key] ?? entry.value) != entry.value) {
-          throw Exception("Group details mismatch");
+          log.warning("User details mismatch: ${entry.key} != ${entry.value} on key ${entry.key}");
+          log.warning("Map is $vals");
+
+          throw Exception("User details mismatch");
         }
       }
 
-      vals.addAll(vals["details"] as Map);
+      vals.addAll(details);
     }
 
     return User(data: json);

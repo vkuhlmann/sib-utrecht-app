@@ -32,13 +32,17 @@ class ConfidantsPageContents extends StatelessWidget {
   Widget build(BuildContext context) {
     return SelectionArea(
         child: CenteredPageScroll(
+          horizontalPadding: 8,
       slivers: [
         SliverPadding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-            sliver: SliverList.list(
+            padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+            sliver: 
+            SliverList.list(
                 children: confidants
                     .map((user) =>
-                        UserCard(user: user, key: ValueKey(user.entityName)))
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+                          child: UserCard(user: user, key: ValueKey(user.entityName))))
                     .toList()))
       ],
     ));

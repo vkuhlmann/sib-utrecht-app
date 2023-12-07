@@ -8,30 +8,11 @@ import 'weekday_indicator.dart';
 import 'signup_indicator.dart';
 
 class EventTile extends StatefulWidget {
-  // final DateTime date;
   final AnnotatedEvent event;
-
-  // @override
-  // final Event event;
-
-  // @override
-  // final bool isParticipating;
-  // @override
-  // final ValueSetter<bool> setParticipating;
-  // @override
-  // final bool isDirty;
-  // @override
-  // final DateTime date;
-
-  // final bool isContinuation;
 
   const EventTile(
       {Key? key,
       required this.event,
-      // required this.isParticipating,
-      // required this.setParticipating,
-      // required this.isDirty,
-      // required this.date,
     })
       : super(key: key);
 
@@ -42,64 +23,8 @@ class EventTile extends StatefulWidget {
 class _EventTileState extends State<EventTile> {
   final _timeFormat = DateFormat("HH:mm");
 
-  // Widget buildSignupInteraction() => Builder(builder: (context) {
-  //       if (widget.event.data["signup"]?["type"] == "none") {
-  //         return const SizedBox();
-  //       }
-
-  //       if (widget.event.data["signup"] == null) {
-  //         if (widget.event?.participation?.isDirty) {
-  //           return const CircularProgressIndicator();
-  //         }
-
-  //         return Checkbox(
-  //           value: widget.isParticipating,
-  //           onChanged: widget.isContinuation
-  //               ? null
-  //               : (value) {
-  //                   widget.setParticipating(value!);
-  //                 },
-  //         );
-  //       }
-
-  //       if (widget.event.data["signup"]["url"] != null) {
-  //         if (widget.isContinuation) {
-  //           return const SizedBox();
-  //         }
-
-  //         return IconButton(
-  //             onPressed: () {
-  //               launchUrl(Uri.parse(widget.event.data["signup"]["url"]))
-  //                   .catchError((e) {
-  //                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-  //                     content: Text(
-  //                         "Failed to open signup link: ${widget.event.data["signup"]["url"]}")));
-  //               });
-  //             },
-  //             icon: const Icon(Icons.open_in_browser));
-  //       }
-
-  //       return const SizedBox();
-  //     });
-
   @override
   Widget build(BuildContext context) {
-    // bool isActive = widget.event.data["tickets"] != null &&
-    //     widget.event.data["tickets"].length > 0;
-    // Color color = EventTile.weekDayColors[widget.date.weekday - 1];
-    // if (widget.isConinuation) {
-    //   color =
-    //       HSLColor.fromColor(Colors.orangeAccent).withLightness(0.4).toColor();
-    // }
-
-    // Color activeColor = HSLColor.fromColor(color).withLightness(0.7).toColor();
-
-    // if (Theme.of(context).brightness == Brightness.light) {
-    //   color = HSLColor.fromColor(color).withLightness(0.8).toColor();
-    //   activeColor =
-    //       HSLColor.fromColor(activeColor).withLightness(0.6).toColor();
-    // }
-
     var placement = widget.event.placement;
     String? dayMonth;
     if (placement != null) {
