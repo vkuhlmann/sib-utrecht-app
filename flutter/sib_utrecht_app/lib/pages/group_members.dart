@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
-import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
-import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/entity_card.dart';
 import 'package:sib_utrecht_app/components/people/entity_icon.dart';
 import 'package:sib_utrecht_app/globals.dart';
@@ -34,19 +31,11 @@ class GroupMembersPage extends StatelessWidget {
                           .map((e) => e['entity'] as String)
                           .toList(),
                       builder: (context, members) =>
-                          // Padding(
-                          //     padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                          //     child:
                           CustomScrollView(slivers: [
                             SliverAppBar(
                               automaticallyImplyLeading: false,
                               toolbarHeight: kToolbarHeight + 16,
                               title:
-                                  // Padding(
-                                  //     padding: const EdgeInsets.fromLTRB(0, 32, 0, 32),
-                                  //     child:
-                                  // Center(
-                                  //     child:
                                   LayoutBuilder(
                                       builder: (context, constraints) {
                                 bool useCentered = constraints.maxWidth > 700;
@@ -76,47 +65,13 @@ class GroupMembersPage extends StatelessWidget {
                                         ? MainAxisAlignment.center
                                         : MainAxisAlignment.start,
                                     children: [
-                                      // Container(
-                                      //     // color: Colors.black,
-                                      //     width: 72,
-                                      //     child: Row(
-                                      //         mainAxisSize:
-                                      //             MainAxisSize.min,
-                                      //         children: [
-                                      //           Transform.scale(
-                                      //               scale: 0.7,
-                                      //               child: EntityIcon(
-                                      //                   entity:
-                                      //                       group)),
-                                      //           // const SizedBox(
-                                      //           //     width: 16),
-                                      //         ])),
-                                      // Expanded(child: Container(constraints: BoxConstraints(maxWidth: 32),))
-                                      // Container(constraints: BoxConstraints(maxWidth: 32),),
-                                      // Expanded(
-                                      //     // fit:
-                                      //     // (constraints.maxWidth > 700) ?
-                                      //     // FlexFit.tight
-                                      //     // : FlexFit.loose,
-                                      //     flex:
-                                      // (constraints.maxWidth > 700) ?
-                                      //     1 : 0,
-                                      //     child: ),
                                       leading,
-                                      // Flexible(
-                                      //     child:
                                       Flexible(
                                           child: Text(group.getLocalLongName(
                                               Localizations.localeOf(
                                                   context)))),
                                       if (useCentered)
                                         Expanded(child: Container())
-                                      // const SizedBox(width: 16),
-                                      // Transform.scale(
-                                      //     scale: 0.7,
-                                      //     child: const CircleAvatar(
-                                      //       radius: 28,
-                                      //     ))
                                     ]);
                               }),
                               pinned: true,
@@ -136,13 +91,6 @@ class GroupMembersPage extends StatelessWidget {
                                                 entity: members[index],
                                                 role: membersNames[index]
                                                     ["role"] as String?)
-                                            //  ListTile(
-                                            //   leading: CircleAvatar(
-                                            //     child: Text(members[index]['entity']?[0] ?? "N/A"),
-                                            //   ),
-                                            //   title: Text(members[index]['entity'] ?? "N/A"),
-                                            // )
-
                                             );
                                       },
                                     ))),

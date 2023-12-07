@@ -78,15 +78,16 @@ class UserCard extends StatelessWidget {
       Padding(
           padding: const EdgeInsets.fromLTRB(55, 0, 0, 0),
           child: Card(
-            // color: Colors.red,
-                  child: InkWell(
-              onTap: entityName == null
-                  ? null
-                  : () {
-                      GoRouter.of(context).pushNamed("user_page",
-                          pathParameters: {"entity_name": entityName});
-                    },
-              child: 
+              clipBehavior: Clip.hardEdge,
+              // color: Colors.red,
+              child: InkWell(
+                  onTap: entityName == null
+                      ? null
+                      : () {
+                          GoRouter.of(context).pushNamed("user_page",
+                              pathParameters: {"entity_name": entityName});
+                        },
+                  child:
                       // Text("test")
                       Padding(
                           padding: const EdgeInsets.only(left: 0),
@@ -129,9 +130,19 @@ class UserCard extends StatelessWidget {
                                     []),
                                 // Text(user.emailAddress),
                               ]))))),
-      Positioned(left: 0, top: 7, child: 
-      Transform.scale(scale: 0.8, child:
-      EntityIcon(entity: user)))
+      Positioned(
+          left: 0,
+          top: 7,
+          child: Transform.scale(
+              scale: 0.8,
+              child: GestureDetector(
+                  onTap: entityName == null
+                      ? null
+                      : () {
+                          GoRouter.of(context).pushNamed("user_page",
+                              pathParameters: {"entity_name": entityName});
+                        },
+                  child: EntityIcon(entity: user))))
     ]);
   }
 }
