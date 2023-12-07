@@ -122,7 +122,7 @@ class UserCard extends StatelessWidget {
                                             Padding(
                                                 padding:
                                                     const EdgeInsets.fromLTRB(
-                                                        32, 8, 16, 8),
+                                                        0, 8, 0, 8),
                                                 child: buildContactOption(
                                                     context,
                                                     cont.key,
