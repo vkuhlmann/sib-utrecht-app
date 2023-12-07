@@ -53,6 +53,7 @@ dependencies:
   # dual_screen: ^1.0.4
   badges: ^3.1.2
   flutter_sticky_header: ^0.6.5
+  sliver_tools: ^0.2.12
 
   flutter_localizations:
     sdk: flutter
