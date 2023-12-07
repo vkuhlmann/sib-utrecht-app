@@ -20,7 +20,7 @@ import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 import 'package:sib_utrecht_app/view_model/multiplexed_provider.dart';
 import 'package:sib_utrecht_app/view_model/single_provider.dart';
 
-Widget WPUsersProvider({required Widget Function(BuildContext, List<Map>) builder}) => SingleProvider(
+Widget WPUsersProvider({required Widget Function(BuildContext, List<User>) builder}) => SingleProvider(
       query: null,
       builder: builder,
       errorTitle: (loc) => loc.couldNotLoad(loc.dataUsers),

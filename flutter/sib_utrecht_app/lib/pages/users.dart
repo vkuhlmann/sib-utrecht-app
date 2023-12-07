@@ -7,11 +7,12 @@ import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/group_card.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/model/group.dart';
+import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/view_model/groups_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/wp_users_provider.dart';
 
 class UsersPageContents extends StatelessWidget {
-  final List<Map> users;
+  final List<User> users;
 
   const UsersPageContents({Key? key, required this.users}) : super(key: key);
 
@@ -32,16 +33,19 @@ class UsersPageContents extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(10, 18, 10, 32),
             sliver: SliverList.list(
                 children: users
-                    .map((el) => Card(
+                    .map((el) {
+                      final entityName = el.entityName;
+
+                      return Card(
                             child: ListTile(
-                          title: Text(el["display_name"]),
-                          subtitle: Text(el["user_email"] ?? ""),
-                          trailing: el["entity_name"] == null
+                          title: Text(el.longName),
+                          subtitle: Text(el.data["wp_user"]?["user_email"]),
+                          trailing: entityName == null
                               ? IconButton(
                                   onPressed: () {
                                     APIAccess.of(context)
                                         .users
-                                        .getOrCreateUser(wpId: el["wp_id"])
+                                        .getOrCreateUser(wpId: el.wpId)
                                         .then((value) {
                                       GoRouter.of(context).pushNamed(
                                           "user_page",
@@ -60,11 +64,11 @@ class UsersPageContents extends StatelessWidget {
                                   onPressed: () {
                                     GoRouter.of(context).pushNamed("user_page",
                                         pathParameters: {
-                                          "entity_name": el["entity_name"]
+                                          "entity_name": entityName
                                         });
                                   },
                                   icon: const Icon(Icons.arrow_forward_ios)),
-                        )))
+                        ));})
                     .toList()))
       ],
     ));

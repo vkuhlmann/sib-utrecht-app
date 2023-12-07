@@ -24,12 +24,13 @@ class Users {
         .toList();
   }
 
-  Future<List<Map>> listWP() async {
+  Future<List<User>> listWP() async {
     var raw = await (await apiConnector).get("/wp-users");
 
     return (raw["data"]["wp-users"] as Iterable<dynamic>)
         .map((e) => (e as Map<dynamic, dynamic>)
             .map((key, value) => MapEntry(key as String, value)))
+        .map((e) => User.fromJson(e))
         // .map((e) => User.fromJson(e))
         .toList();
   }

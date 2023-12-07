@@ -69,14 +69,14 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
                       // return Text("test");
 
                       final user = users[index];
-                      final bool isMember = user["entity_name"] != null &&
-                          memberNames.contains(user["entity_name"]);
+                      final bool isMember = user.entityName != null &&
+                          memberNames.contains(user.entityName);
 
                       return Card(
                           color: isMember ? selectedColor : null,
                           child: ListTile(
-                        title: Text(user["display_name"]),
-                        subtitle: Text(user["user_email"]),
+                        title: Text(user.longName),
+                        subtitle: Text(user.email ?? ""),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
