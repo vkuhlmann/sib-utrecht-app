@@ -7,6 +7,7 @@ import 'package:sib_utrecht_app/components/people/entity_tile.dart';
 import 'package:sib_utrecht_app/components/people/user_card.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/view_model/user_provider.dart';
+import 'package:sliver_tools/sliver_tools.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 // AppBar expansion animation code based on
@@ -31,6 +32,10 @@ class UserPageContents extends StatelessWidget {
           // leading: const SizedBox(),
           automaticallyImplyLeading: false,
           toolbarHeight: _appBarMinHeight,
+          // backgroundColor: Colors.greenAccent,
+          // shadowColor: Colors.greenAccent,
+          // surfaceTintColor: Colors.greenAccent,
+          // foregroundColor: Colors.greenAccent,
           // title: Row(mainAxisSize: MainAxisSize.min, children: [
           //   EntityIcon(entity: user),
           //   const SizedBox(width: 16),
@@ -115,7 +120,14 @@ class UserPageContents extends StatelessWidget {
                     begin: Alignment.centerLeft,
                     end: Alignment.bottomCenter,
                   ).evaluate(animation),
-                  child: Transform(
+                  child: 
+                  Transform.translate(
+                    offset: Tween<Offset>(
+                      begin: const Offset(0, 0),
+                      end: const Offset(0, -20),
+                    ).evaluate(animation),
+                    child:
+                  Transform(
                       alignment: AlignmentTween(
                         begin: Alignment.centerLeft,
                         end: Alignment.topCenter,
@@ -123,7 +135,7 @@ class UserPageContents extends StatelessWidget {
                       transform: 
                           Matrix4.translation(
                             Matrix4.diagonal3(Vector3(1, 1, 1) *
-                              Tween<double>(begin: 80, end: -14)
+                              Tween<double>(begin: 80, end: 4)
                                   .evaluate(CurvedAnimation(parent:
                                             animation,
                                             curve: Curves.easeInQuart
@@ -144,7 +156,7 @@ class UserPageContents extends StatelessWidget {
                           // constraints: BoxConstraints(),
                           child: Text(user.longName,
                               style:
-                                  Theme.of(context).textTheme.headlineSmall)))),
+                                  Theme.of(context).textTheme.headlineSmall))))),
               // Align(
               //   alignment: AlignmentTween(
               //     begin: Alignment.bottomCenter,
@@ -172,20 +184,19 @@ class UserPageContents extends StatelessWidget {
                   // ),
                   ),
         ),
-        SliverToBoxAdapter(
-          child: UserCard(user: user),
-        ),
-        SliverToBoxAdapter(
-          child: Center(child: EntityTile(entity: user)),
-        ),
-        SliverToBoxAdapter(
-          child: Center(child: Text(user.entityName ?? "Missing entity name")),
-        ),
-        const SliverToBoxAdapter(
-            child: SizedBox(
-                // color: Colors.blue[100],
+        SliverCrossAxisConstrained(maxCrossAxisExtent: 700, child: 
+         SliverPadding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+         sliver: SliverToBoxAdapter(child: Column(children: [
+UserCard(user: user),
+Center(child: EntityTile(entity: user)),
+Center(child: Text(user.entityName ?? "Missing entity name")),
+const SizedBox(
+                
                 height: 1000,
-                child: Center(child: Text("Hello"))))
+                child: Center(child: Text("Hello")))
+         ]),)
+         )
+        )
         // SliverPadding(
         //     padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
         //     sliver: SliverList.list(
