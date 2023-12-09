@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/model/api/events.dart';
 import 'package:sib_utrecht_app/view_model/annotated_user.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 import 'package:sib_utrecht_app/view_model/single_provider.dart';
 
 Widget EventParticipantsProvider(
@@ -11,8 +10,7 @@ Widget EventParticipantsProvider(
     SingleProvider(
       query: eventId,
       builder: builder,
+      changeListener: (p) => Listenable.merge([p.events, p.users]),
       errorTitle: (loc) => loc.couldNotLoad(loc.dataParticipants),
-      obtainProvider: (int q) => CachedProvider(
-        obtain: (c) => Events(c).listParticipants(eventId: q),
-      ),
+      obtain: (int q, c) => Events(c).listParticipants(eventId: q),
     );

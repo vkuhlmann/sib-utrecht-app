@@ -91,6 +91,19 @@
   "dataParticipants": "participants",
   "dataEntity": "user or group",
 
+  "userDetailsSaved": "User details saved",
+  "userDetailsSaveFailed": "Failed to save user details: {errorString}",
+  "@userDetailsSaveFailed": {
+    "type": "text",
+    "placeholders": {
+      "errorString": {
+        "type": "String"
+      }
+    },
+    "description": "Error message when saving user details fails"
+  },
+
+
   "couldNotLoad": "Could not load {componentsString}:",
   "@couldNotLoad": {
     "type": "text",

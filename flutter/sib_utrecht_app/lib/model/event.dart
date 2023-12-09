@@ -5,11 +5,13 @@ import 'package:sib_utrecht_app/constants.dart';
 import 'package:sib_utrecht_app/log.dart';
 
 class Event {
-  final Map<String, dynamic> data;
+  final Map data;
   final DateTime start;
   final DateTime? end;
   final String? location;
 
+  String get id => eventId.toString();
+  
   int get eventId => data["event_id"];
   String get eventName => data["name"];
   String get eventNameNL => data["nameNL"] ?? data["name"];
@@ -43,7 +45,7 @@ class Event {
     return eventName;
   }
 
-  static Event fromJson(Map<String, dynamic> json) {
+  static Event fromJson(Map json) {
     var vals = json;
     vals["start"] = vals["start"] ?? vals["event_start"];
     vals["end"] = vals["end"] ?? vals["event_end"];
@@ -59,10 +61,7 @@ class Event {
         }
       }
 
-      vals.addAll(
-        (vals["details"] as Map).map((key, value)
-        => MapEntry(key as String, value))
-      );
+      vals.addAll(vals["details"] as Map);
     }
     if (vals["start"] == null) {
       throw Exception("Event start is null for event ${vals["event_id"]}");
@@ -134,4 +133,6 @@ class Event {
 
     return (description.isEmpty ? null : description, thumbnail);
   }
+
+  bool doesExpectParticipants() => signupType == "api";
 }

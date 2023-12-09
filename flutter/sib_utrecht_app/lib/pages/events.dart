@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
+import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/pages/home.dart';
-import 'package:sib_utrecht_app/view_model/event/events_calendar_list.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider.dart';
+import 'package:sib_utrecht_app/view_model/event/events_calendar_provider_old.dart';
 import 'package:sib_utrecht_app/view_model/event/week_chunker.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
@@ -57,9 +58,8 @@ class _EventsPageState extends State<EventsPage> {
     super.didChangeDependencies();
   }
 
-  Map<RelativeWeek, Widget> buildEvents(EventsCalendarList list) {
-    var superGroups =
-        WeekChunked(list.events, (e) => e.placement?.date).superGroups;
+  Map<RelativeWeek, Widget> buildEvents(List<AnnotatedEvent> events) {
+    var superGroups = WeekChunked(events, (e) => e.placement?.date).superGroups;
 
     return superGroups.map((k, v) => MapEntry(
         k,
@@ -241,36 +241,30 @@ class _EventsPageState extends State<EventsPage> {
         //   )
         // ],
         child: ActionSubscriptionAggregator(
-            child: EventsCalendarProvider(builder: (context, calendar) {
-          var loading = calendar.loading;
-          return FutureBuilderPatched(
-            future: calendar.loading,
-            builder: (calendarLoadContext, calendarLoadSnapshot) {
-              if (calendar.events.isEmpty) {
-                return Center(
-                    child: HomePage.buildInProgress(
-                        calendarLoadContext, calendarLoadSnapshot));
-              }
+            child: CalendarListProvider(
+          feedback: ActionFeedback(
+            sendConfirm: (m) => ActionFeedback.sendConfirmToast(context, m),
+            sendError: (m) => ActionFeedback.showErrorDialog(context, m),
+          ),
+          builder: (context, eventsRaw) {
+            var events = buildEvents(eventsRaw);
 
-              var events = buildEvents(calendar);
-
-              return buildContents(context,
-                  events: events,
-                  bottomPanel: IgnorePointer(
-                      child: Center(
-                          child: AlertsPanel(
-                              controller: alertsPanelController,
-                              loadingFutures: [
-                        if (loading != null)
-                          AlertsFutureStatus(
-                              component: "calendar",
-                              future: loading,
-                              data: {
-                                "isRefreshing": calendar.events.isNotEmpty
-                              })
-                      ]))));
-            },
-          );
-        })));
+            return buildContents(context,
+                events: events, bottomPanel: const SizedBox()
+                // IgnorePointer(
+                //     child: Center(
+                //         child: AlertsPanel(
+                //             controller: alertsPanelController,
+                //             loadingFutures: [
+                //       if (loading != null)
+                //         AlertsFutureStatus(
+                //             component: "calendar",
+                //             future: loading,
+                //             data: {
+                //               "isRefreshing": calendar.events.isNotEmpty
+                //             })
+                );
+          },
+        )));
   }
 }

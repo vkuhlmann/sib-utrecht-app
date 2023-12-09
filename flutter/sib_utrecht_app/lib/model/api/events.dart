@@ -1,4 +1,6 @@
+import 'package:sib_utrecht_app/model/api/users.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
+import 'package:sib_utrecht_app/model/api_connector_cache_monitor.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/view_model/annotated_user.dart';
@@ -8,33 +10,42 @@ class Events {
 
   Events(this.apiConnector);
 
+  Future<Event> parseEvent(Map data) async {
+    var val = Event.fromJson(data);
+    var conn = apiConnector;
+    if (conn is CacheApiConnectorMonitor) {
+      conn.collectEvent(val);
+    }
+    return val;
+  }
+
   Future<Event> getEvent(
       {required int eventId, required bool includeImage}) async {
-    var raw = await apiConnector.get(includeImage
+    var raw = await apiConnector.getSimple(includeImage
         ? "/events/$eventId?include_image=true"
         : "/events/$eventId");
 
-    return Event.fromJson((raw["data"]["event"] as Map)
-        .map<String, dynamic>((key, value) => MapEntry(key, value)));
+    return parseEvent(raw["data"]["event"] as Map);
   }
 
   Future<List<AnnotatedUser>> listParticipants({required int eventId}) async {
-    var raw = await apiConnector.get("/events/$eventId/participants");
+    var raw = await apiConnector.getSimple("/events/$eventId/participants");
 
-    return (raw["data"]["participants"] as Iterable<dynamic>).map((e) {
+    return Future.wait(
+        (raw["data"]["participants"] as Iterable<dynamic>).map((e) async {
       return AnnotatedUser(
-          user: User.fromJson(e["entity"] ??
+          user: await Users(apiConnector).fetchUser(e["entity"] ??
               {
                 "long_name": e["name"],
                 "short_name":
                     e["name_first"] ?? User.truncateUserName(e["name"])
               }),
           comment: e["comment"] as String?);
-    }).toList();
+    }));
   }
 
   Future<List<String>> listParticipantsNames({required int eventId}) async {
-    var raw = await apiConnector.get("/events/$eventId/participants");
+    var raw = await apiConnector.getSimple("/events/$eventId/participants");
 
     return (raw["data"]["participants"] as Iterable<dynamic>)
         .map((e) => e["name"] as String)
@@ -42,12 +53,9 @@ class Events {
   }
 
   Future<List<Event>> list() async {
-    var raw = await apiConnector.get("/events");
+    var raw = await apiConnector.getSimple("/events");
 
-    return (raw["data"]["events"] as Iterable<dynamic>)
-        .map((e) => (e as Map<dynamic, dynamic>)
-            .map((key, value) => MapEntry(key as String, value)))
-        .map((e) => Event.fromJson(e))
-        .toList();
+    return Future.wait(
+        (raw["data"]["events"] as Iterable<dynamic>).map((e) => parseEvent(e)));
   }
 }

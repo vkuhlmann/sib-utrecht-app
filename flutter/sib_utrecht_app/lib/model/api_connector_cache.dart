@@ -27,7 +27,8 @@ class CacheApiConnector extends APIConnector {
     throw CacheMissException("No caching available for DELETE operations");
   }
 
-  Future<FetchResult<Map>> getWithFetchResult(String url) async {
+  @override
+  Future<FetchResult<Map>> get(String url) async {
     var box = await boxFuture;
     Map? res = box.get(getKeyName(url));
     Map? response = res?["response"];
@@ -47,11 +48,6 @@ class CacheApiConnector extends APIConnector {
     return FetchResult(response, timestamp);
   }
 
-  @override
-  Future<Map> get(String url) async {
-    return (await getWithFetchResult(url)).value;
-  }
-
   String getKeyName(String url) {
     if (channelName == null) {
       return url;
@@ -60,11 +56,11 @@ class CacheApiConnector extends APIConnector {
     return "$channelName:$url";
   }
 
-  Future<void> setGetResult(String url, Map ans) async {
+  Future<void> setGetResult(String url, FetchResult<Map> ans) async {
     var box = await boxFuture;
     box.put(getKeyName(url), {
-      "response": ans,
-      "time": DateTime.now().millisecondsSinceEpoch,
+      "response": ans.value,
+      "time": ans.timestamp?.millisecondsSinceEpoch,
     });
   }
 

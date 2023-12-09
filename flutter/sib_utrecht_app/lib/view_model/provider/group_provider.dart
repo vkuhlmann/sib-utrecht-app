@@ -10,9 +10,8 @@ class GroupProvider {
       query: query,
       builder: builder,
       errorTitle: (loc) => loc.couldNotLoad(loc.dataGroups),
-      obtainProvider: (String q) => CachedProvider(
-            obtain: (c) => Groups(c).getGroup(groupName: q),
-          ));
+      changeListener: (p) => p.groups,
+      obtain: (String q, c) => Groups(c).getGroup(groupName: q));
 
   static Widget Single(
           {required String query,
@@ -21,7 +20,6 @@ class GroupProvider {
           query: query,
           builder: builder,
           errorTitle: (loc) => loc.couldNotLoad(loc.dataGroup),
-          obtainProvider: (String q) => CachedProvider(
-                obtain: (c) => Groups(c).getGroup(groupName: q),
-              ));
+          changeListener: (p) => p.groups,
+          obtain: (String q, c) => Groups(c).getGroup(groupName: q));
 }

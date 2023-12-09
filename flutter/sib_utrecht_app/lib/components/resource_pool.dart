@@ -3,47 +3,64 @@ import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
-import 'package:sib_utrecht_app/view_model/event/events_provider.dart';
-import 'package:sib_utrecht_app/view_model/groups_provider.dart';
+import 'package:sib_utrecht_app/model/booking.dart';
+import 'package:sib_utrecht_app/model/resource_pool.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
 import 'package:sib_utrecht_app/log.dart';
 
-class ResourcePool {
+class ResourcePool extends ResourcePoolBase {
   Future<CacherApiConnector>? connector;
-  EventsProvider? _eventsProvider;
-  GroupsProvider? _groupsProvider;
+  // EventsProvider? _eventsProvider;
+  // GroupsProvider? _groupsProvider;
 
-  EventsProvider get eventsProvider {
-    var val = _eventsProvider ?? EventsProvider();
-    var conn = connector;
-    if (conn != null) {
-      val.setApiConnector(conn);
-    }
-    _eventsProvider = val;
-    return val;
-  }
 
-  GroupsProvider get groupsProvider {
-    var val = _groupsProvider ?? GroupsProvider();
-    var conn = connector;
-    if (conn != null) {
-      val.setApiConnector(conn);
-    }
-    _groupsProvider = val;
-    return val;
-  }
+  // By event ID
+  Map<String, FetchResult<Booking>>? myBookings;
 
-  void setApiConnector(Future<CacherApiConnector> conn) {
-    connector = conn;
-    
-    var evProv = _eventsProvider;
-    if (evProv != null) {
-      evProv.setApiConnector(conn);
-    }
-  }
+  final ChangeNotifier myBookingsChange = ChangeNotifier();
+
+  // final CachedProvider<List<Event>> eventsProvider =
+  //   CachedProvider<List<Event>>(obtain: (c) => Events(c).list());
+
+  // final CachedProvider<Set<int>> bookingsProvider =
+  //   CachedProvider<Set<int>>(obtain: (c) => Bookings(c).getMyBookings());
 
   ResourcePool() {
     log.info("Creating ResourcePool");
   }
+
+  // Future<FetchResult<User>> getUser(FetchResult<dynamic> raw) async {
+  // }
+
+  // EventsProvider get eventsProvider {
+  //   var val = _eventsProvider ?? EventsProvider();
+  //   var conn = connector;
+  //   if (conn != null) {
+  //     val.setApiConnector(conn);
+  //   }
+  //   _eventsProvider = val;
+  //   return val;
+  // }
+
+  // GroupsProvider get groupsProvider {
+  //   var val = _groupsProvider ?? GroupsProvider();
+  //   var conn = connector;
+  //   if (conn != null) {
+  //     val.setApiConnector(conn);
+  //   }
+  //   _groupsProvider = val;
+  //   return val;
+  // }
+
+  void setApiConnector(Future<CacherApiConnector> conn) {
+    connector = conn;
+    
+    // var evProv = _eventsProvider;
+    // if (evProv != null) {
+    //   evProv.setApiConnector(conn);
+    // }
+  }
+
 }
 
 class ResourcePoolAccess extends InheritedWidget {

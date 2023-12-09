@@ -7,7 +7,7 @@ class Bookings {
   Bookings(this.apiConnector);
 
   Future<Set<int>> getMyBookings() async {
-    var raw = await apiConnector.get("/users/me/bookings");
+    var raw = await apiConnector.getSimple("/users/me/bookings");
 
     var bookings = (raw["data"]["bookings"] as Iterable<dynamic>)
         .where((v) => v["booking"]["status"] == "approved")

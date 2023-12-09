@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/event/event_tile.dart';
@@ -9,6 +10,7 @@ import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider.dart';
+import 'package:sib_utrecht_app/view_model/event/events_calendar_provider_old.dart';
 import 'package:sib_utrecht_app/view_model/event/week_chunker.dart';
 
 class HomePageContents extends StatelessWidget {
@@ -339,22 +341,17 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return WithSIBAppBar(
         actions: const [],
-        child: EventsCalendarProvider(
-            builder: (context, calendar) => FutureBuilderPatched(
-                  future: calendar.loading,
-                  builder: (calendarLoadContext, calendarLoadSnapshot) {
-                    if (calendar.events.isEmpty) {
-                      return Center(
-                          child: buildInProgress(
-                              calendarLoadContext, calendarLoadSnapshot));
-                    }
+        child: CalendarListProvider(
+          feedback: ActionFeedback(
+            sendConfirm: (m) => ActionFeedback.sendConfirmToast(context, m),
+            sendError: (m) => ActionFeedback.showErrorDialog(context, m),
+          ),
+          builder: (context, events) {
+            var superGroups =
+                WeekChunked(events, (e) => e.placement?.date).superGroups;
 
-                    var superGroups =
-                        WeekChunked(calendar.events, (e) => e.placement?.date)
-                            .superGroups;
-
-                    return HomePageContents(superGroups);
-                  },
-                )));
+            return HomePageContents(superGroups);
+          },
+        ));
   }
 }

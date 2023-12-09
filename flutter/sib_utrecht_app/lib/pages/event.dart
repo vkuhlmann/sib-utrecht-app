@@ -17,6 +17,7 @@ import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
 import 'package:sib_utrecht_app/view_model/provider/event_participants_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/event_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/participation_provider.dart';
 
 import '../globals.dart';
 import '../components/actions/alerts_panel.dart';
@@ -99,7 +100,8 @@ class EventHeader extends StatelessWidget {
                 ])
               ])
           ]))),
-      if (event.participation?.isActive == true && event.participation?.isParticipating == false)
+      if (event.participation?.isActive == true &&
+          event.participation?.isParticipating == false)
         // Card(
         //     child: ListTile(
         //         title:
@@ -216,6 +218,11 @@ class EventPageContents extends StatelessWidget {
                       EventParticipantsProvider(
                           eventId: event.eventId,
                           builder: (context, participants) {
+                            if (participants.isEmpty &&
+                                !event.doesExpectParticipants()) {
+                              return const SizedBox();
+                            }
+
                             // if ()
                             return EventParticipants(event,
                                 participants: participants);
@@ -232,7 +239,7 @@ class EventPageContents extends StatelessWidget {
 
 class _EventPageState extends State<EventPage> {
   final AlertsPanelController _alertsPanelController = AlertsPanelController();
-  late EventProviderNotifier _eventProvider;
+  // late EventProviderNotifier _eventProvider;
 
   @override
   void initState() {
@@ -247,103 +254,88 @@ class _EventPageState extends State<EventPage> {
     _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
         component: "participants", status: "done", data: {}));
 
-    _eventProvider = EventProviderNotifier(
-        eventId: widget.eventId, apiConnector: null, cachedEvent: null);
+    // _eventProvider = EventProviderNotifier(
+    //     eventId: widget.eventId, apiConnector: null, cachedEvent: null);
   }
 
   @override
   void didChangeDependencies() {
     final apiConnector = APIAccess.of(context).connector;
 
-    if (apiConnector != _eventProvider.apiConnector) {
-      log.info(
-          "Event page: API connector changed from ${_eventProvider.apiConnector} "
-          " to $apiConnector, reloading event data");
+    // if (apiConnector != _eventProvider.apiConnector) {
+    //   log.info(
+    //       "Event page: API connector changed from ${_eventProvider.apiConnector} "
+    //       " to $apiConnector, reloading event data");
 
-      var cachedEv = ResourcePoolAccess.of(context)
-          .pool
-          .eventsProvider
-          .events
-          .firstWhereOrNull((element) => element.eventId == widget.eventId);
+    //   var cachedEv = ResourcePoolAccess.of(context)
+    //       .pool
+    //       .eventsProvider
+    //       .events
+    //       .firstWhereOrNull((element) => element.eventId == widget.eventId);
 
-      _eventProvider = EventProviderNotifier(
-          eventId: widget.eventId,
-          apiConnector: apiConnector,
-          cachedEvent: cachedEv == null ? null : FetchResult(cachedEv, null));
-    }
+    //   _eventProvider = EventProviderNotifier(
+    //       eventId: widget.eventId,
+    //       apiConnector: apiConnector,
+    //       cachedEvent: cachedEv == null ? null : FetchResult(cachedEv, null));
+    // }
 
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
+    // var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
     return WithSIBAppBar(
         actions: const [],
         child: ActionSubscriptionAggregator(
             child: EventProvider.Single(
                 query: widget.eventId,
-                builder: (context, event) {
-                  // ListenableBuilder(
-                  //     listenable: Listenable.merge([_eventProvider, provEvents]),
-                  //     builder: (context, _) {
-                  log.fine(
-                      "Building event page for event id ${widget.eventId}");
+                builder: (context, event) => EventParticipationProvider.Single(
+                    query: event,
+                    builder: (context, annotatedEvent) {
+                      // ListenableBuilder(
+                      //     listenable: Listenable.merge([_eventProvider, provEvents]),
+                      //     builder: (context, _) {
+                      log.fine(
+                          "Building event page for event id ${widget.eventId}");
 
-                  // var prov = _eventProvider;
-                  // var cachedEvent = prov.event.cached;
-
-                  EventParticipation? participation;
-                  // if (event != null) {
-                  participation = provEvents.getMeParticipation(event,
-                      feedback: ActionFeedback(
-                        sendConfirm: (m) =>
-                            ActionFeedback.sendConfirmToast(context, m),
-                        sendError: (m) =>
-                            ActionFeedback.showErrorDialog(context, m),
-                      ));
-                  // }
-
-                  return
-                      // WithSIBAppBar(
-                      //     actions: [
-                      //       ActionRefreshButton(
-                      //           refreshFuture: Future.wait([
-                      //             _eventProvider.event.loading,
-                      //             if (prov.doesExpectParticipants())
-                      //               _eventProvider.participants.loading
-                      //           ]).then((_) => DateTime.now()),
-                      //           triggerRefresh: _eventProvider.refresh)
-                      //     ],
-                      //     child:
-                      Column(children: [
-                    Expanded(
-                        child: EventPageContents(
-                            event: AnnotatedEvent(
-                              event: event,
-                              participation: participation,
-                              // participants: eventProvider.participants.cached,
-                            ),
-                            eventParticipation: participation)),
-                    // AlertsPanel(
-                    //     controller: _alertsPanelController,
-                    //     loadingFutures: [
-                    //       AlertsFutureStatus(
-                    //           component: "details",
-                    //           future: _eventProvider.event.loading,
-                    //           data: {
-                    //             "isRefreshing": _eventProvider.event.cached != null
-                    //           }),
-                    //       if (prov.doesExpectParticipants())
-                    //         AlertsFutureStatus(
-                    //             component: "participants",
-                    //             future: _eventProvider.participants.loading,
-                    //             data: {
-                    //               "isRefreshing":
-                    //                   _eventProvider.participants.cached != null
-                    //             })
-                    //     ])
-                  ]);
-                })));
+                      return
+                          // WithSIBAppBar(
+                          //     actions: [
+                          //       ActionRefreshButton(
+                          //           refreshFuture: Future.wait([
+                          //             _eventProvider.event.loading,
+                          //             if (prov.doesExpectParticipants())
+                          //               _eventProvider.participants.loading
+                          //           ]).then((_) => DateTime.now()),
+                          //           triggerRefresh: _eventProvider.refresh)
+                          //     ],
+                          //     child:
+                          Column(children: [
+                        Expanded(
+                            child: EventPageContents(
+                                event: annotatedEvent,
+                                eventParticipation:
+                                    annotatedEvent.participation)),
+                        // AlertsPanel(
+                        //     controller: _alertsPanelController,
+                        //     loadingFutures: [
+                        //       AlertsFutureStatus(
+                        //           component: "details",
+                        //           future: _eventProvider.event.loading,
+                        //           data: {
+                        //             "isRefreshing": _eventProvider.event.cached != null
+                        //           }),
+                        //       if (prov.doesExpectParticipants())
+                        //         AlertsFutureStatus(
+                        //             component: "participants",
+                        //             future: _eventProvider.participants.loading,
+                        //             data: {
+                        //               "isRefreshing":
+                        //                   _eventProvider.participants.cached != null
+                        //             })
+                        //     ])
+                      ]);
+                    }))));
   }
 }

@@ -145,6 +145,8 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
 
     // var _ = loadFresh();
     var c = cached;
+    log.info("Cached timestamp is ${c?.timestamp}");
+
     if (c != null &&
         c.timestamp?.isAfter(DateTime.now().subtract(autoRefreshThreshold)) ==
             true) {

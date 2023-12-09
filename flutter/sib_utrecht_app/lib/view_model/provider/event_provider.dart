@@ -12,40 +12,19 @@ class EventProvider {
       query: query,
       builder: builder,
       errorTitle: (loc) => loc.couldNotLoad(loc.dataEvents),
-      obtainProvider: (int id) => CachedProvider(
-            obtain: (c) => Events(c).getEvent(eventId: id, includeImage: true),
-          ));
+      changeListener: (p) => p.events,
+      obtain: (int id, c) =>
+          Events(c).getEvent(eventId: id, includeImage: true));
 
   static Widget Single(
           {required int query,
           required Widget Function(BuildContext, Event) builder}) =>
       SingleProvider(
-          query: query,
-          builder: builder,
-          errorTitle: (loc) => loc.couldNotLoad(loc.dataEvent),
-          obtainProvider: (int id) => CachedProvider(
-                obtain: (c) =>
-                    Events(c).getEvent(eventId: id, includeImage: true),
-              ));
-
-
-
-  static bool doesExpectParticipants(
-    Event? event, List? participants) {
-
-    if (event != null) {
-      var signupType = event.signupType;
-
-      if (signupType == "api") {
-        return true;
-      }
-    }
-
-    if (participants != null && participants.isNotEmpty) {
-      return true;
-    }
-
-    return false;
-  }
-
+        query: query,
+        builder: builder,
+        errorTitle: (loc) => loc.couldNotLoad(loc.dataEvent),
+        changeListener: (p) => p.events,
+        obtain: (int id, c) =>
+            Events(c).getEvent(eventId: id, includeImage: true),
+      );
 }

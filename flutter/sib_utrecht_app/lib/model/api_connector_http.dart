@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sib_utrecht_app/model/api_connector.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
 
 import 'api_error.dart';
 import '../log.dart';
@@ -10,7 +11,6 @@ import '../log.dart';
 //   Contains code from https://stackoverflow.com/questions/50244416/how-to-pass-basic-auth-credentials-in-api-call-for-a-flutter-mobile-application
 //   answer by https://stackoverflow.com/users/9597706/richard-heap
 //   Modified
-
 
 class HTTPApiConnector extends APIConnector {
   late http.Client client;
@@ -94,8 +94,15 @@ class HTTPApiConnector extends APIConnector {
     return obj;
   }
 
+
+  // @override
+  // Future<FetchResult<Map>> getWithFetchResult(String url) async {
+  //   var result = await get(url);
+  //   return FetchResult(result, DateTime.now());
+  // }
+
   @override
-  Future<Map> get(String url) async {
+  Future<FetchResult<Map>> get(String url) async {
     log.info("Doing GET on $url");
 
     final Stopwatch stopwatch = Stopwatch()..start();
@@ -118,7 +125,7 @@ class HTTPApiConnector extends APIConnector {
     //   "response": ans,
     //   "time": DateTime.now().millisecondsSinceEpoch,
     // });
-    return ans;
+    return FetchResult(ans, DateTime.now());
   }
 
   @override

@@ -149,7 +149,7 @@ class LoginManager extends ChangeNotifier {
     if (fillIdentity) {
       var conn = HTTPApiConnector(
           apiAddress: apiAddress, user: user, apiSecret: apiSecret);
-      var res = await conn.get("/auth");
+      var res = await conn.getSimple("/auth");
       var identity = res["data"]?["identity"];
       profile["identity"] = identity;
       if (identity == null) {

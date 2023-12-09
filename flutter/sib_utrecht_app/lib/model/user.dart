@@ -6,6 +6,8 @@ import 'package:sib_utrecht_app/model/entity.dart';
 class User extends Entity {
   final Map data;
 
+  String? get id => entityName;
+  
   String? get entityName => data["entity_name"];
   String get shortName => (data["short_name"] ??
       data["short_name_unique"] ??

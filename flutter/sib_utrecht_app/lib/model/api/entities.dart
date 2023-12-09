@@ -9,7 +9,7 @@ class Entities {
   Entities(this.apiConnector);
 
   Future<Entity> getEntity({required String entityName}) async {
-    var raw = await apiConnector.get("/entities/@$entityName");
+    var raw = await apiConnector.getSimple("/entities/@$entityName");
 
     var a = (raw["data"]["entity"] as Map).entries.first;
     var type = a.key;

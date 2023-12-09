@@ -2,6 +2,7 @@
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cache.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
 
 class CacherApiConnector extends APIConnector {
   final APIConnector base;
@@ -16,7 +17,7 @@ class CacherApiConnector extends APIConnector {
   Future<Map> delete(url, {Map? body}) => base.delete(url, body: body);
   
   @override
-  Future<Map> get(String url) async {
+  Future<FetchResult<Map>> get(String url) async {
     var ans = await base.get(url);
     await cache.setGetResult(url, ans);
     return ans;
