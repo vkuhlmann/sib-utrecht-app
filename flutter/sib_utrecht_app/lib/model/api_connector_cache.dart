@@ -1,6 +1,6 @@
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:hive/hive.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 class CacheMissException implements Exception {
   final String message;

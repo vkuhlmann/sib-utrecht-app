@@ -5,14 +5,27 @@ import 'package:flutter/foundation.dart';
 
 import '../log.dart';
 
+@immutable
 class FetchResult<T> {
   final T value;
   final DateTime? timestamp;
+  final bool invalidated;
 
-  FetchResult(this.value, this.timestamp);
+  const FetchResult(this.value, this.timestamp, {this.invalidated = false});
 
   FetchResult<U> mapValue<U>(U Function(T) f) {
     return FetchResult(f(value), timestamp);
+  }
+
+  Future<FetchResult<U>> mapValueAsync<U>(FutureOr<U> Function(T) f) async {
+    return FetchResult(await f(value), timestamp);
+  }
+
+  // Future<FetchResult<T>> wait()
+
+  bool isObsolete({Duration expireTime = const Duration(minutes: 5)}) {
+    return invalidated ||
+        timestamp?.isBefore(DateTime.now().subtract(expireTime)) != false;
   }
 }
 
@@ -29,6 +42,7 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
   (int, FetchResult<T>)? _cached;
   late Future<FetchResult<T>> _loading;
   Object? _error;
+  bool _isDisposed = false;
 
   Object? get error => _error;
 
@@ -49,6 +63,15 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
       required this.postProcess,
       this.autoRefreshThreshold = const Duration(minutes: 5)}) {
     _silentReset();
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+
+    _silentReset();
+
+    super.dispose();
   }
 
   void _silentReset() {
@@ -95,6 +118,9 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     }).onError<Object>((error, stackTrace) {
       // log.warning("Failed to load fresh data: $error");
       // _loading = Future.error(error, stackTrace);
+      if (thisLoad != firstValidId) {
+        throw e;
+      }
       _error = error;
       notifyListeners();
       throw error;
@@ -112,7 +138,6 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     // if (a != lastValidId) {
     //   return;
     // }
-
     var curCache = _cached;
 
     if (curCache != null && a < curCache.$1) {
@@ -121,6 +146,10 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
 
     var prevCached = cached;
     _cached = (a, val);
+
+    if (_isDisposed) {
+      return;
+    }
 
     if (prevCached != cached) {
       notifyListeners();
@@ -163,11 +192,19 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     }
     _cached = null;
 
+    if (_isDisposed) {
+      return;
+    }
+
     notifyListeners();
   }
 
   void invalidate({doRefresh = true}) {
     _firstValidId++;
+    if (_isDisposed) {
+      return;
+    }
+
 
     if (doRefresh) {
       var _ = loadFresh();

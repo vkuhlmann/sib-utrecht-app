@@ -1,12 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
+import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
@@ -27,8 +29,7 @@ class MultiplexedProvider<T, U> extends StatelessWidget {
       required this.obtain,
       required this.builder,
       required this.errorTitle,
-      this.changeListener
-      })
+      this.changeListener})
       : super(key: key);
 
   @override
@@ -43,17 +44,20 @@ class MultiplexedProvider<T, U> extends StatelessWidget {
     }
 
     if (listenable != null) {
-      return ListenableBuilder(listenable: listenable, builder: (context, _) 
-        => MultiplexedProviderInt(
-          key: UniqueKey(),
-          query: query, obtain: obtain, builder: builder, errorTitle: errorTitle)
-      );
+      return ListenableBuilder(
+          listenable: listenable,
+          builder: (context, _) => MultiplexedProviderInt(
+              key: UniqueKey(),
+              query: query,
+              obtain: obtain,
+              builder: builder,
+              errorTitle: errorTitle));
     }
 
-    return MultiplexedProviderInt(query: query, obtain: obtain, builder: builder, errorTitle: errorTitle);
+    return MultiplexedProviderInt(
+        query: query, obtain: obtain, builder: builder, errorTitle: errorTitle);
   }
 }
-
 
 class MultiplexedProviderInt<T, U> extends StatefulWidget {
   final List<T> query;
@@ -65,23 +69,23 @@ class MultiplexedProviderInt<T, U> extends StatefulWidget {
   final String Function(AppLocalizations) errorTitle;
   // final Widget Function(BuildContext context, Future<U> data)? loadingBuilder;
 
-  const MultiplexedProviderInt(
-      {Key? key,
-      required this.query,
-      // this.obtainProvider,
-      required this.obtain,
-      required this.builder,
-      required this.errorTitle,
-      // this.changeListener
-      })
-      : super(key: key);
+  const MultiplexedProviderInt({
+    Key? key,
+    required this.query,
+    // this.obtainProvider,
+    required this.obtain,
+    required this.builder,
+    required this.errorTitle,
+    // this.changeListener
+  }) : super(key: key);
 
   @override
   State<MultiplexedProviderInt<T, U>> createState() =>
       _MultiplexedProviderIntState<T, U>();
 }
 
-class _MultiplexedProviderIntState<T, U> extends State<MultiplexedProviderInt<T, U>> {
+class _MultiplexedProviderIntState<T, U>
+    extends State<MultiplexedProviderInt<T, U>> {
   // Future<CacherApiConnector>? apiConnector;
   // Future<ResourcePoolBase>? pool;
 
@@ -120,7 +124,7 @@ class _MultiplexedProviderIntState<T, U> extends State<MultiplexedProviderInt<T,
     //   oldList.removeListener(initData);
     // }
     // activeListener = null;
-    
+
     // var pool = ResourcePoolAccess.maybeOf(context)?.pool;
     // var changeList = widget.changeListener;
     // if (pool != null && changeList != null) {
@@ -166,11 +170,12 @@ class _MultiplexedProviderIntState<T, U> extends State<MultiplexedProviderInt<T,
     var pool = ResourcePoolAccess.maybeOf(context)?.pool;
     var conn = APIAccess.of(context).connector;
 
-    var newData = widget.query.map((v) => 
-    CachedProvider(
-      obtain: (c) => widget.obtain(v, c),
-      pool: pool,
-    )).toList();
+    var newData = widget.query
+        .map((v) => CachedProvider(
+              obtain: (c) => widget.obtain(v, c),
+              pool: pool,
+            ))
+        .toList();
 
     for (var element in newData) {
       element.setConnector(conn);
@@ -193,19 +198,84 @@ class _MultiplexedProviderIntState<T, U> extends State<MultiplexedProviderInt<T,
     // });
   }
 
+  Widget buildError(BuildContext context, Object? error) => Center(
+      child: Container(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Card(
+                child: ListTile(
+                    title: Row(children: [
+                      const Icon(Icons.error, color: Colors.red),
+                      const SizedBox(width: 8),
+                      Expanded(
+                          child: Text(
+                              widget.errorTitle(AppLocalizations.of(context)!),
+                              maxLines: 4,
+                              overflow: TextOverflow.ellipsis))
+                    ]),
+                    subtitle: Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 8, 8, 8),
+                        child: formatError(error))),
+              ))));
+
+  static Widget buildLoginPrompt(BuildContext context) => Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(children: [
+        FilledButton(
+            onPressed: () {
+              GoRouter.of(context).go("/login?immediate=true");
+            },
+            style: (Theme.of(context).filledButtonTheme.style ??
+                    FilledButton.styleFrom())
+                .copyWith(
+                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4)))),
+            child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text("Log in",
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ))))
+      ]));
+
+  Widget buildInProgress(BuildContext context, AsyncSnapshot<void> snapshot) =>
+      Center(
+          child: FutureBuilderPatched(
+              future: APIAccess.of(context).connector,
+              builder: (context, connectorSnapshot) {
+                var data = connectorSnapshot.data;
+                if (data != null &&
+                    data.base is HTTPApiConnector &&
+                    (data.base as HTTPApiConnector).user == null) {
+                  return buildLoginPrompt(context);
+                }
+
+                if (snapshot.hasError) {
+                  return buildError(context, snapshot.error);
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(child: CircularProgressIndicator()));
+                }
+
+                return const Text('Data missing');
+              }));
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
         listenable: Listenable.merge(data),
         builder: (context, _) => ActionEmitter(
-            refreshFuture: Future.wait(data.map((e) => e.loading)).then(
-                (value) =>
-                    value
-                        .map((a) => a.timestamp)
-                        .toList()
-                        .whereNotNull()
-                        .minOrNull ??
-                    DateTime.now()),
+            refreshFuture: Future.wait(data.map((e) => e.loading)).then((value) =>
+                value
+                    .map((a) => a.timestamp)
+                    .toList()
+                    .whereNotNull()
+                    .minOrNull ??
+                DateTime.now()),
             triggerRefresh: () {
               for (var element in data) {
                 element.invalidate();
@@ -214,46 +284,17 @@ class _MultiplexedProviderIntState<T, U> extends State<MultiplexedProviderInt<T,
             child: FutureBuilderPatched(
               future: Future.wait(data.map((e) => e.loading)),
               builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(
-                      child: Container(
-                          constraints: const BoxConstraints(maxWidth: 600),
-                          child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Card(
-                                child: ListTile(
-                                    title: Row(
-                                        children: [
-                                          const Icon(Icons.error,
-                                              color: Colors.red),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                              child: Text(
-                                                  widget.errorTitle(
-                                                      AppLocalizations.of(
-                                                          context)!),
-                                                  maxLines: 4,
-                                                  overflow:
-                                                      TextOverflow.ellipsis))
-                                        ]),
-                                    subtitle: Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            32, 8, 8, 8),
-                                        child: formatError(snapshot.error))),
-                              ))));
-                }
-
                 var cachedVals = data.map((e) => e.cached).toList();
                 log.info("[Provider] cachedVals.length: ${cachedVals.length}");
 
                 if (cachedVals.contains(null)) {
                   log.info("[Provider] cached contains null");
 
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+                  return buildInProgress(context, snapshot);
+                }
 
-                  return const Center(child: Text('Data missing'));
+                if (snapshot.hasError) {
+                  return buildError(context, snapshot.error);
                 }
 
                 return widget.builder(context,

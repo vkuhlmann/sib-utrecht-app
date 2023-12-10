@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sib_utrecht_app/model/api_connector.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 import 'api_error.dart';
 import '../log.dart';

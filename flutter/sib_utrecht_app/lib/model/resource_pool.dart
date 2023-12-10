@@ -3,7 +3,7 @@ import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/model/user.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 class Resource<T> extends ChangeNotifier {
   final Map<String, FetchResult<T>> data = {};

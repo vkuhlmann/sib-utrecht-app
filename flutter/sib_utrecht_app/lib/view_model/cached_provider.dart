@@ -3,7 +3,7 @@ import 'package:sib_utrecht_app/model/api_connector_cache.dart';
 import 'package:sib_utrecht_app/model/api_connector_cache_monitor.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 class CachedProvider<T> extends CachedProviderT<T, T, CacherApiConnector> {
   final Future<T> Function(APIConnector) obtain;

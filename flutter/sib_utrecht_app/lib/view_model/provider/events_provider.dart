@@ -9,6 +9,6 @@ Widget EventsProvider(
     SingleProvider(
         query: null,
         builder: builder,
-        errorTitle: (loc) => loc.couldNotLoad(loc.dataUsers),
+        errorTitle: (loc) => loc.couldNotLoad(loc.dataEvents),
         changeListener: (p) => p.users,
         obtain: (void q, c) => Events(c).list());

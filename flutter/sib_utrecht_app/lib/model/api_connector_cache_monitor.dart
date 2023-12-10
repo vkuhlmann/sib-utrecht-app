@@ -5,12 +5,13 @@ import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/model/user.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 class CacheApiConnectorMonitor extends APIConnector {
   final APIConnector base;
   final ResourcePoolBase? pool;
 
+  bool isInvalidated = false;
   bool hasEncounteredNullTimestamp = false;
   DateTime? oldestTimestamp;
   DateTime? get freshnessTimestamp => oldestTimestamp;
@@ -21,7 +22,7 @@ class CacheApiConnectorMonitor extends APIConnector {
 
   CacheApiConnectorMonitor(this.base, {required this.pool});
 
-  void _impactTimestamp(DateTime? ts) {
+  void _impactTimestamp(DateTime? ts, bool invalidated) {
 if (ts == null) {
       hasEncounteredNullTimestamp = true;
     }
@@ -36,7 +37,7 @@ if (ts == null) {
   @override
   Future<FetchResult<Map>> get(String url) async {
     var res = await base.get(url);
-    _impactTimestamp(res.timestamp);
+    _impactTimestamp(res.timestamp, res.invalidated);
     log.info("CacheApiConnectorMonitor: timestamp for $url is ${res.timestamp}");
     return res;
   }
@@ -63,7 +64,7 @@ if (ts == null) {
       return null;
     }
 
-    _impactTimestamp(result.timestamp);
+    _impactTimestamp(result.timestamp, result.invalidated);
     return result;
   }
 

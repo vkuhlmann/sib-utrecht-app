@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 abstract class APIConnector {
   Future<Map> getSimple(String url) =>

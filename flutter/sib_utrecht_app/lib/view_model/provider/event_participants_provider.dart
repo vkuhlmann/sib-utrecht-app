@@ -12,5 +12,7 @@ Widget EventParticipantsProvider(
       builder: builder,
       changeListener: (p) => Listenable.merge([p.events, p.users]),
       errorTitle: (loc) => loc.couldNotLoad(loc.dataParticipants),
-      obtain: (int q, c) => Events(c).listParticipants(eventId: q),
+      obtain: (int q, c) => Events(c)
+          .listParticipants(eventId: q)
+          .then((v) => v.map((e) => e.user).toList()),
     );

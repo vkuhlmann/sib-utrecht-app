@@ -5,7 +5,7 @@ import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/booking.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 import 'package:sib_utrecht_app/log.dart';
 
 class ResourcePool extends ResourcePoolBase {
