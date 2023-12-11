@@ -41,12 +41,12 @@ class Users {
     return parseUser(data);
   }
 
-  Future<String?> abstractUser(dynamic data) async {
+  Future<String> abstractUser(dynamic data) async {
     if (data is String) {
       return data;
     }
     User user = await parseUser(data);
-    return user.entityName;
+    return user.id;
   }
 
   Future<FetchResult<T>> retrieve<T>(

@@ -10,7 +10,10 @@ import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/resource_pool.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/signup_indicator.dart';
+import 'package:sib_utrecht_app/model/booking.dart';
+import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/utils.dart';
+import 'package:sib_utrecht_app/view_model/annotated_user.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
@@ -18,6 +21,7 @@ import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
 import 'package:sib_utrecht_app/view_model/provider/event_participants_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/event_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/participation_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/user_provider.dart';
 
 import '../globals.dart';
 import '../components/actions/alerts_panel.dart';
@@ -217,20 +221,33 @@ class EventPageContents extends StatelessWidget {
                       const SizedBox(height: 32),
                       EventParticipantsProvider(
                           eventId: event.eventId,
-                          builder: (context, participants) {
-                            if (participants.isEmpty &&
-                                !event.doesExpectParticipants()) {
-                              return const SizedBox();
-                            }
+                          builder: (context, participants)
+                              // UserProvider.Multiplexed(
+                              //     query: bookings
+                              //         .map((e) => e.userId)
+                              //         .toList(),
+                              //     builder: (context, users)
+                                  {
+                                    if (participants.isEmpty &&
+                                        !event.doesExpectParticipants()) {
+                                      return const SizedBox();
+                                    }
 
-                            // if ()
-                            return EventParticipants(event,
-                                participants: participants);
+                                    // var participants = bookings.mapIndexed((index, element) => 
+                                    //   AnnotatedUser(
+                                    //     user: users[index],
+                                    //     comment: element.comment
+                                    //   )
+                                    // ).toList();
 
-                            // if (expectParticipants) ...[
-                            //   EventParticipants(event, eventProvider: eventProvider)
-                            // ]
-                          })
+                                    // if ()
+                                    return EventParticipants(event,
+                                        participants: participants);
+
+                                    // if (expectParticipants) ...[
+                                    //   EventParticipants(event, eventProvider: eventProvider)
+                                    // ]
+                                  })
                     ])))
           ])),
     ]));

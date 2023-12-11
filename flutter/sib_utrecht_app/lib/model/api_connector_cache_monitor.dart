@@ -17,7 +17,9 @@ class CacheApiConnectorMonitor extends APIConnector {
   DateTime? get freshnessTimestamp => oldestTimestamp;
 
   FetchResult<T> wrapResult<T>(T val) {
-    return FetchResult(val, freshnessTimestamp);
+    log.info("[Cache] monitor, wrapping result $val, "
+    "freshness: $freshnessTimestamp, invalidated: $isInvalidated");
+    return FetchResult(val, freshnessTimestamp, invalidated: isInvalidated);
   }
 
   CacheApiConnectorMonitor(this.base, {required this.pool});
@@ -28,6 +30,10 @@ if (ts == null) {
     }
     if (ts != null && oldestTimestamp?.isAfter(ts) != false) {
       oldestTimestamp = ts;
+    }
+
+    if (invalidated) {
+      isInvalidated = true;
     }
   }
 

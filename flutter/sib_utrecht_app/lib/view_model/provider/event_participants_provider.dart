@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/model/api/events.dart';
+import 'package:sib_utrecht_app/model/booking.dart';
 import 'package:sib_utrecht_app/view_model/annotated_user.dart';
 import 'package:sib_utrecht_app/view_model/single_provider.dart';
 
 Widget EventParticipantsProvider(
         {required int eventId,
-        required Widget Function(BuildContext, List<AnnotatedUser> members)
+        required Widget Function(BuildContext, List<AnnotatedUser> bookings)
             builder}) =>
     SingleProvider(
       query: eventId,
@@ -14,5 +15,5 @@ Widget EventParticipantsProvider(
       errorTitle: (loc) => loc.couldNotLoad(loc.dataParticipants),
       obtain: (int q, c) => Events(c)
           .listParticipants(eventId: q)
-          .then((v) => v.map((e) => e.user).toList()),
+          // .then((v) => v.map((e) => e.user).toList()),
     );

@@ -30,7 +30,7 @@ class Events {
     return parseEvent(raw["data"]["event"] as Map);
   }
 
-  Future<List<Booking>> listParticipants({required int eventId}) async {
+  Future<List<AnnotatedUser>> listParticipants({required int eventId}) async {
     log.info("Fetching participants for event $eventId");
     var raw = await apiConnector.getSimple("/events/$eventId/participants");
 
@@ -48,20 +48,31 @@ class Events {
 
     return Future.wait(
         (raw["data"]["participants"] as Iterable<dynamic>).map((e) async {
-      final user = AnnotatedUser(
-          user: await Users(apiConnector).readUser(e["entity"] ??
-              {
-                "long_name": e["name"],
-                "short_name":
-                    e["name_first"] ?? User.truncateUserName(e["name"])
-              }),
+      // final user = AnnotatedUser(
+      //     user: await Users(apiConnector).readUser(e["entity"] ??
+      //         {
+      //           "long_name": e["name"],
+      //           "short_name":
+      //               e["name_first"] ?? User.truncateUserName(e["name"])
+      //         }),
+      //     comment: e["comment"] as String?);
+
+      // return Booking(
+      //     eventId: eventId.toString(),
+      //     userId: user.id,
+      //     // user: user,
+      //     comment: user.comment);
+
+      return AnnotatedUser(
+          user: await Users(apiConnector).readUser(e["entity"]),
           comment: e["comment"] as String?);
 
-      return Booking(
-          eventId: eventId.toString(),
-          userId: user.id,
-          user: user,
-          comment: user.comment);
+      // final wpFallback = "wp-user-${e['id']}";
+
+      // return Booking(
+      //     eventId: eventId.toString(),
+      //     userId: await Users(apiConnector).abstractUser(e["entity"] ?? wpFallback),
+      //     comment: e["comment"] as String?);
     }));
   }
 

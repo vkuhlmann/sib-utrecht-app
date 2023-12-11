@@ -6,7 +6,7 @@ import 'package:sib_utrecht_app/model/entity.dart';
 class User extends Entity {
   final Map data;
 
-  String? get id => entityName;
+  String get id => entityName ?? "wp-user-$wpId";
   
   String? get entityName => data["entity_name"];
   String get shortName => (data["short_name"] ??
@@ -59,6 +59,7 @@ class User extends Entity {
 
       vals.addAll(details);
     }
+    vals.remove("details");
 
     return User(data: json);
   }

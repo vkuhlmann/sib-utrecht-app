@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,94 +17,96 @@ import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class MultiplexedProvider<T, U> extends StatelessWidget {
-  final List<T> query;
-  final Future<U> Function(T, APIConnector) obtain;
-  final Listenable Function(ResourcePoolBase)? changeListener;
+// class MultiplexedProvider<T, U> extends StatelessWidget {
+//   final List<T> query;
+//   final Future<U> Function(T, APIConnector) obtain;
+//   final Listenable Function(ResourcePoolBase)? changeListener;
 
-  final Widget Function(BuildContext context, List<U> data) builder;
-  final String Function(AppLocalizations) errorTitle;
+//   final Widget Function(BuildContext context, List<U> data) builder;
+//   final String Function(AppLocalizations) errorTitle;
 
-  const MultiplexedProvider(
-      {Key? key,
-      required this.query,
-      required this.obtain,
-      required this.builder,
-      required this.errorTitle,
-      this.changeListener})
-      : super(key: key);
+//   const MultiplexedProvider(
+//       {Key? key,
+//       required this.query,
+//       required this.obtain,
+//       required this.builder,
+//       required this.errorTitle,
+//       this.changeListener})
+//       : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    var pool = ResourcePoolAccess.maybeOf(context)?.pool;
+//   @override
+//   Widget build(BuildContext context) {
+//     var pool = ResourcePoolAccess.maybeOf(context)?.pool;
 
-    Listenable? listenable;
-    final changeListener = this.changeListener;
+//     Listenable? listenable;
+//     final changeListener = this.changeListener;
 
-    if (pool != null && changeListener != null) {
-      listenable = changeListener(pool);
-    }
+//     if (pool != null && changeListener != null) {
+//       listenable = changeListener(pool);
+//     }
 
-    if (listenable != null) {
-      return ListenableBuilder(
-          listenable: listenable,
-          builder: (context, _) => MultiplexedProviderInt(
-              key: UniqueKey(),
-              query: query,
-              obtain: obtain,
-              builder: builder,
-              errorTitle: errorTitle));
-    }
+//     if (listenable != null) {
+//       return ListenableBuilder(
+//           listenable: listenable,
+//           builder: (context, _) => MultiplexedProviderInt(
+//               // key: UniqueKey(),
+//               query: query,
+//               obtain: obtain,
+//               builder: builder,
+//               errorTitle: errorTitle));
+//     }
 
-    return MultiplexedProviderInt(
-        query: query, obtain: obtain, builder: builder, errorTitle: errorTitle);
-  }
-}
+//     return MultiplexedProviderInt(
+//         query: query, obtain: obtain, builder: builder, errorTitle: errorTitle);
+//   }
+// }
 
-class MultiplexedProviderInt<T, U> extends StatefulWidget {
+class MultiplexedProvider<T, U> extends StatefulWidget {
   final List<T> query;
   // final CachedProvider<U> Function(T)? obtainProvider;
-  final Future<U> Function(T, APIConnector) obtain;
+  final FutureOr<U> Function(T, APIConnector) obtain;
   // final Listenable Function(ResourcePoolBase)? changeListener;
 
   final Widget Function(BuildContext context, List<U> data) builder;
   final String Function(AppLocalizations) errorTitle;
   // final Widget Function(BuildContext context, Future<U> data)? loadingBuilder;
 
-  const MultiplexedProviderInt({
+  final Listenable Function(ResourcePoolBase)? changeListener;
+
+  const MultiplexedProvider({
     Key? key,
     required this.query,
     // this.obtainProvider,
     required this.obtain,
     required this.builder,
     required this.errorTitle,
-    // this.changeListener
+    this.changeListener
   }) : super(key: key);
 
   @override
-  State<MultiplexedProviderInt<T, U>> createState() =>
-      _MultiplexedProviderIntState<T, U>();
+  State<MultiplexedProvider<T, U>> createState() =>
+      _MultiplexedProviderState<T, U>();
 }
 
-class _MultiplexedProviderIntState<T, U>
-    extends State<MultiplexedProviderInt<T, U>> {
+class _MultiplexedProviderState<T, U>
+    extends State<MultiplexedProvider<T, U>> {
   // Future<CacherApiConnector>? apiConnector;
   // Future<ResourcePoolBase>? pool;
 
   late List<CachedProvider<U>> data;
   List<CachedProvider<U>>? loadingData;
 
-  // Listenable? activeListener;
+  Listenable? activeListener;
 
   @override
   void dispose() {
     super.dispose();
 
-    // var oldList = activeListener;
-    // if (oldList != null) {
-    //   oldList.removeListener(initData);
-    // }
-    // activeListener = null;
+    var oldList = activeListener;
+    if (oldList != null) {
+      oldList.removeListener(updateData);
+    }
+    activeListener = null;
 
     for (var element in data) {
       element.dispose();
@@ -119,19 +123,19 @@ class _MultiplexedProviderIntState<T, U>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // var oldList = activeListener;
-    // if (oldList != null) {
-    //   oldList.removeListener(initData);
-    // }
-    // activeListener = null;
+    var oldList = activeListener;
+    if (oldList != null) {
+      oldList.removeListener(updateData);
+    }
+    activeListener = null;
 
-    // var pool = ResourcePoolAccess.maybeOf(context)?.pool;
-    // var changeList = widget.changeListener;
-    // if (pool != null && changeList != null) {
-    //   var listener = changeList(pool);
-    //   listener.addListener(initData);
-    //   activeListener = listener;
-    // }
+    var pool = ResourcePoolAccess.maybeOf(context)?.pool;
+    var changeList = widget.changeListener;
+    if (pool != null && changeList != null) {
+      var listener = changeList(pool);
+      listener.addListener(updateData);
+      activeListener = listener;
+    }
 
     data = initData();
 
@@ -145,7 +149,7 @@ class _MultiplexedProviderIntState<T, U>
   }
 
   @override
-  void didUpdateWidget(MultiplexedProviderInt<T, U> oldWidget) {
+  void didUpdateWidget(MultiplexedProvider<T, U> oldWidget) {
     super.didUpdateWidget(oldWidget);
     // var conn = apiConnector;
 
@@ -162,6 +166,19 @@ class _MultiplexedProviderIntState<T, U>
     }
   }
 
+  void updateData() {
+    log.info("[Provider] updateData");
+
+    var loadingData = this.loadingData;
+    for (CachedProvider<U> element in loadingData ?? []) {
+      element.reload();
+    }
+
+    for (var element in data) {
+      element.reload();
+    }
+  }
+
   List<CachedProvider<U>> initData() {
     if (!mounted) {
       return [];
@@ -174,12 +191,13 @@ class _MultiplexedProviderIntState<T, U>
         .map((v) => CachedProvider(
               obtain: (c) => widget.obtain(v, c),
               pool: pool,
+              connector: conn,
             ))
         .toList();
 
-    for (var element in newData) {
-      element.setConnector(conn);
-    }
+    // for (var element in newData) {
+    //   element.setConnector(conn);
+    // }
 
     loadingData = newData;
     Future.wait(newData.map((e) => e.loading)).whenComplete(() {
@@ -278,7 +296,7 @@ class _MultiplexedProviderIntState<T, U>
                 DateTime.now()),
             triggerRefresh: () {
               for (var element in data) {
-                element.invalidate();
+                element.refresh();
               }
             },
             child: FutureBuilderPatched(

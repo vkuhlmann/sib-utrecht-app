@@ -63,6 +63,8 @@ class Event {
 
       vals.addAll(vals["details"] as Map);
     }
+    vals.remove("details");
+
     if (vals["start"] == null) {
       throw Exception("Event start is null for event ${vals["event_id"]}");
     }

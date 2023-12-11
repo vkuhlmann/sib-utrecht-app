@@ -41,8 +41,11 @@ class ManagementPage extends StatelessWidget {
               child: const ListTile(title: Text("Clear cache")),
               onTap: () {
                 Hive.init(null);
-                Hive.openBox("api_cache").then((box) {
-                  box.clear();
+                Future.wait([Hive.openBox("api_cache"), Hive.openBox("cache")]).then((boxes) {
+                  for (var b in boxes) {
+                    b.clear();
+                  }
+                  // box.then((b) => b.clear());
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text("Cache cleared"),
                   ));

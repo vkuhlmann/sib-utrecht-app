@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sib_utrecht_app/utils.dart';
 
 import '../log.dart';
 
@@ -14,11 +15,15 @@ class FetchResult<T> {
   const FetchResult(this.value, this.timestamp, {this.invalidated = false});
 
   FetchResult<U> mapValue<U>(U Function(T) f) {
-    return FetchResult(f(value), timestamp);
+    return FetchResult(f(value), timestamp, invalidated: invalidated);
   }
 
   Future<FetchResult<U>> mapValueAsync<U>(FutureOr<U> Function(T) f) async {
-    return FetchResult(await f(value), timestamp);
+    return FetchResult(await f(value), timestamp, invalidated: invalidated);
+  }
+
+  FetchResult<T> asInvalidated() {
+    return FetchResult(value, timestamp, invalidated: true);
   }
 
   // Future<FetchResult<T>> wait()
@@ -27,13 +32,36 @@ class FetchResult<T> {
     return invalidated ||
         timestamp?.isBefore(DateTime.now().subtract(expireTime)) != false;
   }
+
+  Map toJson(dynamic Function(T) serialize) => {
+        "value": serialize(value),
+        "timestamp": timestamp?.toIso8601String(),
+        "invalidated": invalidated
+      };
+
+  static FetchResult<T> fromJson<T>(Map json, T Function(dynamic) parse) {
+    DateTime? timestamp;
+
+    String? ts = json["timestamp"] as String?;
+    if (ts != null) {
+      timestamp = DateTime.parse(ts);
+    }
+
+    return FetchResult(parse(json["value"]), timestamp,
+        invalidated: json["invalidated"] as bool? ?? false);
+  }
+
+  @override
+  String toString() {
+    return "FetchResult($value, $timestamp, $invalidated)";
+  }
 }
 
 class CachedProviderT<T, U, V> extends ChangeNotifier {
-  Future<V>? connector;
+  FutureOr<V> connector;
 
-  final Future<U> Function(V) getFresh;
-  final Future<FetchResult<U>?> Function(Future<V?>) getCached;
+  final Future<FetchResult<U>> Function(V) getFresh;
+  final FutureOr<FetchResult<U>?> Function(FutureOr<V>) getCached;
 
   final T Function(U) postProcess;
 
@@ -61,8 +89,11 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
       {required this.getFresh,
       required this.getCached,
       required this.postProcess,
+      required this.connector,
       this.autoRefreshThreshold = const Duration(minutes: 5)}) {
     _silentReset();
+    // _loading = Future.value(reload());
+    reload();
   }
 
   @override
@@ -77,7 +108,7 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
   void _silentReset() {
     _cached = null;
     _firstValidId++;
-    _loading = Future.error(Exception("No load initiated"));
+    // _loading = Future.error(Exception("No load initiated"));
   }
 
   void reset() {
@@ -85,36 +116,39 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<FetchResult<T>?> _fetchCachedResult() {
-    return getCached(Future.value(connector)).then((value) {
-      if (value == null) {
-        return Future.value(null);
-      }
-      return value.mapValue(postProcess);
-    });
+  FutureOr<FetchResult<T>?> _fetchCachedResult() {
+    return foThen(
+        connector,
+        (c) => foThen(getCached(c), (v) {
+              if (v == null) {
+                return null;
+              }
+              log.info("[Cache] mapping value $v");
+              return v.mapValue(postProcess);
+            }));
   }
 
-  Future<T> _fetchFreshResult() {
-    return connector!
+  Future<FetchResult<T>> _fetchFreshResult() {
+    return Future.value(connector)
         .then((st) => getFresh(st))
-        .then((value) => postProcess(value));
+        .then((value) => value.mapValue(postProcess));
   }
 
-  Future<T> loadFresh() async {
-    if (connector == null) {
-      throw Exception("Cannot load fresh data: no API connector");
-    }
+  Future<FetchResult<T>> _loadFresh() async {
+    // if (connector == null) {
+    //   throw Exception("Cannot load fresh data: no API connector");
+    // }
 
     // int thisLoad = ++_lastValidId;
     int thisLoad = firstValidId;
 
     var fut = _fetchFreshResult();
-    _loading = fut.then((v) async {
+    var fut2 = fut.then((v) async {
       _error = null;
-      DateTime timestamp = DateTime.now();
+      // DateTime timestamp = DateTime.now();
 
-      setCache(thisLoad, FetchResult(v, timestamp));
-      return FetchResult(v, timestamp);
+      setCache(thisLoad, v);
+      return v;
     }).onError<Object>((error, stackTrace) {
       // log.warning("Failed to load fresh data: $error");
       // _loading = Future.error(error, stackTrace);
@@ -125,22 +159,28 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
       notifyListeners();
       throw error;
     });
+    _loading = fut2;
 
     //.then((value) => (thisLoad, value),);
     _loadTargetId = max(_loadTargetId, thisLoad);
-    notifyListeners();
 
-    var res = await fut;
-    return res;
+    // var res = await fut;
+    return await fut2;
   }
 
   void setCache(int a, FetchResult<T> val) {
+    log.info("[Cache] setCache invoked with $a, $val");
+
     // if (a != lastValidId) {
     //   return;
     // }
     var curCache = _cached;
+    var curCacheTimestamp = curCache?.$2.timestamp;
+    final isMoreRecent = curCacheTimestamp != null &&
+        (val.timestamp?.isAfter(curCacheTimestamp) == true
+        || (val.timestamp == curCacheTimestamp && val.invalidated));
 
-    if (curCache != null && a < curCache.$1) {
+    if (curCache != null && !isMoreRecent && a < curCache.$1) {
       return;
     }
 
@@ -160,30 +200,64 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     log.info("Setting connector on CachedProvider");
     connector = conn;
 
-    if (_cached == null) {
-      try {
-        var attemptCache = await _fetchCachedResult();
-        if (attemptCache != null) {
-          setCache(-1, attemptCache);
-        }
-      } catch (e) {
-        log.warning("Failed to load cached result: $e");
-        _loading = Future.error(e);
+    // if (_cached == null) {
+    //   await reloadCache();
+    // }
+
+    // // var _ = loadFresh();
+    // var c = cached;
+    // log.info("Cached timestamp is ${c?.timestamp}");
+
+    // if (c != null &&
+    //     c.timestamp?.isAfter(DateTime.now().subtract(autoRefreshThreshold)) ==
+    //         true) {
+    //   _loading = Future.value(c);
+    //   return;
+    // }
+
+    // refresh();
+
+    await reload();
+  }
+
+  FutureOr<FetchResult<T>> _doLoading({bool forceRefresh = false}) async {
+    if (forceRefresh) {
+      log.info("[Cache] Forcing refresh");
+      return _loadFresh();
+    }
+
+    try {
+      var attemptCache = await _fetchCachedResult();
+      if (attemptCache != null) {
+        setCache(-1, attemptCache);
       }
+    } catch (e) {
+      log.warning("[Cache] Failed to load cached result: $e");
+      // _loading = Future.error(e);
     }
 
-    // var _ = loadFresh();
     var c = cached;
-    log.info("Cached timestamp is ${c?.timestamp}");
+    // bool needsRefresh = c?.invalidated == true
+    //     || c?.timestamp?.isBefore(DateTime.now().subtract(autoRefreshThreshold)) != false;
+    log.info(
+        "[Cache] Cached timestamp is ${c?.timestamp} (needs refresh: ${c?.isObsolete(expireTime: autoRefreshThreshold)})");
 
-    if (c != null &&
-        c.timestamp?.isAfter(DateTime.now().subtract(autoRefreshThreshold)) ==
-            true) {
-      _loading = Future.value(c);
-      return;
+    bool needsRefresh =
+        c == null || c.isObsolete(expireTime: autoRefreshThreshold);
+    if (needsRefresh) {
+      return _loadFresh();
     }
 
-    invalidate();
+    // _loading = Future.value(c);
+    return c;
+  }
+
+  FutureOr<FetchResult<T>> reload({bool forceRefresh = false}) {
+    var l = _doLoading(forceRefresh: forceRefresh);
+    _loading = Future.value(l);
+
+    notifyListeners();
+    return l;
   }
 
   void clear() {
@@ -199,17 +273,11 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     notifyListeners();
   }
 
-  void invalidate({doRefresh = true}) {
+  Future<FetchResult<T>> refresh() {
     _firstValidId++;
     if (_isDisposed) {
-      return;
+      throw Exception("Cannot refresh: provider is disposed");
     }
-
-
-    if (doRefresh) {
-      var _ = loadFresh();
-    }
-
-    notifyListeners();
+    return Future.value(reload(forceRefresh: true));
   }
 }

@@ -49,6 +49,7 @@ class _EditUserDetailsState extends State<EditUserDetails> {
   Future<Map?>? _submission;
 
   void setToUser() {
+    origDetails = getSubmitPayload();
     _longNameController.text = widget.user.longName;
     _shortNameController.text = widget.user.shortName;
     _shortNameUniqueController.text = widget.user.shortNameUnique;
@@ -57,7 +58,7 @@ class _EditUserDetailsState extends State<EditUserDetails> {
     _legalFirstNameController.text = widget.user.legalFirstName ?? "";
     _legalLastNameController.text = widget.user.legalLastName ?? "";
 
-    origDetails = getSubmitPayload();
+    updateSubmissionDetails();
   }
 
   @override
@@ -95,7 +96,9 @@ class _EditUserDetailsState extends State<EditUserDetails> {
   void didUpdateWidget(covariant EditUserDetails oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.user != widget.user) {
+      log.info("User page: user changed");
       setToUser();
+      log.info("User page: user change complete");
     }
   }
 
@@ -104,7 +107,8 @@ class _EditUserDetailsState extends State<EditUserDetails> {
       newDetails = getSubmitPayload();
       isDirty = !const DeepCollectionEquality().equals(origDetails, newDetails);
       if (isDirty) {
-        log.info("User details are dirty:\n orig: $origDetails\n new: $newDetails");
+        log.info(
+            "User details are dirty:\n orig: $origDetails\n new: $newDetails");
       }
     });
   }
@@ -190,37 +194,38 @@ class _EditUserDetailsState extends State<EditUserDetails> {
       ]),
       // const SizedBox(height: 32),
       if (isDirty)
-        Padding(padding: const EdgeInsets.fromLTRB(0, 32, 0, 0), child: 
-        FilledButton(
-            onPressed: () {
-              final fut = submit();
-              setState(() {
-                _submission = fut;
-              });
-              fut.then((value) {
-                if (!mounted) {
-                  return;
-                }
+        Padding(
+            padding: const EdgeInsets.fromLTRB(0, 32, 0, 0),
+            child: FilledButton(
+                onPressed: () {
+                  final fut = submit();
+                  setState(() {
+                    _submission = fut;
+                  });
+                  fut.then((value) {
+                    if (!mounted) {
+                      return;
+                    }
 
-                if (value != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          AppLocalizations.of(context)!.userDetailsSaved)));
-                }
+                    if (value != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(
+                              AppLocalizations.of(context)!.userDetailsSaved)));
+                    }
 
-                pool?.users.invalidate();
-              });
-              fut.catchError((e) {
-                if (!mounted) {
-                  throw e;
-                }
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(AppLocalizations.of(context)!
-                        .userDetailsSaveFailed(e.toString()))));
-                throw e;
-              });
-            },
-            child: Text(AppLocalizations.of(context)!.save))),
+                    pool?.users.invalidateId(widget.user.id);
+                  });
+                  fut.catchError((e) {
+                    if (!mounted) {
+                      throw e;
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(AppLocalizations.of(context)!
+                            .userDetailsSaveFailed(e.toString()))));
+                    throw e;
+                  });
+                },
+                child: Text(AppLocalizations.of(context)!.save))),
       // Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       // child: Container
 
