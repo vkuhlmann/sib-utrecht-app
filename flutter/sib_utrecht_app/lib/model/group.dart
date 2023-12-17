@@ -49,4 +49,7 @@ class Group extends Entity {
   @override
   String? get profilePage => router
       .namedLocation("group", pathParameters: {"group_name": groupName});
+      
+  @override
+  Map toJson() => data;
 }

@@ -18,12 +18,26 @@ class FetchResult<T> {
     return FetchResult(f(value), timestamp, invalidated: invalidated);
   }
 
+  FetchResult<U> withValue<U>(U value) {
+    return mapValue((_) => value);
+  }
+
   Future<FetchResult<U>> mapValueAsync<U>(FutureOr<U> Function(T) f) async {
     return FetchResult(await f(value), timestamp, invalidated: invalidated);
   }
 
   FetchResult<T> asInvalidated() {
     return FetchResult(value, timestamp, invalidated: true);
+  }
+
+  static FetchResult<void> merge(FetchResult<void> one, FetchResult<void> two) {
+    DateTime? timestamp = one.timestamp;
+    if (timestamp == null || two.timestamp?.isAfter(timestamp) == true) {
+      timestamp = two.timestamp;
+    }
+
+    return FetchResult<void>(null, timestamp,
+        invalidated: one.invalidated || two.invalidated);
   }
 
   // Future<FetchResult<T>> wait()
@@ -123,7 +137,7 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
               if (v == null) {
                 return null;
               }
-              log.info("[Cache] mapping value $v");
+              // log.info("[Cache] mapping value $v");
               return v.mapValue(postProcess);
             }));
   }
@@ -169,7 +183,7 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
   }
 
   void setCache(int a, FetchResult<T> val) {
-    log.info("[Cache] setCache invoked with $a, $val");
+    // log.info("[Cache] setCache invoked with $a, $val");
 
     // if (a != lastValidId) {
     //   return;
@@ -177,8 +191,8 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     var curCache = _cached;
     var curCacheTimestamp = curCache?.$2.timestamp;
     final isMoreRecent = curCacheTimestamp != null &&
-        (val.timestamp?.isAfter(curCacheTimestamp) == true
-        || (val.timestamp == curCacheTimestamp && val.invalidated));
+        (val.timestamp?.isAfter(curCacheTimestamp) == true ||
+            (val.timestamp == curCacheTimestamp && val.invalidated));
 
     if (curCache != null && !isMoreRecent && a < curCache.$1) {
       return;

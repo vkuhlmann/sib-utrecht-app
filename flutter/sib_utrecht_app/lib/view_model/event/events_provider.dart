@@ -55,7 +55,7 @@ import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
       required Event event,
       required bool value,
       required ActionFeedback feedback}) async {
-        int eventId = event.eventId;
+        String eventId = event.id;
         String eventName = event.eventName;
 
     if (value) {

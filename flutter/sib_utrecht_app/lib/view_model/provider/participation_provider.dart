@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/model/event.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 import 'package:sib_utrecht_app/view_model/event/events_provider.dart';
@@ -36,14 +37,14 @@ class EventParticipationProvider {
       Builder(
           builder: (context) => ApiConnectorProvider(
               builder: (context, connector) => BookingsProvider(
-                  builder: (context, bookings) => builder(
+                  builder: (context, bookings, _) => builder(
                       context,
                       query
                           .map((e) => 
                           AnnotatedEvent(event: e, participation:
                           EventParticipation.fromEvent(
                                 e,
-                                isParticipating: bookings.contains(e.eventId),
+                                isParticipating: bookings.contains(e.id),
                                 setParticipating: (value) => setMeParticipation(
                                     api: connector,
                                     event: e,

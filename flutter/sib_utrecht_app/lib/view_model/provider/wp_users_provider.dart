@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 // import 'package:sib_utrecht_app/model/events.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/model/api/users.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 // import '../constants.dart';
 
 import 'package:sib_utrecht_app/view_model/single_provider.dart';
 
 Widget WPUsersProvider(
-        {required Widget Function(BuildContext, List<User>) builder}) =>
+        {required Widget Function(BuildContext, List<User>, FetchResult<void>) builder}) =>
     SingleProvider(
         query: null,
         builder: builder,

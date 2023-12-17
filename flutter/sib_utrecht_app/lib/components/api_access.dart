@@ -10,7 +10,7 @@ class APIAccess extends InheritedWidget {
   final Future<LoginState> state;
   final Future<CacherApiConnector> connector;
 
-  Users get users => Users(connector);
+  // Users get users => Users(connector);
 
   static APIAccess? maybeOf(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<APIAccess>();

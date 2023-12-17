@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
 
 import '../utils.dart';
 import '../globals.dart';
@@ -77,8 +78,7 @@ class _EventEditPageState extends State<EventEditPage> {
                 });
                 return value;
               }).then((response) => Event.fromJson(
-                      (response["data"]["event"] as Map).map<String, dynamic>(
-                          (key, value) => MapEntry(key, value)))));
+                      (response["data"]["event"] as Map), DirectUnpacker())));
 
           originalEvent = evFuture.then(
             (Event value) {
@@ -88,8 +88,8 @@ class _EventEditPageState extends State<EventEditPage> {
                 _nameController.text = value.eventName;
                 _nameNLController.text = value.data["nameNL"] ?? "";
                 _locationController.text = value.location ?? "";
-                _startController.text = _dateFormat.format(
-                    value.start.toLocal());
+                _startController.text =
+                    _dateFormat.format(value.start.toLocal());
                 _endController.text = "";
                 if (endDate != null) {
                   _endController.text = _dateFormat.format(endDate.toLocal());
@@ -163,9 +163,9 @@ class _EventEditPageState extends State<EventEditPage> {
       return null;
     }
     DateTime date;
-    try{
+    try {
       date = _dateFormat.parse(input);
-    }catch(e){
+    } catch (e) {
       throw Exception("Invalid date format, expected yyyy-MM-dd HH:mm:ss.");
     }
     return _apiDateFormat.format(date.toUtc());
@@ -209,22 +209,22 @@ class _EventEditPageState extends State<EventEditPage> {
 
     data.remove("details");
 
-    return Event.fromJson(data);
+    return Event.fromJson(data, DirectUnpacker());
   }
 
   Widget buildEventForm() => Builder(
       builder: (context) => Column(children: [
             // Card(
-            //     child: 
-                ListTile(
-                    title: TextField(
+            //     child:
+            ListTile(
+                title: TextField(
               controller: _nameController,
               onChanged: onFieldChanged,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(), labelText: 'Event name'),
             )),
             ListTile(
-                    title: TextField(
+                title: TextField(
               controller: _nameNLController,
               onChanged: onFieldChanged,
               decoration: const InputDecoration(
@@ -232,7 +232,7 @@ class _EventEditPageState extends State<EventEditPage> {
             )),
             const SizedBox(height: 16),
             ListTile(
-                    title: TextField(
+                title: TextField(
               controller: _locationController,
               onChanged: onFieldChanged,
               decoration: const InputDecoration(
@@ -260,17 +260,16 @@ class _EventEditPageState extends State<EventEditPage> {
             ),
             const SizedBox(height: 32),
             ListTile(
-                    // title: Text(AppLocalizations.of(context)!.eventDescription),
-                    subtitle: TextField(
-                        controller: _descriptionController,
-                        onChanged: onFieldChanged,
-                        decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Description'),
-                        maxLines: null)),
-             const SizedBox(height: 32),
-             ListTile(
-                    title: TextField(
+                // title: Text(AppLocalizations.of(context)!.eventDescription),
+                subtitle: TextField(
+                    controller: _descriptionController,
+                    onChanged: onFieldChanged,
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(), labelText: 'Description'),
+                    maxLines: null)),
+            const SizedBox(height: 32),
+            ListTile(
+                title: TextField(
               controller: _signupLinkController,
               onChanged: onFieldChanged,
               decoration: const InputDecoration(
@@ -278,71 +277,74 @@ class _EventEditPageState extends State<EventEditPage> {
                   labelText: 'Sign-up link (optional)'),
             )),
 
-
             if (!acceptBeta || eventId == null)
               ListTile(
-                      leading: Checkbox(
-                          value: acceptBeta,
-                          onChanged: (val) {
-                            setState(() {
-                              acceptBeta = val ?? false;
-                            });
-                          }),
-                      title: const Text(
-                          "I understand this event will only show in the app, not on the website.")),
+                  leading: Checkbox(
+                      value: acceptBeta,
+                      onChanged: (val) {
+                        setState(() {
+                          acceptBeta = val ?? false;
+                        });
+                      }),
+                  title: const Text(
+                      "I understand this event will only show in the app, not on the website.")),
 
             const SizedBox(
               height: 32,
             ),
 
             if (eventId != null)
-            ElevatedButton(
-                onPressed: () {
-                  // showDialog(
-                  //     context: context,
-                  //     builder: (BuildContext ctx) {
-                  //       return AlertDialog(
-                  //         title: const Text('Event deletion'),
-                  //         content: const Text(
-                  //             'Are you sure you want to delete the event?'),
-                  //         actions: [
-                  //           // The "Yes" button
-                  //           TextButton(
-                  //               onPressed: () {
-                  //                 // // Remove the box
-                  //                 // setState(() {
-                  //                 //   _isShown = false;
-                  //                 // });
+              ElevatedButton(
+                  onPressed: () {
+                    // showDialog(
+                    //     context: context,
+                    //     builder: (BuildContext ctx) {
+                    //       return AlertDialog(
+                    //         title: const Text('Event deletion'),
+                    //         content: const Text(
+                    //             'Are you sure you want to delete the event?'),
+                    //         actions: [
+                    //           // The "Yes" button
+                    //           TextButton(
+                    //               onPressed: () {
+                    //                 // // Remove the box
+                    //                 // setState(() {
+                    //                 //   _isShown = false;
+                    //                 // });
 
-                  //                 // Close the dialog
-                  //                 Navigator.of(context).pop();
-                  //               },
-                  //               child: const Text('Delete')),
-                  //           TextButton(
-                  //               onPressed: () {
-                  //                 // Close the dialog
-                  //                 Navigator.of(context).pop();
-                  //               },
-                  //               child: const Text('Cancel'))
-                  //         ],
-                  //       );
-                  //     });
+                    //                 // Close the dialog
+                    //                 Navigator.of(context).pop();
+                    //               },
+                    //               child: const Text('Delete')),
+                    //           TextButton(
+                    //               onPressed: () {
+                    //                 // Close the dialog
+                    //                 Navigator.of(context).pop();
+                    //               },
+                    //               child: const Text('Cancel'))
+                    //         ],
+                    //       );
+                    //     });
 
-                  router.pushNamed("event_delete_confirm", pathParameters: {"event_id": eventId.toString()})
-                  .then((ans) {
-                    if (ans != "delete_confirmed") {
-                      return;
-                    }
-                    setState(() {
-                      var a = deleteEvent();
-                      _deletion = a;
-                      a.then((v) => Future.delayed(const Duration(seconds: 2))).then((value) {
-                        router.go("/");
+                    router.pushNamed("event_delete_confirm", pathParameters: {
+                      "event_id": eventId.toString()
+                    }).then((ans) {
+                      if (ans != "delete_confirmed") {
+                        return;
+                      }
+                      setState(() {
+                        var a = deleteEvent();
+                        _deletion = a;
+                        a
+                            .then((v) =>
+                                Future.delayed(const Duration(seconds: 2)))
+                            .then((value) {
+                          router.go("/");
+                        });
                       });
                     });
-                  });
-                },
-                child: Text(AppLocalizations.of(context)!.delete)),
+                  },
+                  child: Text(AppLocalizations.of(context)!.delete)),
             const SizedBox(
               height: 16,
             ),
@@ -380,100 +382,96 @@ class _EventEditPageState extends State<EventEditPage> {
     var subm = _submission;
     var deleteAction = _deletion;
 
-    return
-      WithSIBAppBar(actions: const [], child: 
-     Column(children: [
-      Expanded(
-          child: SelectionArea(
-              child: CustomScrollView(slivers: [
-        SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            sliver: SliverList(
-                delegate: SliverChildListDelegate([
-              const SizedBox(height: 20),
+    return WithSIBAppBar(
+        actions: const [],
+        child: Column(children: [
+          Expanded(
+              child: SelectionArea(
+                  child: CustomScrollView(slivers: [
+            SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                  const SizedBox(height: 20),
+                  FutureBuilderPatched(
+                      future: originalEvent,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Padding(
+                              padding: const EdgeInsets.all(32),
+                              child:
+                                  Center(child: formatError(snapshot.error)));
+                        }
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Padding(
+                              padding: EdgeInsets.all(32),
+                              child:
+                                  Center(child: CircularProgressIndicator()));
+                        }
 
-              FutureBuilderPatched(
-                  future: originalEvent,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Padding(
-                          padding: const EdgeInsets.all(32),
-                          child: Center(child: formatError(snapshot.error)));
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(child: CircularProgressIndicator()));
-                    }
+                        // final Event? event = snapshot.data;
+                        // if (event == null) {
+                        //   return const SizedBox();
+                        // }
 
-                    // final Event? event = snapshot.data;
-                    // if (event == null) {
-                    //   return const SizedBox();
-                    // }
+                        // return Card(
+                        //     child: ListTile(
+                        //         title: Text(event.eventName),
+                        //         subtitle: Text(event.location ?? "")));
 
-                    // return Card(
-                    //     child: ListTile(
-                    //         title: Text(event.eventName),
-                    //         subtitle: Text(event.location ?? "")));
+                        // ...(() {
+                        // final Event? event = _eventProvider.cached;
+                        // var eventEnd = event.end;
+                        // var location = event.location;
 
-                    // ...(() {
-                    // final Event? event = _eventProvider.cached;
-                    // var eventEnd = event.end;
-                    // var location = event.location;
+                        return buildEventForm();
+                      }),
+                  FutureBuilderPatched(
+                    future: _submission,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Center(child: formatError(snapshot.error)));
+                      }
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Center(child: CircularProgressIndicator()));
+                      }
 
-                    return buildEventForm();
-                  }),
-              FutureBuilderPatched(
-                future: _submission,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Center(child: formatError(snapshot.error)));
-                  }
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator()));
-                  }
+                      var data = snapshot.data;
+                      if (data == null) {
+                        if (snapshot.connectionState == ConnectionState.none) {
+                          return const SizedBox();
+                        }
+                        return const Text("No response");
+                      }
 
-                  var data = snapshot.data;
-                  if (data == null) {
-                    if (snapshot.connectionState == ConnectionState.none) {
-                      return const SizedBox();
-                    }
-                    return const Text("No response");
-                  }
-
-                  return Text(const JsonEncoder.withIndent("  ").convert(data));
-                },
-              )
-            ]))),
-      ]))),
-      AlertsPanel(
-        controller: _alertsPanelController,
-        loadingFutures: [
-        if (subm != null)
-          AlertsFutureStatus(
-            component: "submission",
-            future: subm,
-            data: {
-              "err_msg": (msg) => const Text("Could not submit changes:"),
-              "loading_msg": (msg) => const Text("Submitting changes..."),
-              "done_msg": (msg) => const Text("Submitted changes"),
-            }
-          ),
-        if (deleteAction != null)
-          AlertsFutureStatus(
-            component: "deletion",
-            future: deleteAction,
-            data: {
-              "err_msg": (msg) => const Text("Could not delete event:"),
-              "loading_msg": (msg) => const Text("Deleting event..."),
-              "done_msg": (msg) => const Text("Deleted event"),
-            }
-          )
-      ])
-    ]));
+                      return Text(
+                          const JsonEncoder.withIndent("  ").convert(data));
+                    },
+                  )
+                ]))),
+          ]))),
+          AlertsPanel(controller: _alertsPanelController, loadingFutures: [
+            if (subm != null)
+              AlertsFutureStatus(component: "submission", future: subm, data: {
+                "err_msg": (msg) => const Text("Could not submit changes:"),
+                "loading_msg": (msg) => const Text("Submitting changes..."),
+                "done_msg": (msg) => const Text("Submitted changes"),
+              }),
+            if (deleteAction != null)
+              AlertsFutureStatus(
+                  component: "deletion",
+                  future: deleteAction,
+                  data: {
+                    "err_msg": (msg) => const Text("Could not delete event:"),
+                    "loading_msg": (msg) => const Text("Deleting event..."),
+                    "done_msg": (msg) => const Text("Deleted event"),
+                  })
+          ])
+        ]));
   }
 }

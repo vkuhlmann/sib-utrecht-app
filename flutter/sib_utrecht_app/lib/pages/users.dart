@@ -5,7 +5,8 @@ import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/people/group_card.dart';
-import 'package:sib_utrecht_app/components/resource_pool.dart';
+import 'package:sib_utrecht_app/components/resource_pool_access.dart';
+import 'package:sib_utrecht_app/model/api/users.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/view_model/groups_provider.dart';
@@ -26,50 +27,49 @@ class UsersPageContents extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+
     return SelectionArea(
         child: CenteredPageScroll(
       slivers: [
         SliverPadding(
             padding: const EdgeInsets.fromLTRB(10, 18, 10, 32),
             sliver: SliverList.list(
-                children: users
-                    .map((el) {
-                      final entityName = el.entityName;
+                children: users.map((el) {
+              final entityName = el.entityName;
 
-                      return Card(
-                            child: ListTile(
-                          title: Text(el.longName),
-                          subtitle: Text(el.data["wp_user"]?["user_email"]),
-                          trailing: entityName == null
-                              ? IconButton(
-                                  onPressed: () {
-                                    APIAccess.of(context)
-                                        .users
-                                        .getOrCreateUser(wpId: el.wpId)
-                                        .then((value) {
-                                      GoRouter.of(context).pushNamed(
-                                          "user_page",
-                                          pathParameters: {
-                                            "entity_name": value
-                                          });
-                                      
-                                    }).onError((error, stackTrace) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                              content: Text("Error: $error")));
-                                    });
-                                  },
-                                  icon: const Icon(Icons.add))
-                              : IconButton(
-                                  onPressed: () {
-                                    GoRouter.of(context).pushNamed("user_page",
-                                        pathParameters: {
-                                          "entity_name": entityName
-                                        });
-                                  },
-                                  icon: const Icon(Icons.arrow_forward_ios)),
-                        ));})
-                    .toList()))
+              return Card(
+                  child: ListTile(
+                title: Text(el.longName),
+                subtitle: Text(el.data["wp_user"]?["user_email"]),
+                trailing: entityName == null
+                    ? IconButton(
+                        onPressed: () async {
+                          final conn = await APIAccess.of(context).connector;
+
+                          late String value;
+                          try {
+                            value = await Users(conn)
+                                .getOrCreateUser(wpId: el.wpId);
+                          } catch (error) {
+                            messenger.showSnackBar(
+                                SnackBar(content: Text("Error: $error")));
+                            return;
+                          }
+
+                          router.pushNamed("user_page",
+                              pathParameters: {"entity_name": value});
+                        },
+                        icon: const Icon(Icons.add))
+                    : IconButton(
+                        onPressed: () {
+                          GoRouter.of(context).pushNamed("user_page",
+                              pathParameters: {"entity_name": entityName});
+                        },
+                        icon: const Icon(Icons.arrow_forward_ios)),
+              ));
+            }).toList()))
       ],
     ));
   }
@@ -108,7 +108,7 @@ class _UsersPageState extends State<UsersPage> {
 
     return ActionSubscriptionAggregator(
         child: WPUsersProvider(
-            builder: (context, provUsers) =>
+            builder: (context, provUsers, _) =>
                 // WithSIBAppBar(actions: const [], child:
                 Column(children: [
                   Expanded(child: UsersPageContents(users: provUsers)),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/model/api/groups.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 import 'package:sib_utrecht_app/view_model/multiplexed_provider.dart';
 import 'package:sib_utrecht_app/view_model/single_provider.dart';
 
@@ -15,7 +16,7 @@ class GroupProvider {
 
   static Widget Single(
           {required String query,
-          required Widget Function(BuildContext, Group) builder}) =>
+          required Widget Function(BuildContext, Group, FetchResult<void>) builder}) =>
       SingleProvider(
           query: query,
           builder: builder,

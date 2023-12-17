@@ -3,73 +3,22 @@ import 'dart:core';
 
 import 'package:sib_utrecht_app/constants.dart';
 import 'package:sib_utrecht_app/log.dart';
+import 'package:sib_utrecht_app/model/cacheable_resource.dart';
+import 'package:sib_utrecht_app/model/unpacker/anchored_unpacker.dart';
 
-class Event {
+class EventBody implements CacheableResource {
+  @override
+  final String id;
+
   final Map data;
-  final DateTime start;
-  final DateTime? end;
-  final String? location;
+  // final String? description;
 
-  String get id => eventId.toString();
-  
-  int get eventId => data["event_id"];
-  String get eventName => data["name"];
-  String get eventNameNL => data["nameNL"] ?? data["name"];
-  String get eventSlug => data["slug"];
+  EventBody({required this.id, required this.data});
 
-  String get signupType {
-    var signupType = data["signup"]?["type"];
-    if (signupType == null && data["signup"]?["url"] != null) {
-      signupType = "url";
-    }
-
-    if (data["event_rsvp"] == 0) {
-      signupType = "none";
-    }
-
-    signupType = signupType ?? "api";
-
-    return signupType;
-  }
-  
-  Event({required this.data})
-  : start = DateTime.parse('${data["start"]}Z').toLocal(),
-    end = data["end"] != null ? DateTime.parse('${data["end"]}Z').toLocal() : null,
-    location = data["location"];
-
-  String getLocalEventName(Locale loc) {
-    if (loc.languageCode == "nl") {
-      return eventNameNL;
-    }
-
-    return eventName;
-  }
-
-  static Event fromJson(Map json) {
-    var vals = json;
-    vals["start"] = vals["start"] ?? vals["event_start"];
-    vals["end"] = vals["end"] ?? vals["event_end"];
-    vals["name"] = vals["name"] ?? vals["event_name"];
-    vals["slug"] = vals["slug"] ?? vals["event_slug"];
-    vals["publish_date"] = vals["publish_date"] ?? vals["post_date_gmt"];
-    vals["modified"] = vals["modified"] ?? vals["post_modified_gmt"];
-
-    if (vals["details"] != null) {
-      for (var entry in (vals["details"] as Map).entries) {
-        if ((vals[entry.key] ?? entry.value) != entry.value) {
-          throw Exception("Event details mismatch");
-        }
-      }
-
-      vals.addAll(vals["details"] as Map);
-    }
-    vals.remove("details");
-
-    if (vals["start"] == null) {
-      throw Exception("Event start is null for event ${vals["event_id"]}");
-    }
-
-    return Event(data: json);
+  factory EventBody.fromJson(Map data) {
+    return EventBody(
+        id: data["id"],
+        data: data);
   }
 
   String? processThumbnailUrl(String? url) {
@@ -82,7 +31,8 @@ class Event {
     }
 
     if (url.startsWith("http://sib-utrecht.nl/")) {
-      url = url.replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
+      url =
+          url.replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
     }
 
     log.info("Processing thumbnail url: $url");
@@ -96,10 +46,9 @@ class Event {
   }
 
   (String?, Map?) extractDescriptionAndThumbnail() {
-    String description = ((data["post_content"] ??
-            data["description"] ??
-            "") as String)
-        .replaceAll("\r\n\r\n", "<br/><br/>");
+    String description =
+        ((data["post_content"] ?? data["description"] ?? "") as String)
+            .replaceAll("\r\n\r\n", "<br/><br/>");
     Map? thumbnail = data["thumbnail"];
 
     // if (thumbnail != null &&
@@ -131,10 +80,122 @@ class Event {
     }
 
     description = description.replaceAll(
-        RegExp("^(<strong></strong>)?(\r|\n|<br */>|<br *>)*", multiLine: false), "");
+        RegExp("^(<strong></strong>)?(\r|\n|<br */>|<br *>)*",
+            multiLine: false),
+        "");
 
     return (description.isEmpty ? null : description, thumbnail);
   }
+  
+  @override
+  Map toJson() => data;
+}
+
+class Event implements CacheableResource {
+  final Map data;
+  final DateTime start;
+  final DateTime? end;
+  final String? location;
+
+  final EventBody? body;
+
+  @override
+  String get id => getEventIdFromData(data);
+
+  // String get bodyId => "$id-body";
+  static String getEventIdFromData(Map data) => data["event_id"].toString();
+  static String getBodyIdForEventId(String eventId) => "$eventId-body";
+
+  // int get eventId => data["event_id"];
+  // String get eventId => data["event_id"];
+  String get eventName => data["name"];
+  String get eventNameNL => data["nameNL"] ?? data["name"];
+  String get eventSlug => data["slug"];
+
+  String get signupType {
+    var signupType = data["signup"]?["type"];
+    if (signupType == null && data["signup"]?["url"] != null) {
+      signupType = "url";
+    }
+
+    if (data["event_rsvp"] == 0) {
+      signupType = "none";
+    }
+
+    signupType = signupType ?? "api";
+
+    return signupType;
+  }
+
+  Event({required this.data, required this.body})
+      : start = DateTime.parse('${data["start"]}Z').toLocal(),
+        end = data["end"] != null
+            ? DateTime.parse('${data["end"]}Z').toLocal()
+            : null,
+        location = data["location"];
+
+  String getLocalEventName(Locale loc) {
+    if (loc.languageCode == "nl") {
+      return eventNameNL;
+    }
+
+    return eventName;
+  }
+
+  Event withBody(EventBody body) {
+    return Event(data: data, body: body);
+  }
+
+  static Event fromJson(Map data, AnchoredUnpacker unpacker) {
+    data["start"] ??= data["event_start"];
+    data["end"] ??= data["event_end"];
+    data["name"] ??= data["event_name"];
+    data["slug"] ??= data["event_slug"];
+    data["publish_date"] ??= data["post_date_gmt"];
+    data["modified"] ??= data["post_modified_gmt"];
+
+    data["description"] ??= data["post_content"];
+
+    final id = getEventIdFromData(data);
+
+    if (data["details"] != null) {
+      for (var entry in (data["details"] as Map).entries) {
+        if ((data[entry.key] ?? entry.value) != entry.value) {
+          throw Exception("Event details mismatch");
+        }
+      }
+
+      data.addAll(data["details"] as Map);
+    }
+    data.remove("details");
+
+    var thumbnailVal = data["thumbnail"];
+
+    if (thumbnailVal != null) {
+      data["body"] ??= {};
+      data["body"]["thumbnail"] = thumbnailVal;
+    }
+
+    EventBody? body;
+    Map? bodyVal = data["body"];
+    if (bodyVal != null) {
+      bodyVal["description"] ??= data["description"];
+      bodyVal["id"] = getBodyIdForEventId(id);
+
+      body = unpacker.parse<EventBody>(bodyVal);
+    }
+    data.remove("body");
+
+    if (data["start"] == null) {
+      throw Exception("Event start is null for event ${data["event_id"]}");
+    }
+
+
+    return Event(data: data, body: body);
+  }
 
   bool doesExpectParticipants() => signupType == "api";
+
+  @override
+  Map toJson() => data;
 }

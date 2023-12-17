@@ -81,7 +81,7 @@ class CalendarListProvider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => EventsProvider(
-      builder: (context, events) => EventParticipationProvider.Multiplexed(
+      builder: (context, events, _) => EventParticipationProvider.Multiplexed(
           query: events,
           builder: (context, annotatedEvents) =>
               builder(context, toCalendarList(annotatedEvents))));

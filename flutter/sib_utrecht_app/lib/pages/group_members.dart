@@ -19,25 +19,19 @@ class GroupMembersPage extends StatelessWidget {
     return ActionSubscriptionAggregator(
         child: GroupProvider.Single(
             query: groupName,
-            builder: (context, group) => GroupMembersProvider(
+            builder: (context, group, _) => GroupMembersProvider(
                 groupName: groupName,
-                builder: (context, membersNames) {
-                  if (membersNames.isEmpty) {
-                    return const Center(child: Text("No members found"));
-                  }
-
+                builder: (context, membersNames, _) {
                   return EntityProvider.Multiplexed(
-                      query: membersNames
-                          .map((e) => e['entity'] as String)
+                      query: membersNames.memberships
+                          .map((e) => e.entity)
                           .toList(),
-                      builder: (context, members) =>
-                          CustomScrollView(slivers: [
+                      builder: (context, members) => CustomScrollView(slivers: [
                             SliverAppBar(
                               automaticallyImplyLeading: false,
                               toolbarHeight: kToolbarHeight + 16,
-                              title:
-                                  LayoutBuilder(
-                                      builder: (context, constraints) {
+                              title: LayoutBuilder(
+                                  builder: (context, constraints) {
                                 bool useCentered = constraints.maxWidth > 700;
                                 // useCentered = false;
 
@@ -76,11 +70,15 @@ class GroupMembersPage extends StatelessWidget {
                               }),
                               pinned: true,
                             ),
+                            if (membersNames.memberships.isEmpty)
+                              const SliverToBoxAdapter(
+                                  child:
+                                      Center(child: Text("No members found"))),
                             SliverCrossAxisConstrained(
                                 maxCrossAxisExtent: 500,
                                 child: SliverPadding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 16, 16, 32),
                                     sliver: SliverList.builder(
                                       itemCount: members.length,
                                       itemBuilder: (context, index) {
@@ -88,10 +86,9 @@ class GroupMembersPage extends StatelessWidget {
                                             padding: const EdgeInsets.fromLTRB(
                                                 0, 6, 0, 6),
                                             child: EntityCard(
-                                                entity: members[index],
-                                                role: membersNames[index]
-                                                    ["role"] as String?)
-                                            );
+                                                entity: members[index].value,
+                                                role: membersNames
+                                                    .memberships[index].role));
                                       },
                                     ))),
                             SliverToBoxAdapter(

@@ -29,7 +29,7 @@ class EventsPage extends StatefulWidget {
 
   static Widget buildItem(AnnotatedEvent event) {
     return EventTile(
-        key: ValueKey(("eventsItem", event.eventId, event.placement?.date)),
+        key: ValueKey(("eventsItem", event.id, event.placement?.date)),
         event: event);
   }
 }

@@ -246,12 +246,13 @@ GoRouter createRouter() {
                         Route(
                             path: '/event/:event_id',
                             builder: (context, state) {
-                              int? eventId;
-                              if (state.pathParameters
-                                  .containsKey('event_id')) {
-                                eventId = int.tryParse(
-                                    state.pathParameters['event_id']!);
-                              }
+                              // String? eventId;
+                              // if (state.pathParameters
+                              //     .containsKey('event_id')) {
+                              //   eventId = int.tryParse(
+                              //       state.pathParameters['event_id']!);
+                              // }
+                              String? eventId = state.pathParameters['event_id'];
 
                               if (eventId == null) {
                                 router.go("/");

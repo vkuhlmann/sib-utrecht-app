@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
-import 'package:sib_utrecht_app/components/resource_pool.dart';
+import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
@@ -16,6 +16,7 @@ import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 // class MultiplexedProvider<T, U> extends StatelessWidget {
 //   final List<T> query;
@@ -64,10 +65,10 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class MultiplexedProvider<T, U> extends StatefulWidget {
   final List<T> query;
   // final CachedProvider<U> Function(T)? obtainProvider;
-  final FutureOr<U> Function(T, APIConnector) obtain;
+  final FutureOr<FetchResult<U>> Function(T, APIConnector) obtain;
   // final Listenable Function(ResourcePoolBase)? changeListener;
 
-  final Widget Function(BuildContext context, List<U> data) builder;
+  final Widget Function(BuildContext context, List<FetchResult<U>> data) builder;
   final String Function(AppLocalizations) errorTitle;
   // final Widget Function(BuildContext context, Future<U> data)? loadingBuilder;
 
@@ -93,14 +94,13 @@ class _MultiplexedProviderState<T, U>
   // Future<CacherApiConnector>? apiConnector;
   // Future<ResourcePoolBase>? pool;
 
-  late List<CachedProvider<U>> data;
-  List<CachedProvider<U>>? loadingData;
+  late List<CachedProvider<FetchResult<U>>> data;
+  List<CachedProvider<FetchResult<U>>>? loadingData;
 
   Listenable? activeListener;
 
   @override
   void dispose() {
-    super.dispose();
 
     var oldList = activeListener;
     if (oldList != null) {
@@ -110,13 +110,18 @@ class _MultiplexedProviderState<T, U>
 
     for (var element in data) {
       element.dispose();
+      data.remove(element);
+      loadingData?.remove(element);
     }
 
-    for (CachedProvider<U> element in loadingData ?? []) {
+    for (CachedProvider<FetchResult<U>> element in loadingData ?? []) {
       element.dispose();
+      loadingData?.remove(element);
     }
 
     loadingData = null;
+
+    super.dispose();
   }
 
   @override
@@ -170,7 +175,7 @@ class _MultiplexedProviderState<T, U>
     log.info("[Provider] updateData");
 
     var loadingData = this.loadingData;
-    for (CachedProvider<U> element in loadingData ?? []) {
+    for (CachedProvider<FetchResult<U>> element in loadingData ?? []) {
       element.reload();
     }
 
@@ -179,7 +184,7 @@ class _MultiplexedProviderState<T, U>
     }
   }
 
-  List<CachedProvider<U>> initData() {
+  List<CachedProvider<FetchResult<U>>> initData() {
     if (!mounted) {
       return [];
     }

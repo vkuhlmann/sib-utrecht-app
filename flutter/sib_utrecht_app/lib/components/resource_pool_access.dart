@@ -114,7 +114,8 @@ class _ResourcePoolProviderState extends State<ResourcePoolProvider> {
       }
 
       if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Text("Loading cache...");
+        return const SizedBox();
+        // return const Text("Loading cache...");
       }
 
       var data = snapshot.data;

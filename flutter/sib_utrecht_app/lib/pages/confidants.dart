@@ -26,17 +26,16 @@ class ConfidantsPageContents extends StatelessWidget {
   Widget build(BuildContext context) {
     return SelectionArea(
         child: CenteredPageScroll(
-          horizontalPadding: 8,
+      horizontalPadding: 8,
       slivers: [
         SliverPadding(
             padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-            sliver: 
-            SliverList.list(
+            sliver: SliverList.list(
                 children: confidants
-                    .map((user) =>
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-                          child: UserCard(user: user, key: ValueKey(user.entityName))))
+                    .map((user) => Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+                        child: UserCard(
+                            user: user, key: ValueKey(user.entityName))))
                     .toList()))
       ],
     ));
@@ -63,10 +62,10 @@ class _ConfidantsPageState extends State<ConfidantsPage> {
   Widget build(BuildContext context) => ActionSubscriptionAggregator(
       child: GroupProvider.Single(
           query: "confidants",
-          builder: (context, group) => GroupMembersProvider(
+          builder: (context, group, _) => GroupMembersProvider(
               groupName: "confidants",
-              builder: (context, members) => UserProvider.Multiplexed(
-                  query: members.map((m) => m["entity"] as String).toList(),
-                  builder: (context, users) =>
-                      ConfidantsPageContents(confidants: users)))));
+              builder: (context, members, _) => UserProvider.Multiplexed(
+                  query: members.memberships.map((m) => m.entity).toList(),
+                  builder: (context, users) => ConfidantsPageContents(
+                      confidants: users.map((e) => e.value).toList())))));
 }

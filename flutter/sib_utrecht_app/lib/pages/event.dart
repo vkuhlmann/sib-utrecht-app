@@ -7,13 +7,15 @@ import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/event/event_participants.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
-import 'package:sib_utrecht_app/components/resource_pool.dart';
+import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/signup_indicator.dart';
 import 'package:sib_utrecht_app/model/booking.dart';
+import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/annotated_user.dart';
+import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
@@ -29,7 +31,7 @@ import '../components/api_access.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({Key? key, required this.eventId}) : super(key: key);
-  final int eventId;
+  final String eventId;
 
   @override
   State<EventPage> createState() => _EventPageState();
@@ -55,7 +57,7 @@ class EventHeader extends StatelessWidget {
         IconButton(
             onPressed: () {
               router.goNamed("event_edit",
-                  pathParameters: {"event_id": event.eventId.toString()});
+                  pathParameters: {"event_id": event.id});
             },
             icon: const Icon(Icons.edit)),
       ]),
@@ -174,13 +176,13 @@ class EventHeader extends StatelessWidget {
 }
 
 class EventDescription extends StatelessWidget {
-  final AnnotatedEvent event;
+  final Event event;
 
   const EventDescription(this.event, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final (description, _) = event.extractDescriptionAndThumbnail();
+    final (description, _) = event.body!.extractDescriptionAndThumbnail();
 
     return Card(
         child: ListTile(
@@ -216,24 +218,39 @@ class EventPageContents extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 700),
                     child: Column(children: [
                       EventHeader(event),
-                      EventDescription(event),
-                      EventThumbnail(event),
+                      EventProvider.Single(
+                        query: event.id,
+                        requireBody: true,
+                        builder: (context, event, _) => Column(children: [
+                          EventDescription(event),
+                          EventThumbnail(event),
+                        ]),
+                      ),
                       const SizedBox(height: 32),
                       EventParticipantsProvider(
-                          eventId: event.eventId,
-                          builder: (context, participants)
-                              // UserProvider.Multiplexed(
-                              //     query: bookings
-                              //         .map((e) => e.userId)
-                              //         .toList(),
-                              //     builder: (context, users)
-                                  {
+                          eventId: event.id,
+                          builder: (context, participantFutures, _) =>
+                              FutureBuilderPatched(
+                                  future: Future.wait(participantFutures),
+                                  builder: (context, snapshot)
+                                      // UserProvider.Multiplexed(
+                                      //     query: bookings
+                                      //         .map((e) => e.userId)
+                                      //         .toList(),
+                                      //     builder: (context, users)
+                                      {
+                                    final participants = snapshot.data;
+
+                                    if (participants == null) {
+                                      return const SizedBox();
+                                    }
+
                                     if (participants.isEmpty &&
                                         !event.doesExpectParticipants()) {
                                       return const SizedBox();
                                     }
 
-                                    // var participants = bookings.mapIndexed((index, element) => 
+                                    // var participants = bookings.mapIndexed((index, element) =>
                                     //   AnnotatedUser(
                                     //     user: users[index],
                                     //     comment: element.comment
@@ -247,7 +264,7 @@ class EventPageContents extends StatelessWidget {
                                     // if (expectParticipants) ...[
                                     //   EventParticipants(event, eventProvider: eventProvider)
                                     // ]
-                                  })
+                                  }))
                     ])))
           ])),
     ]));
@@ -307,52 +324,54 @@ class _EventPageState extends State<EventPage> {
         child: ActionSubscriptionAggregator(
             child: EventProvider.Single(
                 query: widget.eventId,
-                builder: (context, event) => EventParticipationProvider.Single(
-                    query: event,
-                    builder: (context, annotatedEvent) {
-                      // ListenableBuilder(
-                      //     listenable: Listenable.merge([_eventProvider, provEvents]),
-                      //     builder: (context, _) {
-                      log.fine(
-                          "Building event page for event id ${widget.eventId}");
+                requireBody: false,
+                builder: (context, event, _) =>
+                    EventParticipationProvider.Single(
+                        query: event,
+                        builder: (context, annotatedEvent) {
+                          // ListenableBuilder(
+                          //     listenable: Listenable.merge([_eventProvider, provEvents]),
+                          //     builder: (context, _) {
+                          log.fine(
+                              "Building event page for event id ${widget.eventId}");
 
-                      return
-                          // WithSIBAppBar(
-                          //     actions: [
-                          //       ActionRefreshButton(
-                          //           refreshFuture: Future.wait([
-                          //             _eventProvider.event.loading,
-                          //             if (prov.doesExpectParticipants())
-                          //               _eventProvider.participants.loading
-                          //           ]).then((_) => DateTime.now()),
-                          //           triggerRefresh: _eventProvider.refresh)
-                          //     ],
-                          //     child:
-                          Column(children: [
-                        Expanded(
-                            child: EventPageContents(
-                                event: annotatedEvent,
-                                eventParticipation:
-                                    annotatedEvent.participation)),
-                        // AlertsPanel(
-                        //     controller: _alertsPanelController,
-                        //     loadingFutures: [
-                        //       AlertsFutureStatus(
-                        //           component: "details",
-                        //           future: _eventProvider.event.loading,
-                        //           data: {
-                        //             "isRefreshing": _eventProvider.event.cached != null
-                        //           }),
-                        //       if (prov.doesExpectParticipants())
-                        //         AlertsFutureStatus(
-                        //             component: "participants",
-                        //             future: _eventProvider.participants.loading,
-                        //             data: {
-                        //               "isRefreshing":
-                        //                   _eventProvider.participants.cached != null
-                        //             })
-                        //     ])
-                      ]);
-                    }))));
+                          return
+                              // WithSIBAppBar(
+                              //     actions: [
+                              //       ActionRefreshButton(
+                              //           refreshFuture: Future.wait([
+                              //             _eventProvider.event.loading,
+                              //             if (prov.doesExpectParticipants())
+                              //               _eventProvider.participants.loading
+                              //           ]).then((_) => DateTime.now()),
+                              //           triggerRefresh: _eventProvider.refresh)
+                              //     ],
+                              //     child:
+                              Column(children: [
+                            Expanded(
+                                child: EventPageContents(
+                                    event: annotatedEvent,
+                                    eventParticipation:
+                                        annotatedEvent.participation)),
+                            // AlertsPanel(
+                            //     controller: _alertsPanelController,
+                            //     loadingFutures: [
+                            //       AlertsFutureStatus(
+                            //           component: "details",
+                            //           future: _eventProvider.event.loading,
+                            //           data: {
+                            //             "isRefreshing": _eventProvider.event.cached != null
+                            //           }),
+                            //       if (prov.doesExpectParticipants())
+                            //         AlertsFutureStatus(
+                            //             component: "participants",
+                            //             future: _eventProvider.participants.loading,
+                            //             data: {
+                            //               "isRefreshing":
+                            //                   _eventProvider.participants.cached != null
+                            //             })
+                            //     ])
+                          ]);
+                        }))));
   }
 }

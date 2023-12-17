@@ -6,7 +6,7 @@ import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/event/event_tile.dart';
-import 'package:sib_utrecht_app/components/resource_pool.dart';
+import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
@@ -59,7 +59,7 @@ class HomePageContents extends StatelessWidget {
                         .map((event) => EventTile(
                             key: ValueKey((
                               "eventsItem",
-                              event.eventId,
+                              event.id,
                               event.placement?.date
                             )),
                             event: event))
@@ -104,7 +104,7 @@ class HomePageContents extends StatelessWidget {
                             .map((event) => EventTile(
                                 key: ValueKey((
                                   "eventsItem",
-                                  event.eventId,
+                                  event.id,
                                   event.placement?.date
                                 )),
                                 event: event))

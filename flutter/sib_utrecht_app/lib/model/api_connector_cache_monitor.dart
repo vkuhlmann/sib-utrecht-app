@@ -3,6 +3,7 @@ import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cache.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/group.dart';
+import 'package:sib_utrecht_app/model/members.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
@@ -17,15 +18,15 @@ class CacheApiConnectorMonitor extends APIConnector {
   DateTime? get freshnessTimestamp => oldestTimestamp;
 
   FetchResult<T> wrapResult<T>(T val) {
-    log.info("[Cache] monitor, wrapping result $val, "
-    "freshness: $freshnessTimestamp, invalidated: $isInvalidated");
+    // log.info("[Cache] monitor, wrapping result $val, "
+    // "freshness: $freshnessTimestamp, invalidated: $isInvalidated");
     return FetchResult(val, freshnessTimestamp, invalidated: isInvalidated);
   }
 
   CacheApiConnectorMonitor(this.base, {required this.pool});
 
   void _impactTimestamp(DateTime? ts, bool invalidated) {
-if (ts == null) {
+    if (ts == null) {
       hasEncounteredNullTimestamp = true;
     }
     if (ts != null && oldestTimestamp?.isAfter(ts) != false) {
@@ -44,7 +45,8 @@ if (ts == null) {
   Future<FetchResult<Map>> get(String url) async {
     var res = await base.get(url);
     _impactTimestamp(res.timestamp, res.invalidated);
-    log.info("CacheApiConnectorMonitor: timestamp for $url is ${res.timestamp}");
+    log.info(
+        "CacheApiConnectorMonitor: timestamp for $url is ${res.timestamp}");
     return res;
   }
 
@@ -74,15 +76,19 @@ if (ts == null) {
     return result;
   }
 
-  void collectEvent(Event data) {
-    pool?.events.collect(data.id, wrapResult(data));
-  }
+  // void collectEvent(Event data) {
+  //   pool?.events.collect(data.id, wrapResult(data));
+  // }
 
-  void collectGroup(Group data) {
-    pool?.groups.collect(data.id, wrapResult(data));
-  }
+  // void collectGroup(Group data) {
+  //   pool?.groups.collect(data.id, wrapResult(data));
+  // }
 
-  void collectUser(User data) {
-    pool?.users.collect(data.id, wrapResult(data));
-  }
+  // void collectUser(User data) {
+  //   pool?.users.collect(data.id, wrapResult(data));
+  // }
+
+  // void collectMembers(Members data) {
+  //   pool?.members.collect(data.id, wrapResult(data));
+  // }
 }

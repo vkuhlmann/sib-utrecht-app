@@ -62,7 +62,7 @@ class _GroupsPageState extends State<GroupsPage> {
                 //  ListenableBuilder(
                 //   listenable: provGroups,
                 GroupsProvider(
-              builder: (context, groups) =>
+              builder: (context, groups, _) =>
           // WithSIBAppBar(actions: const [], child:
           Column(children: [
         Expanded(child: GroupsPageContents(groups: groups)),

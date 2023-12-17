@@ -4,13 +4,14 @@ import 'package:sib_utrecht_app/model/bookings.dart';
 // import 'package:sib_utrecht_app/model/events.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/model/api/users.dart';
+import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 // import '../constants.dart';
 
 import 'package:sib_utrecht_app/view_model/single_provider.dart';
 
 Widget BookingsProvider(
-        {required Widget Function(BuildContext, Set<int>) builder}) =>
+        {required Widget Function(BuildContext, Set<String>, FetchResult<void>) builder}) =>
     SingleProvider(
         query: null,
         builder: builder,
