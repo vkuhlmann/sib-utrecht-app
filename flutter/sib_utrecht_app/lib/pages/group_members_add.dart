@@ -47,6 +47,7 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
 
   Future<void> addMember(User user, Locale loc) async {
     log.info("Adding member ${user.id} to group ${widget.groupName}");
+    ResourcePoolBase? pool = ResourcePoolAccess.maybeOf(context)?.pool;
     final connector = await APIAccess.of(context).connector;
 
     try {
@@ -56,6 +57,8 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
       reportError("Failed to add member: $e");
       return;
     }
+
+    pool?.members.invalidateId(widget.groupName);
 
     reportSuccess(
         "Added ${user.getLocalShortName(loc)} to ${widget.groupName}");
@@ -72,14 +75,18 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
 
   Future<void> removeMember(User user, Locale loc) async {
     log.info("Removing member ${user.id} from group ${widget.groupName}");
+    ResourcePoolBase? pool = ResourcePoolAccess.maybeOf(context)?.pool;
     final connector = await APIAccess.of(context).connector;
 
     try {
-      return Groups(connector).removeMember(
+      await Groups(connector).removeMember(
           groupName: widget.groupName, userId: user.id, role: "member");
     } catch (e) {
       reportError("Failed to remove member: $e");
+      return;
     }
+
+    pool?.members.invalidateId(widget.groupName);
 
     reportSuccess(
         "Removed ${user.getLocalShortName(loc)} from ${widget.groupName}");

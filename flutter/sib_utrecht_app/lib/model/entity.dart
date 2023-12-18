@@ -10,3 +10,6 @@ abstract class Entity implements CacheableResource {
   String? get profilePage;
 }
 
+class EntityWrapper {
+  
+}

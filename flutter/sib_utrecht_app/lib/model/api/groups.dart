@@ -39,13 +39,12 @@ class Groups {
   //   return val;
   // }
 
-  Future<FetchResult<Group>> getGroup({required String groupName})
-  => retrieve(
-      conn: apiConnector,
-      fromCached: (pool) => pool.groups[groupName],
-      url: "/groups/@$groupName",
-      parse: (res, unpacker) => unpacker.parse<Group>(res["data"]["group"]),
-  );
+  Future<FetchResult<Group>> getGroup({required String groupName}) => retrieve(
+        conn: apiConnector,
+        fromCached: (pool) => pool.groups[groupName],
+        url: "/groups/@$groupName",
+        parse: (res, unpacker) => unpacker.parse<Group>(res["data"]["group"]),
+      );
 
   //  async {
   //   var raw = await apiConnector.getSimple("/groups/@$groupName");
@@ -53,13 +52,16 @@ class Groups {
   //   return parseGroup(raw["data"]["group"] as Map);
   // }
 
-  Future<FetchResult<Members>> getMembers({required String groupName})
-  => retrieve(
-      conn: apiConnector,
-      fromCached: (pool) => pool.members[groupName],
-      url: "/groups/@$groupName/members",
-      parse: (res, unpacker) => unpacker.parse<Members>(res["data"]["memberships"]),
-  );
+  Future<FetchResult<Members>> getMembers({required String groupName}) =>
+      retrieve(
+        conn: apiConnector,
+        fromCached: (pool) => pool.members[groupName],
+        url: "/groups/@$groupName/members",
+        parse: (res, unpacker) => unpacker.parse<Members>({
+          "group_name": groupName,
+          "memberships": res["data"]["memberships"]
+        }),
+      );
 
   // Future<List<Map>> listMembers({required String groupName}) async {
   //   var raw = await apiConnector.getSimple("/groups/@$groupName/members");
@@ -74,8 +76,8 @@ class Groups {
       fromCached: null,
       url: "/groups",
       parse: (res, unpacker) => (res["data"]["groups"] as Iterable)
-      .map((e) => unpacker.parse<Group>(e)).toList()
-  );
+          .map((e) => unpacker.parse<Group>(e))
+          .toList());
 
   // Future<List<Group>> list() async {
   //   var raw = await apiConnector.getSimple("/groups");
@@ -86,13 +88,15 @@ class Groups {
   // }
 
   Future<void> addMember(
-      {required String groupName, required String userId,
+      {required String groupName,
+      required String userId,
       required String role}) async {
     await apiConnector.post("/groups/@$groupName/members/@$userId:$role");
   }
 
   Future<void> removeMember(
-      {required String groupName, required String userId,
+      {required String groupName,
+      required String userId,
       required String role}) async {
     await apiConnector.delete("/groups/@$groupName/members/@$userId:$role");
   }

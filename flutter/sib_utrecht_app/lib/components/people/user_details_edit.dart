@@ -128,10 +128,10 @@ class _EditUserDetailsState extends State<EditUserDetails> {
 
   Future<Map?> submit() async {
     log.info("Submitting user details");
-    String? id = widget.user.id;
-    if (id == null) {
-      throw Exception("User has no id");
-    }
+    String?id = widget.user.id;
+    // if (id == null) {
+    //   throw Exception("User has no id");
+    // }
 
     APIConnector connector = await APIAccess.of(context).connector;
 

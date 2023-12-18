@@ -49,7 +49,7 @@ class Resource<T extends CacheableResource> extends ChangeNotifier {
       box.delete(entryName);
     }
 
-    log.fine("Raw data: $rawData");
+    // log.fine("Raw data: $rawData");
 
     data = ((rawData ?? {}) as Map).map(
       (key, value) {
@@ -234,28 +234,28 @@ class ResourcePoolBase {
   }
 
   void collect<T>(FetchResult<T> data) {
-    if (data.value is User) {
+    if (T == User) {
       users.collect(data as FetchResult<User>);
       return;
     }
-    if (data.value is Group) {
+    if (T == Group) {
       groups.collect(data as FetchResult<Group>);
       return;
     }
-    if (data.value is Event) {
+    if (T == Event) {
       events.collect(data as FetchResult<Event>);
       return;
     }
-    if (data.value is EventBody) {
+    if (T == EventBody) {
       eventBodies.collect(data as FetchResult<EventBody>);
       return;
     }
-    if (data.value is Members) {
+    if (T == Members) {
       members.collect(data as FetchResult<Members>);
       return;
     }
 
-    log.warning("Not collecting into ResourcePool: ${data.value.runtimeType}");
+    log.warning("Not collecting into ResourcePool: $T");
   }
 
   // final Map<String, FetchResult<User>> users = {};

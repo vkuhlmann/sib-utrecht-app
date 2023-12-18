@@ -11,6 +11,6 @@ Widget GroupMembersProvider(
       query: groupName,
       builder: builder,
       errorTitle: (loc) => loc.couldNotLoad(loc.dataMembers),
-      changeListener: (p) => p.groups,
+      changeListener: (p) => p.members,
       obtain: (String q, c) => Groups(c).getMembers(groupName: q),
     );

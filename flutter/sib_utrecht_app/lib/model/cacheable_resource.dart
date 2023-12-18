@@ -33,10 +33,10 @@ abstract interface class CacheableResource {
       final data = a.value as Map;
 
       if (type == "user") {
-        return User.fromJson(data) as T;
+        return unpacker.parse<User>(data) as T;
       }
       if (type == "group") {
-        return Group.fromJson(data) as T;
+        return unpacker.parse<Group>(data) as T;
       }
 
       throw Exception("Unknown entity type: $type");
