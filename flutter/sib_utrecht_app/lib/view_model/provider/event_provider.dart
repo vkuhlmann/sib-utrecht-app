@@ -9,12 +9,17 @@ import 'package:sib_utrecht_app/view_model/single_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EventProvider {
-  static Widget Multiplexed({query, required bool requireBody, builder}) =>
+  static Widget Multiplexed(
+          {query,
+          required bool requireBody,
+          required Widget Function(BuildContext, List<FetchResult<Event>>)
+              builder}) =>
       MultiplexedProvider(
           query: query,
           builder: builder,
           errorTitle: (loc) => loc.couldNotLoad(loc.dataEvents),
-          changeListener: (p) => p.events,
+          changeListener: (p) =>
+              Listenable.merge([p.events, if (requireBody) p.eventBodies]),
           obtain: (String id, c) =>
               Events(c).getEvent(eventId: id, requireBody: requireBody));
 
@@ -27,7 +32,8 @@ class EventProvider {
           query: query,
           builder: builder,
           errorTitle: (loc) => loc.couldNotLoad(loc.dataEvent),
-          changeListener: (p) => p.events,
+          changeListener: (p) =>
+              Listenable.merge([p.events, if (requireBody) p.eventBodies]),
           obtain: (String id, c) =>
               Events(c).getEvent(eventId: id, requireBody: requireBody));
 }

@@ -17,6 +17,7 @@ import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/view_model/load_stability.dart';
 
 // class MultiplexedProvider<T, U> extends StatelessWidget {
 //   final List<T> query;
@@ -68,40 +69,39 @@ class MultiplexedProvider<T, U> extends StatefulWidget {
   final FutureOr<FetchResult<U>> Function(T, APIConnector) obtain;
   // final Listenable Function(ResourcePoolBase)? changeListener;
 
-  final Widget Function(BuildContext context, List<FetchResult<U>> data) builder;
+  final Widget Function(BuildContext context, List<FetchResult<U>> data)
+      builder;
   final String Function(AppLocalizations) errorTitle;
   // final Widget Function(BuildContext context, Future<U> data)? loadingBuilder;
 
   final Listenable Function(ResourcePoolBase)? changeListener;
 
-  const MultiplexedProvider({
-    Key? key,
-    required this.query,
-    // this.obtainProvider,
-    required this.obtain,
-    required this.builder,
-    required this.errorTitle,
-    this.changeListener
-  }) : super(key: key);
+  const MultiplexedProvider(
+      {Key? key,
+      required this.query,
+      // this.obtainProvider,
+      required this.obtain,
+      required this.builder,
+      required this.errorTitle,
+      this.changeListener})
+      : super(key: key);
 
   @override
   State<MultiplexedProvider<T, U>> createState() =>
       _MultiplexedProviderState<T, U>();
 }
 
-class _MultiplexedProviderState<T, U>
-    extends State<MultiplexedProvider<T, U>> {
+class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
   // Future<CacherApiConnector>? apiConnector;
   // Future<ResourcePoolBase>? pool;
 
-  late List<CachedProvider<FetchResult<U>>> data;
-  List<CachedProvider<FetchResult<U>>>? loadingData;
+  late List<CachedProvider<U>> data;
+  List<CachedProvider<U>>? loadingData;
 
   Listenable? activeListener;
 
   @override
   void dispose() {
-
     var oldList = activeListener;
     if (oldList != null) {
       oldList.removeListener(updateData);
@@ -114,7 +114,7 @@ class _MultiplexedProviderState<T, U>
       loadingData?.remove(element);
     }
 
-    for (CachedProvider<FetchResult<U>> element in loadingData ?? []) {
+    for (CachedProvider<U> element in loadingData ?? []) {
       element.dispose();
       loadingData?.remove(element);
     }
@@ -143,6 +143,8 @@ class _MultiplexedProviderState<T, U>
     }
 
     data = initData();
+
+    updateAllowAutoRefresh();
 
     // var conn = APIAccess.of(context).connector;
     // apiConnector = conn;
@@ -175,7 +177,7 @@ class _MultiplexedProviderState<T, U>
     log.info("[Provider] updateData");
 
     var loadingData = this.loadingData;
-    for (CachedProvider<FetchResult<U>> element in loadingData ?? []) {
+    for (CachedProvider<U> element in loadingData ?? []) {
       element.reload();
     }
 
@@ -184,7 +186,31 @@ class _MultiplexedProviderState<T, U>
     }
   }
 
-  List<CachedProvider<FetchResult<U>>> initData() {
+  void updateAllowAutoRefresh() {
+    var allowAutoRefresh = getAllowAutoRefresh();
+    for (CachedProvider<U> element in loadingData ?? []) {
+      element.setAllowAutoRefresh(allowAutoRefresh);
+    }
+
+    for (var element in data) {
+      element.setAllowAutoRefresh(allowAutoRefresh);
+    }
+  }
+
+  bool getAllowAutoRefresh() {
+    final state = LoadStability.maybeOf(context);
+    if (state == null) {
+      return true;
+    }
+
+    if (state.isLoading) {
+      return false;
+    }
+
+    return true;
+  }
+
+  List<CachedProvider<U>> initData() {
     if (!mounted) {
       return [];
     }
@@ -192,8 +218,11 @@ class _MultiplexedProviderState<T, U>
     var pool = ResourcePoolAccess.maybeOf(context)?.pool;
     var conn = APIAccess.of(context).connector;
 
+    bool allowAutoRefresh = getAllowAutoRefresh();
+
     var newData = widget.query
         .map((v) => CachedProvider(
+              allowAutoRefresh: allowAutoRefresh,
               obtain: (c) => widget.obtain(v, c),
               pool: pool,
               connector: conn,
@@ -289,16 +318,19 @@ class _MultiplexedProviderState<T, U>
 
   @override
   Widget build(BuildContext context) {
+    var prevStability = LoadStability.maybeOf(context);
+
     return ListenableBuilder(
         listenable: Listenable.merge(data),
         builder: (context, _) => ActionEmitter(
-            refreshFuture: Future.wait(data.map((e) => e.loading)).then((value) =>
-                value
-                    .map((a) => a.timestamp)
-                    .toList()
-                    .whereNotNull()
-                    .minOrNull ??
-                DateTime.now()),
+            refreshFuture: Future.wait(data.map((e) => e.loading)).then(
+                (value) =>
+                    value
+                        .map((a) => a.timestamp)
+                        .toList()
+                        .whereNotNull()
+                        .minOrNull ??
+                    DateTime.now()),
             triggerRefresh: () {
               for (var element in data) {
                 element.refresh();
@@ -320,8 +352,16 @@ class _MultiplexedProviderState<T, U>
                   return buildError(context, snapshot.error);
                 }
 
-                return widget.builder(context,
-                    cachedVals.whereNotNull().map((v) => v.value).toList());
+                final isLoading =
+                    snapshot.connectionState == ConnectionState.active ||
+                        snapshot.connectionState == ConnectionState.waiting;
+
+                return LoadStability.combine(
+                    prev: prevStability,
+                    isThisLoading: isLoading,
+                    anchors: snapshot.data ?? [],
+                    child: widget.builder(
+                        context, cachedVals.whereNotNull().toList()));
               },
             )));
   }

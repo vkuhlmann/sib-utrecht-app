@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:js_interop';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/event/event_edit_form.dart';
+import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
 
 import '../utils.dart';
@@ -15,7 +18,7 @@ import '../components/actions/alerts_panel.dart';
 import '../components/api_access.dart';
 
 class EventEditPage extends StatefulWidget {
-  final int? eventId;
+  final String? eventId;
 
   const EventEditPage({Key? key, required this.eventId}) : super(key: key);
 
@@ -26,37 +29,57 @@ class EventEditPage extends StatefulWidget {
 class _EventEditPageState extends State<EventEditPage> {
   Future<APIConnector>? connector;
 
-  Future<Event?>? originalEvent;
+  // Future<Event?>? originalEvent;
   Future<String>? response;
 
-  int? get eventId => widget.eventId;
+  late Future<Event?> startEditResponse;
 
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _nameNLController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _startController = TextEditingController();
-  final TextEditingController _endController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _signupLinkController = TextEditingController();
+  String? get eventId => widget.eventId;
 
-  final AlertsPanelController _alertsPanelController = AlertsPanelController();
-
-  bool acceptBeta = true;
-
-  Future<String>? payload;
+  // Future<String>? payload;
   Future<Map?>? _submission;
   Future<Map?>? _deletion;
 
-  final DateFormat _dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
-  final DateFormat _apiDateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+  final ValueNotifier<AsyncSnapshot<Map>> payload =
+      ValueNotifier(const AsyncSnapshot.nothing());
+  final AlertsPanelController _alertsPanelController = AlertsPanelController();
+
+  late ValueSetter<AsyncSnapshot<Map>> setPayload;
 
   @override
   void initState() {
     super.initState();
 
+    setPayload = (v) => payload.value = v;
+
+    // ValueSetter<String?> a = (v) => _payloadNotifier.value = v;
+
+    // _payloadNotifier.value = "test";
+
+    // if (eventId == null) {
+    //   originalEvent = Future.value(null);
+    // }
+
+    // startEditResponse = _startEdit();
+  }
+
+  Future<Event?> _startEdit() async {
+    final eventId = this.eventId;
     if (eventId == null) {
-      originalEvent = Future.value(null);
+      return null;
     }
+
+    final connector = this.connector;
+    if (connector == null) {
+      throw StateError("No API connector available");
+    }
+
+    final conn = await connector;
+    final response = await conn.post("/events/$eventId/edit");
+    final event =
+        Event.fromJson((response["data"]["event"] as Map), DirectUnpacker());
+
+    return event;
   }
 
   @override
@@ -67,41 +90,36 @@ class _EventEditPageState extends State<EventEditPage> {
           "[EventEditPage] API connector changed from ${this.connector} to $connector");
       this.connector = connector;
 
-      if (eventId != null) {
-        setState(() {
-          var evFuture = connector.then((c) => c
-                  .post("/events/$eventId/edit")
-                  .then((value) {
-                setState(() {
-                  payload = Future.value(
-                      const JsonEncoder.withIndent("  ").convert(value));
-                });
-                return value;
-              }).then((response) => Event.fromJson(
-                      (response["data"]["event"] as Map), DirectUnpacker())));
+      setState(() {
+        startEditResponse = _startEdit();
+      });
 
-          originalEvent = evFuture.then(
-            (Event value) {
-              setState(() {
-                var endDate = value.end;
+      // if (eventId != null) {
+      //   setState(() {
+      //     var evFuture = connector.then((c) => c
+      //             .post("/events/$eventId/edit")
+      //             .then((value) {
+      //           if (!mounted) {
+      //             return null;
+      //           }
+      //           setState(() {
+      //             payload = Future.value(
+      //                 const JsonEncoder.withIndent("  ").convert(value));
+      //           });
+      //           return value;
+      //         }).then((response) => Event.fromJson(
+      //                 (response["data"]["event"] as Map), DirectUnpacker())));
 
-                _nameController.text = value.eventName;
-                _nameNLController.text = value.data["nameNL"] ?? "";
-                _locationController.text = value.location ?? "";
-                _startController.text =
-                    _dateFormat.format(value.start.toLocal());
-                _endController.text = "";
-                if (endDate != null) {
-                  _endController.text = _dateFormat.format(endDate.toLocal());
-                }
-                _descriptionController.text = value.data["description"] ?? "";
-                _signupLinkController.text = value.data["signup"]?["url"] ?? "";
-              });
-              return value;
-            },
-          );
-        });
-      }
+      //     originalEvent = evFuture.then(
+      //       (Event value) {
+      //         setState(() {
+
+      //         });
+      //         return value;
+      //       },
+      //     );
+      //   });
+      // }
     }
 
     super.didChangeDependencies();
@@ -123,259 +141,50 @@ class _EventEditPageState extends State<EventEditPage> {
       return null;
     }
 
-    var payload = await getPayloadJson();
+    final payload = this.payload.value;
 
+    if (payload.hasError) {
+      throw StateError("Cannot submit event: ${payload.error}");
+    }
+
+    final data = payload.data;
+    if (data == null) {
+      throw StateError("Cannot submit event: payload is null");
+    }
+
+    final eventId = this.eventId;
     if (eventId == null) {
-      var submission = await conn.then((c) => c.post(
-          "/events?accept_beta=${acceptBeta ? 'true' : 'false'}",
-          body: payload));
+      var response = await conn.then((c) => c.post("/events",
+          // "/events?accept_beta=${acceptBeta ? 'true' : 'false'}",
+          body: data));
 
-      int newEventId = submission["data"]["event_id"];
+      int newEventId = response["data"]["event_id"];
       router.goNamed("event_edit",
           pathParameters: {"event_id": newEventId.toString()});
 
-      return submission;
+      return response;
     }
 
-    var submission =
-        await conn.then((c) => c.put("/events/$eventId", body: payload));
+    var response =
+        await conn.then((c) => c.put("/events/$eventId", body: data));
 
-    return submission;
-  }
 
-  Future<Map> getPayloadJson() async {
-    Event newEvent = await getUpdatedEvent();
-    return newEvent.data;
-  }
-
-  Future<String> getPayload() async {
-    return const JsonEncoder.withIndent("  ").convert(await getPayloadJson());
-  }
-
-  void onFieldChanged(_) {
-    setState(() {
-      payload = getPayload();
-    });
-  }
-
-  String? dateInputToCanonical(String input) {
-    if (input.isEmpty) {
-      return null;
-    }
-    DateTime date;
-    try {
-      date = _dateFormat.parse(input);
-    } catch (e) {
-      throw Exception("Invalid date format, expected yyyy-MM-dd HH:mm:ss.");
-    }
-    return _apiDateFormat.format(date.toUtc());
-  }
-
-  Future<Event> getUpdatedEvent() async {
-    var origEvent = await originalEvent;
-
-    var startDateInput = _startController.text;
-
-    if (startDateInput.isEmpty) {
-      throw Exception("Start date is required");
+    if (mounted) {
+      final pool = ResourcePoolAccess.maybeOf(context)?.pool;
+      
+      pool?.eventBodies.invalidateId(
+        Event.getBodyIdForEventId(eventId));
+      pool?.events.invalidateId(eventId);
     }
 
-    var data = {
-      if (origEvent != null) ...origEvent.data,
-      if (origEvent == null) ...{
-        "status": "published",
-        "signup": {"type": "none"}
-      },
-      if (eventId != null) ...{"id": eventId},
-      "name": _nameController.text,
-      "nameNL": _nameNLController.text,
-      "location": _locationController.text,
-      "start": dateInputToCanonical(startDateInput),
-      "end": dateInputToCanonical(_endController.text),
-      "description": _descriptionController.text,
-    };
-
-    var newSignupLink = _signupLinkController.text.trim();
-
-    if (newSignupLink.isNotEmpty) {
-      if (data["signup"]?["url"] == null) {
-        data["signup"] = {"type": "url"};
-      }
-      data["signup"]["url"] = newSignupLink;
-    }
-    if (newSignupLink.isEmpty && data["signup"]?["url"] != null) {
-      data["signup"] = {"type": "none"};
-    }
-
-    data.remove("details");
-
-    return Event.fromJson(data, DirectUnpacker());
+    return response;
   }
 
-  Widget buildEventForm() => Builder(
-      builder: (context) => Column(children: [
-            // Card(
-            //     child:
-            ListTile(
-                title: TextField(
-              controller: _nameController,
-              onChanged: onFieldChanged,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(), labelText: 'Event name'),
-            )),
-            ListTile(
-                title: TextField(
-              controller: _nameNLController,
-              onChanged: onFieldChanged,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(), labelText: 'Event name NL'),
-            )),
-            const SizedBox(height: 16),
-            ListTile(
-                title: TextField(
-              controller: _locationController,
-              onChanged: onFieldChanged,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Event location (optional)'),
-            )),
-            const SizedBox(height: 16),
-            ListTile(
-              subtitle: TextField(
-                controller: _startController,
-                onChanged: onFieldChanged,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Event start (e.g. "2024-01-01 00:00:00")'),
-              ),
-            ),
-            ListTile(
-              subtitle: TextField(
-                controller: _endController,
-                onChanged: onFieldChanged,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Event end (optional)'),
-              ),
-            ),
-            const SizedBox(height: 32),
-            ListTile(
-                // title: Text(AppLocalizations.of(context)!.eventDescription),
-                subtitle: TextField(
-                    controller: _descriptionController,
-                    onChanged: onFieldChanged,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(), labelText: 'Description'),
-                    maxLines: null)),
-            const SizedBox(height: 32),
-            ListTile(
-                title: TextField(
-              controller: _signupLinkController,
-              onChanged: onFieldChanged,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Sign-up link (optional)'),
-            )),
-
-            if (!acceptBeta || eventId == null)
-              ListTile(
-                  leading: Checkbox(
-                      value: acceptBeta,
-                      onChanged: (val) {
-                        setState(() {
-                          acceptBeta = val ?? false;
-                        });
-                      }),
-                  title: const Text(
-                      "I understand this event will only show in the app, not on the website.")),
-
-            const SizedBox(
-              height: 32,
-            ),
-
-            if (eventId != null)
-              ElevatedButton(
-                  onPressed: () {
-                    // showDialog(
-                    //     context: context,
-                    //     builder: (BuildContext ctx) {
-                    //       return AlertDialog(
-                    //         title: const Text('Event deletion'),
-                    //         content: const Text(
-                    //             'Are you sure you want to delete the event?'),
-                    //         actions: [
-                    //           // The "Yes" button
-                    //           TextButton(
-                    //               onPressed: () {
-                    //                 // // Remove the box
-                    //                 // setState(() {
-                    //                 //   _isShown = false;
-                    //                 // });
-
-                    //                 // Close the dialog
-                    //                 Navigator.of(context).pop();
-                    //               },
-                    //               child: const Text('Delete')),
-                    //           TextButton(
-                    //               onPressed: () {
-                    //                 // Close the dialog
-                    //                 Navigator.of(context).pop();
-                    //               },
-                    //               child: const Text('Cancel'))
-                    //         ],
-                    //       );
-                    //     });
-
-                    router.pushNamed("event_delete_confirm", pathParameters: {
-                      "event_id": eventId.toString()
-                    }).then((ans) {
-                      if (ans != "delete_confirmed") {
-                        return;
-                      }
-                      setState(() {
-                        var a = deleteEvent();
-                        _deletion = a;
-                        a
-                            .then((v) =>
-                                Future.delayed(const Duration(seconds: 2)))
-                            .then((value) {
-                          router.go("/");
-                        });
-                      });
-                    });
-                  },
-                  child: Text(AppLocalizations.of(context)!.delete)),
-            const SizedBox(
-              height: 16,
-            ),
-
-            FilledButton(
-                onPressed: () {
-                  setState(() {
-                    _submission = submit();
-                  });
-                },
-                child: Text(AppLocalizations.of(context)!.save)),
-            const SizedBox(height: 32),
-            FutureBuilder(
-              future: payload,
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Text(snapshot.error.toString());
-                }
-
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                }
-
-                // if (snapshot.hasData) {
-                //   return Text(snapshot.data.toString());
-                // }
-
-                return const SizedBox();
-              },
-            )
-          ]));
+  // void onFieldChanged(_) {
+  //   setState(() {
+  //     payload = getPayload();
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -394,7 +203,7 @@ class _EventEditPageState extends State<EventEditPage> {
                     delegate: SliverChildListDelegate([
                   const SizedBox(height: 20),
                   FutureBuilderPatched(
-                      future: originalEvent,
+                      future: startEditResponse,
                       builder: (context, snapshot) {
                         if (snapshot.hasError) {
                           return Padding(
@@ -409,6 +218,11 @@ class _EventEditPageState extends State<EventEditPage> {
                               child:
                                   Center(child: CircularProgressIndicator()));
                         }
+
+                        final data = snapshot.data;
+                        // if (data == null) {
+                        //   return const Text("Data missing");
+                        // }
 
                         // final Event? event = snapshot.data;
                         // if (event == null) {
@@ -425,7 +239,94 @@ class _EventEditPageState extends State<EventEditPage> {
                         // var eventEnd = event.end;
                         // var location = event.location;
 
-                        return buildEventForm();
+                        return Column(children: [
+                          EventEditForm(
+                              originalEvent: data, setPayload: setPayload),
+                          if (eventId != null)
+                            ElevatedButton(
+                                onPressed: () {
+                                  // showDialog(
+                                  //     context: context,
+                                  //     builder: (BuildContext ctx) {
+                                  //       return AlertDialog(
+                                  //         title: const Text('Event deletion'),
+                                  //         content: const Text(
+                                  //             'Are you sure you want to delete the event?'),
+                                  //         actions: [
+                                  //           // The "Yes" button
+                                  //           TextButton(
+                                  //               onPressed: () {
+                                  //                 // // Remove the box
+                                  //                 // setState(() {
+                                  //                 //   _isShown = false;
+                                  //                 // });
+
+                                  //                 // Close the dialog
+                                  //                 Navigator.of(context).pop();
+                                  //               },
+                                  //               child: const Text('Delete')),
+                                  //           TextButton(
+                                  //               onPressed: () {
+                                  //                 // Close the dialog
+                                  //                 Navigator.of(context).pop();
+                                  //               },
+                                  //               child: const Text('Cancel'))
+                                  //         ],
+                                  //       );
+                                  //     });
+
+                                  router.pushNamed("event_delete_confirm",
+                                      pathParameters: {
+                                        "event_id": eventId.toString()
+                                      }).then((ans) {
+                                    if (ans != "delete_confirmed") {
+                                      return;
+                                    }
+                                    setState(() {
+                                      var a = deleteEvent();
+                                      _deletion = a;
+                                      a
+                                          .then((v) => Future.delayed(
+                                              const Duration(seconds: 2)))
+                                          .then((value) {
+                                        router.go("/");
+                                      });
+                                    });
+                                  });
+                                },
+                                child:
+                                    Text(AppLocalizations.of(context)!.delete)),
+                          const SizedBox(
+                            height: 16,
+                          ),
+                          FilledButton(
+                              onPressed: () {
+                                setState(() {
+                                  _submission = submit();
+                                });
+                              },
+                              child: Text(AppLocalizations.of(context)!.save)),
+                          const SizedBox(height: 32),
+                          ValueListenableBuilder(
+                            valueListenable: payload,
+                            builder: (context, snapshot, _) {
+                              if (snapshot.hasError) {
+                                return Text(snapshot.error.toString());
+                              }
+
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
+
+                              // if (snapshot.hasData) {
+                              //   return Text(snapshot.data.toString());
+                              // }
+
+                              return const SizedBox();
+                            },
+                          )
+                        ]);
                       }),
                   FutureBuilderPatched(
                     future: _submission,

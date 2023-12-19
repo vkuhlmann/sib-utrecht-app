@@ -40,6 +40,10 @@ class FetchResult<T> {
         invalidated: one.invalidated || two.invalidated);
   }
 
+  static FetchResult<void> mergeMany(Iterable<FetchResult<void>> vals) {
+    return vals.fold(const FetchResult<void>(null, null), (previousValue, element) => FetchResult.merge(previousValue, element));
+  }
+
   // Future<FetchResult<T>> wait()
 
   bool isObsolete({Duration expireTime = const Duration(minutes: 5)}) {
@@ -98,12 +102,14 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
   Future<FetchResult<T>> get loading => _loading;
 
   final Duration autoRefreshThreshold;
+  bool allowAutoRefresh;
 
   CachedProviderT(
       {required this.getFresh,
       required this.getCached,
       required this.postProcess,
       required this.connector,
+      required this.allowAutoRefresh,
       this.autoRefreshThreshold = const Duration(minutes: 5)}) {
     _silentReset();
     // _loading = Future.value(reload());
@@ -128,6 +134,17 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
   void reset() {
     _silentReset();
     notifyListeners();
+  }
+
+  void setAllowAutoRefresh(bool val) {
+    if (allowAutoRefresh == val) {
+      return;
+    }
+
+    allowAutoRefresh = val;
+    if (allowAutoRefresh) {
+      reload();
+    }
   }
 
   FutureOr<FetchResult<T>?> _fetchCachedResult() {
@@ -242,6 +259,10 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
 
     try {
       var attemptCache = await _fetchCachedResult();
+      if (attemptCache == null) {
+        log.info("[Cache] No cached result");
+      }
+
       if (attemptCache != null) {
         setCache(-1, attemptCache);
       }
@@ -257,9 +278,13 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
         "[Cache] Cached timestamp is ${c?.timestamp} (needs refresh: ${c?.isObsolete(expireTime: autoRefreshThreshold)})");
 
     bool needsRefresh =
-        c == null || c.isObsolete(expireTime: autoRefreshThreshold);
+        c == null || (allowAutoRefresh && c.isObsolete(expireTime: autoRefreshThreshold));
     if (needsRefresh) {
       return _loadFresh();
+    }
+
+    if (c.isObsolete(expireTime: autoRefreshThreshold)) {
+      log.info("[Cache] Skipped refresh because allowAutoRefresh is false");
     }
 
     // _loading = Future.value(c);

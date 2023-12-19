@@ -24,11 +24,12 @@ class Resource<T extends CacheableResource> extends ChangeNotifier {
 
   final Box box;
   final String name;
-  final Map<String, FetchResult<T>> data;
+  // final Map<String, FetchResult<T>> data;
   final Map<String, DateTime> invalidationTimestamps = {};
 
   Resource(
-      {required this.data,
+      {
+      // required this.data,
       // required this.save,
       required this.name,
       required this.box
@@ -40,30 +41,30 @@ class Resource<T extends CacheableResource> extends ChangeNotifier {
     String entryName,
     // dynamic Function(T) serialize, T Function(dynamic) deserialize
   ) {
-    Map<String, FetchResult<T>> data = {};
-    dynamic rawData;
-    try {
-      rawData = box.get(entryName);
-    } catch (e) {
-      log.warning("Failed to load $entryName from cache: $e");
-      box.delete(entryName);
-    }
+    // Map<String, FetchResult<T>> data = {};
+    // dynamic rawData;
+    // try {
+    //   rawData = box.get(entryName);
+    // } catch (e) {
+    //   log.warning("Failed to load $entryName from cache: $e");
+    //   box.delete(entryName);
+    // }
 
     // log.fine("Raw data: $rawData");
 
-    data = ((rawData ?? {}) as Map).map(
-      (key, value) {
-        final a = FetchResult.fromJson<Map>(value, (v) => v as Map);
-        return MapEntry(
-            key,
-            a.mapValue((p0) => CacheableResource.fromJson<T>(
-                p0, CollectingUnpacker(anchor: a, pool: null))));
-      },
-    );
+    // data = ((rawData ?? {}) as Map).map(
+    //   (key, value) {
+    //     final a = FetchResult.fromJson<Map>(value, (v) => v as Map);
+    //     return MapEntry(
+    //         key,
+    //         a.mapValue((p0) => CacheableResource.fromJson<T>(
+    //             p0, CollectingUnpacker(anchor: a, pool: null))));
+    //   },
+    // );
 
     var v = Resource<T>(
         box: box,
-        data: data,
+        // data: data,
         // data: ((box.get(entryName) ?? {}) as Map).map((key, value) =>
         //     MapEntry(key, FetchResult.fromJson(value, deserialize))),
         // save: (data) async {
@@ -74,16 +75,30 @@ class Resource<T extends CacheableResource> extends ChangeNotifier {
         // },
         name: entryName);
 
-    log.info("Loaded $entryName from cache, ${v.data.length} entries");
+    log.info("Entry count in ${box.name}: ${box.length}");
+
+    // log.info("Loaded $entryName from cache, ${v.data.length} entries");
     return v;
   }
 
+  String getKey(String id) => "$name-$id";
+
   FetchResult<T>? operator [](String id) {
     // log.info("[Cache] ResourcePool: $id retrieved, timestamp: ${data[id]?.timestamp}, invalidated: ${data[id]?.invalidated}");
-    var val = data[id];
-    if (val == null) {
+
+    final raw = box.get(getKey(id));
+    if (raw == null) {
       return null;
     }
+
+    final a = FetchResult.fromJson<Map>(raw, (v) => v as Map);
+    final val = a.mapValue((p0) => CacheableResource.fromJson<T>(
+        p0, CollectingUnpacker(anchor: a, pool: null)));
+
+    // var val = data[id];
+    // if (val == null) {
+    //   return null;
+    // }
 
     final invalidTs = invalidationTimestamps[id];
     if (invalidTs != null && val.timestamp?.isAfter(invalidTs) != true) {
@@ -93,13 +108,19 @@ class Resource<T extends CacheableResource> extends ChangeNotifier {
     return val;
   }
 
+  void _setValue(String id, FetchResult<T> val) {
+    box
+        .put(getKey(id), val.toJson((v) => v.toJson()))
+        .catchError((e) => log.severe("Failed to save $id to cache: $e"));
+  }
+
   void collect(FetchResult<T> data) {
     final id = data.value.id;
     // if (id == null) {
     //   return;
     // }
 
-    final prevVal = this.data[id];
+    final prevVal = this[id];
     final ts = data.timestamp;
     if (ts != null &&
         prevVal != null &&
@@ -127,7 +148,9 @@ class Resource<T extends CacheableResource> extends ChangeNotifier {
       return;
     }
 
-    this.data[id] = data;
+    // this.data[id] = data;
+    _setValue(id, data);
+
     if (hasValueChanged) {
       log.info("[Cache] ResourcePool: $id changed ($name)");
       // notifyListeners();
@@ -136,9 +159,9 @@ class Resource<T extends CacheableResource> extends ChangeNotifier {
         "[Cache] ResourcePool: $id collected, timestamp changed from ${prevVal?.timestamp} to $ts, "
         " invalidated changed from ${prevVal?.invalidated} to ${data.invalidated}");
 
-    var boxPutVal = this
-        .data
-        .map((key, value) => MapEntry(key, value.toJson((v) => v.toJson())));
+    // var boxPutVal = this
+    //     .data
+    //     .map((key, value) => MapEntry(key, value.toJson((v) => v.toJson())));
 
     // final String boxPutValStr = jsonEncode(boxPutVal);
 
@@ -146,37 +169,37 @@ class Resource<T extends CacheableResource> extends ChangeNotifier {
     //   log.info("Saving $name to cache:\n$boxPutValStr");
     // }
 
-    box.put(name, boxPutVal).catchError((e) {
-      log.severe("Failed to save $name to cache: $e");
-    });
+    // box.put(name, boxPutVal).catchError((e) {
+    //   log.severe("Failed to save $name to cache: $e");
+    // });
     // save(this.data);
   }
 
-  void invalidate() {
-    DateTime invalidationTimestamp = DateTime.now();
+  // void invalidate() {
+  //   DateTime invalidationTimestamp = DateTime.now();
 
-    log.info("[Cache] Invalidating $name");
-    // data.clear();
-    for (var entry in data.entries.toList()) {
-      data[entry.key] = entry.value.asInvalidated();
-      invalidationTimestamps[entry.key] = invalidationTimestamp;
-    }
+  //   log.info("[Cache] Invalidating $name");
+  //   // data.clear();
+  //   for (var entry in data.entries.toList()) {
+  //     data[entry.key] = entry.value.asInvalidated();
+  //     invalidationTimestamps[entry.key] = invalidationTimestamp;
+  //   }
 
-    notifyListeners();
-  }
+  //   notifyListeners();
+  // }
 
   void invalidateId(String id) {
     DateTime invalidationTimestamp = DateTime.now();
     invalidationTimestamps[id] = invalidationTimestamp;
 
     // data.remove(id);
-    var val = data[id];
+    var val = this[id];
     if (val == null) {
       return;
     }
 
     log.info("[Cache] Invalidating $id in $name");
-    data[id] = val.asInvalidated();
+    _setValue(id, val.asInvalidated());
 
     notifyListeners();
   }

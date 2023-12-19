@@ -9,19 +9,22 @@ import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 class CachedProvider<T> extends CachedProviderT<T, T, CacherApiConnector> {
-  final FutureOr<T> Function(APIConnector) obtain;
+  final FutureOr<FetchResult<T>> Function(APIConnector) obtain;
 
   CachedProvider(
       {required this.obtain,
       FetchResult<T>? cache,
       required ResourcePoolBase? pool,
+      required bool allowAutoRefresh,
       required FutureOr<CacherApiConnector> connector})
       : super(
+            allowAutoRefresh: allowAutoRefresh,
             getFresh: (c) {
               var monitor = CacheApiConnectorMonitor(c, pool: pool);
 
-              return Future.value(obtain(monitor))
-                  .then((value) => monitor.wrapResult(value));
+              // return Future.value(obtain(monitor))
+              //     .then((value) => monitor.wrapResult(value));
+              return Future.value(obtain(monitor));
             },
             getCached: (c) {
               if (cache != null) {
@@ -34,7 +37,8 @@ class CachedProvider<T> extends CachedProviderT<T, T, CacherApiConnector> {
                       CacheApiConnectorMonitor(conn.cache, pool: pool);
 
                   return foCatch(
-                      foThen(obtain(monitor), (res) => monitor.wrapResult(res)),
+                      // foThen(
+                      obtain(monitor), // (res) => monitor.wrapResult(res)),
                       (e) {
                     if (e is CacheMissException) {
                       return null;

@@ -140,11 +140,11 @@ class Events {
   //       (raw["data"]["events"] as Iterable<dynamic>).map((e) => parseEvent(e)));
   // }
 
-  Future<FetchResult<List<Event>>> list() => retrieve(
+  Future<FetchResult<List<String>>> list() => retrieve(
       conn: apiConnector,
       fromCached: null,
       url: "/events",
       parse: (res, unpacker) => (res["data"]["events"] as Iterable)
-          .map((e) => unpacker.parse<Event>(e))
+          .map((e) => unpacker.abstract<Event>(e))
           .toList());
 }

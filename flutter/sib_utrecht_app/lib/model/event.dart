@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 import 'dart:core';
 
@@ -92,7 +94,7 @@ class EventBody implements CacheableResource {
 }
 
 class Event implements CacheableResource {
-  final Map data;
+  final Map _data;
   final DateTime start;
   final DateTime? end;
   final String? location;
@@ -100,7 +102,7 @@ class Event implements CacheableResource {
   final EventBody? body;
 
   @override
-  String get id => getEventIdFromData(data);
+  String get id => getEventIdFromData(_data);
 
   // String get bodyId => "$id-body";
   static String getEventIdFromData(Map data) => data["event_id"].toString();
@@ -108,17 +110,18 @@ class Event implements CacheableResource {
 
   // int get eventId => data["event_id"];
   // String get eventId => data["event_id"];
-  String get eventName => data["name"];
-  String get eventNameNL => data["nameNL"] ?? data["name"];
-  String get eventSlug => data["slug"];
+  String get eventName => _data["name"];
+  String? get eventNameNL => _data["nameNL"];
+  // ?? _data["name"];
+  String get eventSlug => _data["slug"];
 
   String get signupType {
-    var signupType = data["signup"]?["type"];
-    if (signupType == null && data["signup"]?["url"] != null) {
+    var signupType = _data["signup"]?["type"];
+    if (signupType == null && _data["signup"]?["url"] != null) {
       signupType = "url";
     }
 
-    if (data["event_rsvp"] == 0) {
+    if (_data["event_rsvp"] == 0) {
       signupType = "none";
     }
 
@@ -127,23 +130,36 @@ class Event implements CacheableResource {
     return signupType;
   }
 
-  Event({required this.data, required this.body})
-      : start = DateTime.parse('${data["start"]}Z').toLocal(),
+  bool get isActive => _data["tickets"]?.isNotEmpty ?? false;
+
+  String? get signupUrl => _data["signup"]?["url"];
+
+  Event({required Map data, required this.body})
+      : 
+      _data = data,
+      start = DateTime.parse('${data["start"]}Z').toLocal(),
         end = data["end"] != null
             ? DateTime.parse('${data["end"]}Z').toLocal()
             : null,
         location = data["location"];
 
+  Event.copy(Event other)
+      : _data = jsonDecode(jsonEncode(other._data)),
+        start = other.start,
+        end = other.end,
+        location = other.location,
+        body = other.body;
+
   String getLocalEventName(Locale loc) {
     if (loc.languageCode == "nl") {
-      return eventNameNL;
+      return eventNameNL ?? eventName;
     }
 
     return eventName;
   }
 
   Event withBody(EventBody body) {
-    return Event(data: data, body: body);
+    return Event(data: _data, body: body);
   }
 
   static Event fromJson(Map data, AnchoredUnpacker unpacker) {
@@ -197,5 +213,11 @@ class Event implements CacheableResource {
   bool doesExpectParticipants() => signupType == "api";
 
   @override
-  Map toJson() => data;
+  Map toJson({bool includeBody = false}) {
+    var res = _data;
+    if (includeBody && body != null) {
+      res["body"] = body!.toJson();
+    }
+    return res;
+  }
 }

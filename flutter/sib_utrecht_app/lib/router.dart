@@ -252,7 +252,8 @@ GoRouter createRouter() {
                               //   eventId = int.tryParse(
                               //       state.pathParameters['event_id']!);
                               // }
-                              String? eventId = state.pathParameters['event_id'];
+                              String? eventId =
+                                  state.pathParameters['event_id'];
 
                               if (eventId == null) {
                                 router.go("/");
@@ -275,23 +276,31 @@ GoRouter createRouter() {
                                   path: 'edit',
                                   name: "event_edit",
                                   builder: (context, state) {
-                                    int? eventId;
-                                    // if (state.pathParameters
-                                    //     .containsKey('event_id')) {
-                                    //   eventId = int.tryParse(
-                                    //       state.pathParameters['event_id']!);
+                                    // int? eventId;
+                                    // // if (state.pathParameters
+                                    // //     .containsKey('event_id')) {
+                                    // //   eventId = int.tryParse(
+                                    // //       state.pathParameters['event_id']!);
+                                    // // }
+                                    // String? eventIdStr =
+                                    //     ;
+
+                                    // if (eventIdStr != "new" &&
+                                    //     eventIdStr != null) {
+                                    //   eventId = int.tryParse(eventIdStr);
                                     // }
-                                    String? eventIdStr =
+
+                                    String? eventIdParam =
                                         state.pathParameters['event_id'];
 
-                                    if (eventIdStr != "new" &&
-                                        eventIdStr != null) {
-                                      eventId = int.tryParse(eventIdStr);
+                                    String? eventId = eventIdParam;
+                                    if (eventId == "new") {
+                                      eventId = null;
                                     }
 
                                     return EventEditPage(
                                         eventId: eventId,
-                                        key: ValueKey("event/$eventId/edit"));
+                                        key: ValueKey("event/$eventIdParam/edit"));
                                   },
                                   routes: [
                                     GoRoute(
@@ -391,7 +400,8 @@ GoRouter createRouter() {
                                   name: "group",
                                   path: 'groups/@:group_name',
                                   builder: (context, state) => GroupMembersPage(
-                                    key: ValueKey(state.pathParameters["group_name"]),
+                                        key: ValueKey(
+                                            state.pathParameters["group_name"]),
                                         groupName:
                                             state.pathParameters["group_name"]!,
                                       ),
@@ -402,7 +412,9 @@ GoRouter createRouter() {
                                         // parentNavigatorKey: _infoNavigatorKey,
                                         builder: (context, state) =>
                                             GroupMembersPage(
-                                              key: ValueKey(state.pathParameters["group_name"]),
+                                              key: ValueKey(
+                                                  state.pathParameters[
+                                                      "group_name"]),
                                               groupName: state.pathParameters[
                                                   "group_name"]!,
                                             ),
@@ -424,12 +436,14 @@ GoRouter createRouter() {
                                             //   //             .queryParameters["url"]
                                             //   //         as String));
                                             // },
-                                            builder:(context, state) => 
-                                              GroupMembersAddPage(
-                                                key: ValueKey(state.pathParameters["group_name"]),
-                                                groupName: state
-                                                        .pathParameters[
-                                                    "group_name"]!),
+                                            builder: (context, state) =>
+                                                GroupMembersAddPage(
+                                                    key: ValueKey(
+                                                        state.pathParameters[
+                                                            "group_name"]),
+                                                    groupName:
+                                                        state.pathParameters[
+                                                            "group_name"]!),
                                           )
                                         ]),
                                   ]),
@@ -438,7 +452,7 @@ GoRouter createRouter() {
                                 // parentNavigatorKey: _infoNavigatorKey,
                                 builder: (context, state) =>
                                     const GroupMembersPage(
-                                      key: ValueKey("societies"),
+                                  key: ValueKey("societies"),
                                   groupName: "societies",
                                 ),
                               ),
@@ -446,7 +460,7 @@ GoRouter createRouter() {
                                 path: 'board',
                                 builder: (context, state) =>
                                     const GroupMembersPage(
-                                      key: ValueKey("boards"),
+                                  key: ValueKey("boards"),
                                   groupName: "boards",
                                 ),
                               ),
@@ -455,7 +469,8 @@ GoRouter createRouter() {
                                 path: 'users/@:entity_name',
                                 // parentNavigatorKey: _infoNavigatorKey,
                                 builder: (context, state) => UserPage(
-                                  key: ValueKey(state.pathParameters["entity_name"]),
+                                  key: ValueKey(
+                                      state.pathParameters["entity_name"]),
                                   entityName:
                                       state.pathParameters["entity_name"]!,
                                 ),

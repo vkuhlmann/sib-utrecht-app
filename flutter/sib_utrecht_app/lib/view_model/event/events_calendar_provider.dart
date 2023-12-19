@@ -9,6 +9,7 @@ import 'package:sib_utrecht_app/view_model/event/event_placement.dart';
 import 'package:sib_utrecht_app/view_model/event/events_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/api_connector_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/bookings_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/event_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/events_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/participation_provider.dart';
 
@@ -80,11 +81,16 @@ class CalendarListProvider extends StatelessWidget {
   //                 toCalendarList(connector, events, bookings, feedback)))));
 
   @override
-  Widget build(BuildContext context) => EventsProvider(
-      builder: (context, events, _) => EventParticipationProvider.Multiplexed(
-          query: events,
+  Widget build(BuildContext context) => EventsIdsProvider(
+      builder: (context, eventIds, _) => 
+      EventProvider.Multiplexed(
+        query: eventIds,
+        requireBody: false,
+        builder: (context, events) =>
+      EventParticipationProvider.Multiplexed(
+          query: events.map((e) => e.value).toList(),
           builder: (context, annotatedEvents) =>
-              builder(context, toCalendarList(annotatedEvents))));
+              builder(context, toCalendarList(annotatedEvents)))));
 }
 
 // class EventsCalendarList with ChangeNotifier {

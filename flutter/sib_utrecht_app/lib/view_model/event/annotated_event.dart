@@ -17,5 +17,5 @@ class AnnotatedEvent extends Event {
     this.participation,
     this.placement,
     this.participants,
-  }) : super(data: event.data, body: event.body);
+  }) : super.copy(event);
 }
