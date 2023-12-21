@@ -10,7 +10,7 @@ import '../../view_model/async_patch.dart';
 
 class ActionRefreshButton extends StatefulWidget {
   final Future<DateTime>? refreshFuture;
-  final void Function() triggerRefresh;
+  final void Function(DateTime) triggerRefresh;
 
   const ActionRefreshButton(
       {super.key, required this.refreshFuture, required this.triggerRefresh});
@@ -22,7 +22,7 @@ class ActionRefreshButton extends StatefulWidget {
 class ActionRefreshButtonWithState extends StatefulWidget {
   final AsyncSnapshot<void> snapshot;
   final bool isResultNew;
-  final void Function() triggerRefresh;
+  final void Function(DateTime) triggerRefresh;
 
   const ActionRefreshButtonWithState(
       {super.key,
@@ -166,7 +166,7 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
 
     return IconButton(
         onPressed: () {
-          widget.triggerRefresh();
+          widget.triggerRefresh(DateTime.now());
         },
         icon: SizedBox(height: 24, width: 24, child: icon));
 

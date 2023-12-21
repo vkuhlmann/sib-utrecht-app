@@ -100,6 +100,9 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
   Listenable? activeListener;
 
+  ResourcePoolBase? pool;
+  Future<APIConnector>? apiConnector;
+
   @override
   void dispose() {
     var oldList = activeListener;
@@ -134,15 +137,24 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
     }
     activeListener = null;
 
-    var pool = ResourcePoolAccess.maybeOf(context)?.pool;
+    var newPool = ResourcePoolAccess.maybeOf(context)?.pool;
+    var newConnector = APIAccess.maybeOf(context)?.connector;
+
+    if (newPool != this.pool || newConnector != apiConnector) {
+      this.pool = newPool;
+      apiConnector = newConnector;
+
+      data = initData();
+    }
+
     var changeList = widget.changeListener;
+
+    final pool = this.pool;
     if (pool != null && changeList != null) {
       var listener = changeList(pool);
       listener.addListener(updateData);
       activeListener = listener;
     }
-
-    data = initData();
 
     updateAllowAutoRefresh();
 
@@ -200,13 +212,17 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
   bool getAllowAutoRefresh() {
     final state = LoadStability.maybeOf(context);
     if (state == null) {
+      log.info("[Provider] LoadStability not found, allowing auto refresh");
       return true;
     }
 
     if (state.isLoading) {
+      log.info(
+          "[Provider] LoadStability is loading, not allowing auto refresh");
       return false;
     }
 
+    log.info("[Provider] LoadStability is not loading, allowing auto refresh");
     return true;
   }
 
@@ -331,10 +347,27 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
                         .whereNotNull()
                         .minOrNull ??
                     DateTime.now()),
-            triggerRefresh: () {
+            triggerRefresh: (DateTime invalidationTime) async {
+              DateTime dt = DateTime.now();
+
               for (var element in data) {
-                element.refresh();
+                DateTime? ct;
+                try {
+                  ct = (await element.loading).timestamp;
+                } catch (e) {
+                  ct = null;
+                }
+
+                if (!(ct?.isBefore(invalidationTime) ?? true)) {
+                  continue;
+                }
+
+                dt = [dt, (await element.refresh()).timestamp]
+                    .whereNotNull()
+                    .min;
               }
+
+              return dt;
             },
             child: FutureBuilderPatched(
               future: Future.wait(data.map((e) => e.loading)),

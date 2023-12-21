@@ -309,7 +309,7 @@ class WithSIBAppBar extends StatelessWidget {
                       refreshFuture: refreshFuture,
                       triggerRefresh:
                           actionSubscriptions.lastOrNull?.triggerRefresh ??
-                              () {}),
+                              (_) {}),
                 // const Icon(Icons.more_vert),
                 // Text("${actionSubscriptions.length}"),
                 // ...ActionProvider.of(context).controller.widgets,
