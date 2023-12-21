@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // import 'package:sib_utrecht_app/model/events.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/model/api/users.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 // import '../constants.dart';
 
@@ -15,7 +15,7 @@ Widget WPUsersProvider(
         query: null,
         builder: builder,
         errorTitle: (loc) => loc.couldNotLoad(loc.dataUsers),
-        changeListener: (p) => p.users,
+        // changeListener: (p) => p._users,
         obtain: (void q, c) => Users(c).listWP());
 
 

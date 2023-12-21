@@ -6,66 +6,11 @@ import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/booking.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/log.dart';
 
-// class ResourcePool extends ResourcePoolBase {
-//   Future<CacherApiConnector>? connector;
-//   // EventsProvider? _eventsProvider;
-//   // GroupsProvider? _groupsProvider;
-
-
-//   // By event ID
-//   Map<String, FetchResult<Booking>>? myBookings;
-
-//   final ChangeNotifier myBookingsChange = ChangeNotifier();
-
-//   // final CachedProvider<List<Event>> eventsProvider =
-//   //   CachedProvider<List<Event>>(obtain: (c) => Events(c).list());
-
-//   // final CachedProvider<Set<int>> bookingsProvider =
-//   //   CachedProvider<Set<int>>(obtain: (c) => Bookings(c).getMyBookings());
-
-//   ResourcePool() {
-//     log.info("Creating ResourcePool");
-//   }
-
-//   // Future<FetchResult<User>> getUser(FetchResult<dynamic> raw) async {
-//   // }
-
-//   // EventsProvider get eventsProvider {
-//   //   var val = _eventsProvider ?? EventsProvider();
-//   //   var conn = connector;
-//   //   if (conn != null) {
-//   //     val.setApiConnector(conn);
-//   //   }
-//   //   _eventsProvider = val;
-//   //   return val;
-//   // }
-
-//   // GroupsProvider get groupsProvider {
-//   //   var val = _groupsProvider ?? GroupsProvider();
-//   //   var conn = connector;
-//   //   if (conn != null) {
-//   //     val.setApiConnector(conn);
-//   //   }
-//   //   _groupsProvider = val;
-//   //   return val;
-//   // }
-
-//   void setApiConnector(Future<CacherApiConnector> conn) {
-//     connector = conn;
-    
-//     // var evProv = _eventsProvider;
-//     // if (evProv != null) {
-//     //   evProv.setApiConnector(conn);
-//     // }
-//   }
-
-// }
-
 class ResourcePoolAccess extends InheritedWidget {
-  final ResourcePoolBase pool;
+  final ResourcePool pool;
 
   const ResourcePoolAccess({Key? key, required Widget child, required this.pool})
       : super(key: key, child: child);
@@ -95,13 +40,13 @@ class ResourcePoolProvider extends StatefulWidget {
 }
 
 class _ResourcePoolProviderState extends State<ResourcePoolProvider> {
-  late Future<ResourcePoolBase> pool;
+  late Future<ResourcePool> pool;
   // Future<APIConnector>? apiConnector;
 
   @override
   void initState() {
     super.initState();
-    pool = ResourcePoolBase.load(null);
+    pool = ResourcePool.load(null);
   }
 
   @override

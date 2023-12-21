@@ -1,3 +1,4 @@
+import 'package:sib_utrecht_app/model/cacheable_resource.dart';
 import 'package:sib_utrecht_app/view_model/annotated_user.dart';
 
 class Booking {

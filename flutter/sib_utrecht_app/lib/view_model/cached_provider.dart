@@ -6,6 +6,7 @@ import 'package:sib_utrecht_app/model/api_connector_cache_monitor.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/utils.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
 
 class CachedProvider<T> extends CachedProviderT<T, T, CacherApiConnector> {
@@ -14,7 +15,7 @@ class CachedProvider<T> extends CachedProviderT<T, T, CacherApiConnector> {
   CachedProvider(
       {required this.obtain,
       FetchResult<T>? cache,
-      required ResourcePoolBase? pool,
+      required ResourcePool? pool,
       required bool allowAutoRefresh,
       required FutureOr<CacherApiConnector> connector})
       : super(
@@ -36,15 +37,23 @@ class CachedProvider<T> extends CachedProviderT<T, T, CacherApiConnector> {
                   var monitor =
                       CacheApiConnectorMonitor(conn.cache, pool: pool);
 
-                  return foCatch(
-                      // foThen(
-                      obtain(monitor), // (res) => monitor.wrapResult(res)),
-                      (e) {
-                    if (e is CacheMissException) {
+                  // return foCatch<FetchResult<T>?>(
+                  //     // foThen(
+                  //     obtain(monitor), // (res) => monitor.wrapResult(res)),
+                  //     (e) {
+                  //   if (e is CacheMissException) {
+                  //     return null;
+                  //   }
+                  //   throw e;
+                  // });
+
+                  return (() async {
+                    try {
+                      return await obtain(monitor);
+                    } on CacheMissException catch (_) {
                       return null;
                     }
-                    throw e;
-                  });
+                  })();
 
                   // Future.value().catchError(onError)
                   //  monitor.wrapResult(await obtain(monitor));

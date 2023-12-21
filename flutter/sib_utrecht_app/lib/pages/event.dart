@@ -16,7 +16,7 @@ import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/annotated_user.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';

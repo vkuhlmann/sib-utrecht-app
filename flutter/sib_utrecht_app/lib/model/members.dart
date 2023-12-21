@@ -5,7 +5,7 @@ import 'package:sib_utrecht_app/model/membership.dart';
 import 'package:sib_utrecht_app/model/unpacker/anchored_unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/unpacker.dart';
 import 'package:sib_utrecht_app/utils.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class Members implements CacheableResource {
   @override

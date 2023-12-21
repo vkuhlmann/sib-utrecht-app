@@ -7,6 +7,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/event_edit_form.dart';
 import 'package:sib_utrecht_app/components/resource_pool_access.dart';
+import 'package:sib_utrecht_app/model/api/events.dart';
+import 'package:sib_utrecht_app/model/fragments_bundle.dart';
 import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
 
 import '../utils.dart';
@@ -37,14 +39,14 @@ class _EventEditPageState extends State<EventEditPage> {
   String? get eventId => widget.eventId;
 
   // Future<String>? payload;
-  Future<Map?>? _submission;
-  Future<Map?>? _deletion;
+  Future<void>? _submission;
+  Future<void>? _deletion;
 
-  final ValueNotifier<AsyncSnapshot<Map>> payload =
+  final ValueNotifier<AsyncSnapshot<FragmentsBundle>> payload =
       ValueNotifier(const AsyncSnapshot.nothing());
   final AlertsPanelController _alertsPanelController = AlertsPanelController();
 
-  late ValueSetter<AsyncSnapshot<Map>> setPayload;
+  late ValueSetter<AsyncSnapshot<FragmentsBundle>> setPayload;
 
   @override
   void initState() {
@@ -74,12 +76,12 @@ class _EventEditPageState extends State<EventEditPage> {
       throw StateError("No API connector available");
     }
 
-    final conn = await connector;
-    final response = await conn.post("/events/$eventId/edit");
-    final event =
-        Event.fromJson((response["data"]["event"] as Map), DirectUnpacker());
+    // final conn = await connector;
+    // final response = await conn.post("/events/$eventId/edit");
+    // final event =
+    //     Event.fromJson((response["data"]["event"] as Map), DirectUnpacker());
 
-    return event;
+    return Events(await connector).startEdit(eventId);
   }
 
   @override
@@ -125,20 +127,24 @@ class _EventEditPageState extends State<EventEditPage> {
     super.didChangeDependencies();
   }
 
-  Future<Map?> deleteEvent() async {
+  Future<void> deleteEvent() async {
     var conn = connector;
     if (conn == null) {
-      return null;
+      throw StateError("No API connector available");
     }
 
-    var submission = await conn.then((c) => c.delete("/events/$eventId"));
-    return submission;
+    final eventId = this.eventId;
+    if (eventId == null) {
+      throw StateError("Cannot delete event: eventId is null");
+    }
+
+    return Events(await conn).deleteEvent(eventId);
   }
 
-  Future<Map?> submit() async {
+  Future<void> submit() async {
     var conn = connector;
     if (conn == null) {
-      return null;
+      return;
     }
 
     final payload = this.payload.value;
@@ -154,30 +160,22 @@ class _EventEditPageState extends State<EventEditPage> {
 
     final eventId = this.eventId;
     if (eventId == null) {
-      var response = await conn.then((c) => c.post("/events",
-          // "/events?accept_beta=${acceptBeta ? 'true' : 'false'}",
-          body: data));
+      // var response = await conn.then((c) => c.post("/events",
+      //     // "/events?accept_beta=${acceptBeta ? 'true' : 'false'}",
+      //     body: data));
 
-      int newEventId = response["data"]["event_id"];
+      int newEventId = await Events(await conn).createEvent(data);
+
+      // int newEventId = response["data"]["event_id"];
       router.goNamed("event_edit",
           pathParameters: {"event_id": newEventId.toString()});
 
-      return response;
+      return;
     }
 
-    var response =
-        await conn.then((c) => c.put("/events/$eventId", body: data));
-
-
-    if (mounted) {
-      final pool = ResourcePoolAccess.maybeOf(context)?.pool;
-      
-      pool?.eventBodies.invalidateId(
-        Event.getBodyIdForEventId(eventId));
-      pool?.events.invalidateId(eventId);
-    }
-
-    return response;
+    // var response =
+    //     await conn.then((c) => c.put("/events/$eventId", body: data));
+    await Events(await conn).updateEvent(eventId, data);
   }
 
   // void onFieldChanged(_) {
@@ -342,16 +340,18 @@ class _EventEditPageState extends State<EventEditPage> {
                             child: Center(child: CircularProgressIndicator()));
                       }
 
-                      var data = snapshot.data;
-                      if (data == null) {
-                        if (snapshot.connectionState == ConnectionState.none) {
-                          return const SizedBox();
-                        }
-                        return const Text("No response");
-                      }
+                      return const SizedBox();
 
-                      return Text(
-                          const JsonEncoder.withIndent("  ").convert(data));
+                      // var data = snapshot.data;
+                      // if (data == null) {
+                      //   if (snapshot.connectionState == ConnectionState.none) {
+                      //     return const SizedBox();
+                      //   }
+                      //   return const Text("No response");
+                      // }
+
+                      // return Text(
+                      //     const JsonEncoder.withIndent("  ").convert(data));
                     },
                   )
                 ]))),

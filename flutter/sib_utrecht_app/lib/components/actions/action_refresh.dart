@@ -169,14 +169,6 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
           widget.triggerRefresh(DateTime.now());
         },
         icon: SizedBox(height: 24, width: 24, child: icon));
-
-    // return IconButton(
-    //     onPressed: () {
-    //       // alertsPanelController.dismissedMessages.clear();
-    //       // calendar.refresh();
-    //       widget.triggerRefresh();
-    //     },
-    //     icon: const Icon(Icons.refresh));
   }
 }
 
@@ -187,7 +179,7 @@ class _ActionRefreshButtonState extends State<ActionRefreshButton>
     return FutureBuilderPatched(
         future: widget.refreshFuture,
         builder: (context, snapshot) => FutureBuilderPatched(
-            future: widget.refreshFuture?.then((value) async {
+            future: widget.refreshFuture?.then((value) {
               // if (value.isAfter(DateTime.now().subtract(const Duration(seconds: 30)))) {
               //   return Future.delayed(const Duration(seconds: 10));
               // }
@@ -198,13 +190,17 @@ class _ActionRefreshButtonState extends State<ActionRefreshButton>
 
               DateTime now = DateTime.now();
               if (noveltyExpiration.isAfter(now)) {
-                await Future.delayed(noveltyExpiration.difference(now));
+                return Future.delayed(noveltyExpiration.difference(now));
               }
+
+              // return false;
+              return Future.value();
               // return Future.delayed([
               //   Duration.zero, noveltyExpiration.difference(DateTime.now())
               // ].max);
-            }).catchError((error, stackTrace) async {
-              await Future.delayed(const Duration(seconds: 10));
+            }).catchError((error, stackTrace) {
+              return Future.delayed(const Duration(seconds: 10));
+              // return true;
             }),
             // whenComplete(() => Future.delayed(const Duration(seconds: 10))),
             builder: (delayContext, delaySnapshot) =>

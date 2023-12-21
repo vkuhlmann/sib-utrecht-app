@@ -144,7 +144,7 @@ class _EditUserDetailsState extends State<EditUserDetails> {
 
   @override
   Widget build(BuildContext context) {
-    ResourcePoolBase? pool = ResourcePoolAccess.maybeOf(context)?.pool;
+    ResourcePool? pool = ResourcePoolAccess.maybeOf(context)?.pool;
 
     return Column(children: [
       Row(
@@ -204,8 +204,6 @@ class _EditUserDetailsState extends State<EditUserDetails> {
                           content: Text(
                               AppLocalizations.of(context)!.userDetailsSaved)));
                     }
-
-                    pool?.users.invalidateId(widget.user.id);
                   });
                   fut.catchError((e) {
                     if (!mounted) {

@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sib_utrecht_app/components/actions/alerts_panel.dart';
 import 'package:sib_utrecht_app/model/event.dart';
+import 'package:sib_utrecht_app/model/fragments_bundle.dart';
 import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
 
 class EventEditForm extends StatefulWidget {
   final Event? originalEvent;
-  final ValueSetter<AsyncSnapshot<Map>> setPayload;
+  final ValueSetter<AsyncSnapshot<FragmentsBundle>> setPayload;
 
   const EventEditForm(
       {required this.originalEvent, required this.setPayload, Key? key})
@@ -32,9 +33,9 @@ class _EventEditFormState extends State<EventEditForm> {
 
   bool acceptBeta = true;
 
-  Map getPayloadJson() {
+  FragmentsBundle getPayloadJson() {
     Event newEvent = getUpdatedEvent();
-    return newEvent.toJson(includeBody: true);
+    return newEvent.toFragments(includeBody: true);
   }
 
   // String getPayload() {
@@ -47,8 +48,8 @@ class _EventEditFormState extends State<EventEditForm> {
     setFields();
   }
 
-  AsyncSnapshot<Map> getPayloadSnapshot() {
-    Map payload;
+  AsyncSnapshot<FragmentsBundle> getPayloadSnapshot() {
+    FragmentsBundle payload;
     try {
       payload = getPayloadJson();
     } catch (e) {

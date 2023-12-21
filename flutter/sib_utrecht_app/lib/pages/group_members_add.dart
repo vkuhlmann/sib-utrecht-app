@@ -9,6 +9,7 @@ import 'package:sib_utrecht_app/globals.dart';
 import 'package:sib_utrecht_app/model/api/groups.dart';
 import 'package:sib_utrecht_app/model/api/users.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
+import 'package:sib_utrecht_app/model/members.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/view_model/provider/group_members_provider.dart';
@@ -47,7 +48,7 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
 
   Future<void> addMember(User user, Locale loc) async {
     log.info("Adding member ${user.id} to group ${widget.groupName}");
-    ResourcePoolBase? pool = ResourcePoolAccess.maybeOf(context)?.pool;
+    // ResourcePool? pool = ResourcePoolAccess.maybeOf(context)?.pool;
     final connector = await APIAccess.of(context).connector;
 
     try {
@@ -58,14 +59,12 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
       return;
     }
 
-    pool?.members.invalidateId(widget.groupName);
-
     reportSuccess(
         "Added ${user.getLocalShortName(loc)} to ${widget.groupName}");
 
-    if (!mounted) {
-      return;
-    }
+    // if (!mounted) {
+    //   return;
+    // }
 
     // final pool = ResourcePoolAccess.maybeOf(context);
     // if (pool != null) {
@@ -75,7 +74,6 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
 
   Future<void> removeMember(User user, Locale loc) async {
     log.info("Removing member ${user.id} from group ${widget.groupName}");
-    ResourcePoolBase? pool = ResourcePoolAccess.maybeOf(context)?.pool;
     final connector = await APIAccess.of(context).connector;
 
     try {
@@ -85,8 +83,6 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
       reportError("Failed to remove member: $e");
       return;
     }
-
-    pool?.members.invalidateId(widget.groupName);
 
     reportSuccess(
         "Removed ${user.getLocalShortName(loc)} from ${widget.groupName}");

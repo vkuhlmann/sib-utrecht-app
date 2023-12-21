@@ -16,7 +16,7 @@ import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/load_stability.dart';
 
 // class MultiplexedProvider<T, U> extends StatelessWidget {
@@ -74,7 +74,7 @@ class MultiplexedProvider<T, U> extends StatefulWidget {
   final String Function(AppLocalizations) errorTitle;
   // final Widget Function(BuildContext context, Future<U> data)? loadingBuilder;
 
-  final Listenable Function(ResourcePoolBase)? changeListener;
+  // final Listenable Function(ResourcePool)? changeListener;
 
   const MultiplexedProvider(
       {Key? key,
@@ -83,7 +83,8 @@ class MultiplexedProvider<T, U> extends StatefulWidget {
       required this.obtain,
       required this.builder,
       required this.errorTitle,
-      this.changeListener})
+      // this.changeListener
+      })
       : super(key: key);
 
   @override
@@ -100,7 +101,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
   Listenable? activeListener;
 
-  ResourcePoolBase? pool;
+  ResourcePool? pool;
   Future<APIConnector>? apiConnector;
 
   @override
@@ -147,11 +148,17 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
       data = initData();
     }
 
-    var changeList = widget.changeListener;
+    // var changeList = widget.changeListener;
 
     final pool = this.pool;
-    if (pool != null && changeList != null) {
-      var listener = changeList(pool);
+    // if (pool != null && changeList != null) {
+    //   var listener = changeList(pool);
+    //   listener.addListener(updateData);
+    //   activeListener = listener;
+    // }
+
+    if (pool != null) {
+      final listener = pool;
       listener.addListener(updateData);
       activeListener = listener;
     }
@@ -351,6 +358,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
               DateTime dt = DateTime.now();
 
               for (var element in data) {
+                await element.reload();
+
                 DateTime? ct;
                 try {
                   ct = (await element.loading).timestamp;

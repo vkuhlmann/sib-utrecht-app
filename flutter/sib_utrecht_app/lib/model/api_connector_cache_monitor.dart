@@ -6,11 +6,11 @@ import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/model/members.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/model/user.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class CacheApiConnectorMonitor extends APIConnector {
   final APIConnector base;
-  final ResourcePoolBase? pool;
+  final ResourcePool? pool;
 
   bool isInvalidated = false;
   bool hasEncounteredNullTimestamp = false;
@@ -57,7 +57,7 @@ class CacheApiConnectorMonitor extends APIConnector {
   Future<Map> put(url, {Map? body}) => base.put(url, body: body);
 
   FetchResult<T>? attemptPoolRetrieve<T>(
-      FetchResult<T>? Function(ResourcePoolBase pool) obtain) {
+      FetchResult<T>? Function(ResourcePool pool) obtain) {
     var p = pool;
     if (p == null) {
       return null;

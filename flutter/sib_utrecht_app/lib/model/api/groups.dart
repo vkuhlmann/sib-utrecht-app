@@ -6,12 +6,15 @@ import 'package:sib_utrecht_app/model/api_connector_cache_monitor.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/model/members.dart';
 import 'package:sib_utrecht_app/model/membership.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/resource_pool.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class Groups {
   final APIConnector apiConnector;
 
   Groups(this.apiConnector);
+
+  ResourcePool? get pool => getCollectingPoolForConnector(apiConnector);
 
   // Group parseGroup(Map data) {
   //   var val = Group.fromJson(data);
@@ -41,7 +44,7 @@ class Groups {
 
   Future<FetchResult<Group>> getGroup({required String groupName}) => retrieve(
         conn: apiConnector,
-        fromCached: (pool) => pool.groups[groupName],
+        fromCached: (pool) => pool.get<Group>(groupName),
         url: "/groups/@$groupName",
         parse: (res, unpacker) => unpacker.parse<Group>(res["data"]["group"]),
       );
@@ -55,7 +58,7 @@ class Groups {
   Future<FetchResult<Members>> getMembers({required String groupName}) =>
       retrieve(
         conn: apiConnector,
-        fromCached: (pool) => pool.members[groupName],
+        fromCached: (pool) => pool.get<Members>(groupName),
         url: "/groups/@$groupName/members",
         parse: (res, unpacker) => unpacker.parse<Members>({
           "group_name": groupName,
@@ -92,6 +95,8 @@ class Groups {
       required String userId,
       required String role}) async {
     await apiConnector.post("/groups/@$groupName/members/@$userId:$role");
+
+    pool?.invalidateId<Members>(groupName);
   }
 
   Future<void> removeMember(
@@ -99,5 +104,7 @@ class Groups {
       required String userId,
       required String role}) async {
     await apiConnector.delete("/groups/@$groupName/members/@$userId:$role");
+
+    pool?.invalidateId<Members>(groupName);
   }
 }

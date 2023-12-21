@@ -6,6 +6,7 @@ import 'dart:core';
 import 'package:sib_utrecht_app/constants.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/cacheable_resource.dart';
+import 'package:sib_utrecht_app/model/fragments_bundle.dart';
 import 'package:sib_utrecht_app/model/unpacker/anchored_unpacker.dart';
 
 class EventBody implements CacheableResource {
@@ -106,7 +107,7 @@ class Event implements CacheableResource {
 
   // String get bodyId => "$id-body";
   static String getEventIdFromData(Map data) => data["event_id"].toString();
-  static String getBodyIdForEventId(String eventId) => "$eventId-body";
+  // static String getBodyIdForEventId(String eventId) => "$eventId-body";
 
   // int get eventId => data["event_id"];
   // String get eventId => data["event_id"];
@@ -196,7 +197,7 @@ class Event implements CacheableResource {
     Map? bodyVal = data["body"];
     if (bodyVal != null) {
       bodyVal["description"] ??= data["description"];
-      bodyVal["id"] = getBodyIdForEventId(id);
+      bodyVal["id"] = id;
 
       body = unpacker.parse<EventBody>(bodyVal);
     }
@@ -219,5 +220,14 @@ class Event implements CacheableResource {
       res["body"] = body!.toJson();
     }
     return res;
+  }
+
+  FragmentsBundle toFragments({bool includeBody = false}) {
+    var res = _data;
+    if (includeBody && body != null) {
+      res["body"] = body!.toJson();
+    }
+
+    return FragmentsBundle.fromComplete(res);
   }
 }

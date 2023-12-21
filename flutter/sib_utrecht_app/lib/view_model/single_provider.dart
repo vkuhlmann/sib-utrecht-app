@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/multiplexed_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -11,11 +11,13 @@ class SingleProvider<T, U> extends StatelessWidget {
     final Future<FetchResult<U>> Function(T, APIConnector) obtain;
   final Widget Function(BuildContext context, U data, FetchResult<void>) builder;
   final String Function(AppLocalizations) errorTitle;
-  final Listenable Function(ResourcePoolBase)? changeListener;
+  // final Listenable Function(ResourcePool)? changeListener;
 
   const SingleProvider(
       {Key? key, required this.query, required this.obtain,
-      required this.builder, required this.errorTitle, this.changeListener})
+      required this.builder, required this.errorTitle, 
+      // this.changeListener
+      })
       : super(key: key);
 
   @override
@@ -25,7 +27,7 @@ class SingleProvider<T, U> extends StatelessWidget {
       obtain: obtain,
       errorTitle: errorTitle,
       builder: (context, data) => builder(context, data.first.value, data.first),
-      changeListener: changeListener,
+      // changeListener: changeListener,
     );
   }  
 }

@@ -2,7 +2,7 @@
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cache.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class CacherApiConnector extends APIConnector {
   final APIConnector base;

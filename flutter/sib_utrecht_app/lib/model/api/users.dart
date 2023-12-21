@@ -11,7 +11,7 @@ import 'package:sib_utrecht_app/model/unpacker/collecting_unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/unpacker.dart';
 import 'package:sib_utrecht_app/model/user.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class Users {
   final APIConnector apiConnector;
@@ -19,6 +19,8 @@ class Users {
   // Unpacker get unpacker => getUnpackerForConnector(apiConnector);
 
   Users(this.apiConnector);
+
+  ResourcePool? get pool => getCollectingPoolForConnector(apiConnector);
 
   // FetchResult<User> parseUser(FetchResult<Map> data) =>
   //     unpacker.parseUser(data);
@@ -63,7 +65,7 @@ class Users {
 
   Future<FetchResult<User>> getUser({required String entityName}) => retrieve(
       conn: apiConnector,
-      fromCached: (pool) => pool.users[entityName],
+      fromCached: (pool) => pool.get<User>(entityName),
       url: "/users/@$entityName",
       parse: (res, unpacker) => unpacker.parse<User>(res["data"]["user"]));
 
@@ -159,6 +161,10 @@ class Users {
     return raw["data"]["entity_name"] as String;
   }
 
-  Future<Map> updateUser({required String id, required Map data}) async =>
-      apiConnector.put("/users/@$id", body: data);
+  Future<Map> updateUser({required String id, required Map data}) async {
+      final ans = await apiConnector.put("/users/@$id", body: data);
+
+      pool?.invalidateId<User>(id);
+      return ans;
+  }
 }

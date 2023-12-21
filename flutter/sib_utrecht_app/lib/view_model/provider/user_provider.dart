@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/model/api/users.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/multiplexed_provider.dart';
 import 'package:sib_utrecht_app/view_model/single_provider.dart';
 
@@ -15,7 +15,7 @@ class UserProvider {
         builder: builder,
         errorTitle: (loc) => loc.couldNotLoad(loc.dataUsers),
         obtain: (q, c) async => (await Users(c).getUser(entityName: q)),
-        changeListener: (p) => p.users,
+        // changeListener: (p) => p._users,
       );
 
   static Widget Single(
@@ -31,6 +31,6 @@ class UserProvider {
             log.info("UserProvider: obtained $ans");
             return ans;
         },
-        changeListener: (p) => p.users,
+        // changeListener: (p) => p._users,
       );
 }

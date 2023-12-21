@@ -8,11 +8,11 @@ import 'package:sib_utrecht_app/model/unpacker/anchored_unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/collecting_unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/unpacker.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 Future<FetchResult<T>> _retrieve<T>(
     APIConnector conn,
-    FetchResult<T>? Function(ResourcePoolBase)? fromCached,
+    FetchResult<T>? Function(ResourcePool)? fromCached,
     Future<FetchResult<T>> Function(APIConnector) fresh) async {
   // var conn = apiConnector;
   if (conn is CacheApiConnectorMonitor && fromCached != null) {
@@ -32,10 +32,14 @@ Future<FetchResult<T>> _retrieve<T>(
 
 Future<FetchResult<T>> retrieve<T>(
         {required APIConnector conn,
-        required FetchResult<T>? Function(ResourcePoolBase)? fromCached,
+        required FetchResult<T>? Function(ResourcePool)? fromCached,
         required String url,
         required T Function(Map, AnchoredUnpacker) parse}) =>
     _retrieve(conn, fromCached, (conn) async {
+      if (url.isEmpty) {
+        throw Exception("Empty url");
+      }
+
       final res = await conn.get(url);
       final unpacker = CollectingUnpacker(
           anchor: res, pool: getCollectingPoolForConnector(conn));
@@ -45,7 +49,7 @@ Future<FetchResult<T>> retrieve<T>(
         // Future.value(parse(await conn.get(url)))
         );
 
-ResourcePoolBase? getCollectingPoolForConnector(APIConnector conn) {
+ResourcePool? getCollectingPoolForConnector(APIConnector conn) {
   if (conn is CacheApiConnectorMonitor) {
     bool isOnlyCache = conn.base is CacheApiConnector;
 

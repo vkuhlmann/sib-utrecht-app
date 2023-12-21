@@ -2,13 +2,16 @@ import 'package:sib_utrecht_app/model/api/utils.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/entity.dart';
 import 'package:sib_utrecht_app/model/group.dart';
+import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/model/user.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class Entities {
   final APIConnector apiConnector;
 
   Entities(this.apiConnector);
+
+  ResourcePool? get pool => getCollectingPoolForConnector(apiConnector);
 
   // Future<FetchResult<Entity>> getEntity({required String entityName}) async {
   //   var raw = await apiConnector.getSimple("/entities/@$entityName");
@@ -35,7 +38,7 @@ class Entities {
       retrieve(
           conn: apiConnector,
           fromCached: (pool) =>
-              pool.users[entityName] ?? pool.groups[entityName],
+              pool.get<User>(entityName) ?? pool.get<Group>(entityName),
           url: "/entities/@$entityName",
           parse: (res, unpacked) =>
               unpacked.parse<Entity>(res["data"]["entity"]));

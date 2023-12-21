@@ -41,7 +41,7 @@ class ManagementPage extends StatelessWidget {
               child: const ListTile(title: Text("Clear cache")),
               onTap: () {
                 Hive.init(null);
-                Future.wait([Hive.openBox("api_cache"), Hive.openBox("cache")]).then((boxes) {
+                Future.wait([Hive.openBox("api_cache"), Hive.openBox("cache")]).then<void>((boxes) {
                   for (var b in boxes) {
                     b.clear();
                   }
@@ -53,6 +53,7 @@ class ManagementPage extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text("Error clearing cache"),
                   ));
+                  return;
                 });
               },
             ),

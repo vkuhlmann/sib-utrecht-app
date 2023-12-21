@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
-import 'package:sib_utrecht_app/model/bookings.dart';
+import 'package:sib_utrecht_app/model/api/bookings.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/api/events.dart';
 import 'package:sib_utrecht_app/view_model/cached_provider.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
-
 
 // class EventsProvider with ChangeNotifier {
 //   final CachedProvider<List<Event>> _eventsProvider =
@@ -50,48 +49,37 @@ import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 //         _dirtyBookState.contains(eventId);
 //   }
 
-  Future<void> setMeParticipation(
-      {required APIConnector api,
-      required Event event,
-      required bool value,
-      required ActionFeedback feedback}) async {
-        String eventId = event.id;
-        String eventName = event.eventName;
+Future<void> setMeParticipation(
+    {required APIConnector api,
+    required Event event,
+    required bool value,
+    required ActionFeedback feedback}) async {
+  String eventId = event.id;
+  String eventName = event.eventName;
 
-    if (value) {
-      Map res;
-      try {
-        res = await api
-            .post("/users/me/bookings/?event_id=$eventId&consent=true");
-
-        bool isSuccess = res["status"] == "success";
-        assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
-
-        if (isSuccess) {
-          feedback.sendConfirm("Registered for $eventName");
-        }
-      } catch (e) {
-        feedback.sendError("Failed to register for $eventName: \n$e");
-      }
+  if (value) {
+    try {
+      await Bookings(api).addMeBooking(eventId: eventId);
+    } catch (e) {
+      feedback.sendError("Failed to register for $eventName: \n$e");
+      return;
     }
 
-    if (!value) {
-      Map res;
-      try {
-        res = await api.delete("/users/me/bookings/by-event-id/$eventId");
-
-        bool isSuccess = res["status"] == "success";
-        assert(isSuccess, "No success status returned: ${jsonEncode(res)}");
-
-        if (isSuccess) {
-          feedback.sendConfirm("Cancelled registration for $eventName");
-        }
-      } catch (e) {
-        feedback
-            .sendError("Failed to cancel registration for $eventName: $e");
-      }
-    }
+    feedback.sendConfirm("Registered for $eventName");
+    return;
   }
+
+  if (!value) {
+    try {
+      await Bookings(api).removeMeBooking(eventId: eventId);
+    } catch (e) {
+      feedback.sendError("Failed to cancel registration for $eventName: $e");
+      return;
+    }
+    feedback.sendConfirm("Cancelled registration for $eventName");
+    return;
+  }
+}
 
 //   void _reprocessCached() {
 //     // log.fine("Reassembling data for events calendar list");

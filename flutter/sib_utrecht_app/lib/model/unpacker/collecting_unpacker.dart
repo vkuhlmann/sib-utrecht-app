@@ -5,11 +5,11 @@ import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/unpacker_base.dart';
 import 'package:sib_utrecht_app/model/user.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class CollectingUnpacker extends DirectUnpacker {
   // Unpacker base;
-  ResourcePoolBase? pool;
+  ResourcePool? pool;
   FetchResult<void> anchor;
 
   CollectingUnpacker({required this.pool, required this.anchor});

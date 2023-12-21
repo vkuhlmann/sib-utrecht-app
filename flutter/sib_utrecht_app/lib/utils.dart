@@ -15,7 +15,7 @@ FutureOr<U> foThen<T, U>(FutureOr<T> fut, FutureOr<U> Function(T) f) {
   return f(fut);
 }
 
-FutureOr<T> foCatch<T>(FutureOr<T> fut, FutureOr<T> Function(dynamic) onError) {
+FutureOr<T> foCatch<T>(FutureOr<T> fut, T Function(dynamic) onError) {
   if (fut is Future<T>) {
     return fut.catchError(onError);
   }

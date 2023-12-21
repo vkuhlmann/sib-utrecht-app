@@ -3,7 +3,7 @@ import 'package:sib_utrecht_app/model/unpacker/anchored_unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/unpacker.dart';
 import 'package:sib_utrecht_app/model/unpacker/unpacker_base.dart';
 import 'package:sib_utrecht_app/model/user.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_t.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class DirectUnpacker implements AnchoredUnpacker {
   // @override
