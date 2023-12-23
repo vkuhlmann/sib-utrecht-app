@@ -239,6 +239,7 @@ class _EventEditPageState extends State<EventEditPage> {
 
                         return Column(children: [
                           EventEditForm(
+                            key: ValueKey(eventId),
                               originalEvent: data, setPayload: setPayload),
                           if (eventId != null)
                             ElevatedButton(

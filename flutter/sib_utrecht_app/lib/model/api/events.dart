@@ -3,6 +3,7 @@ import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/api/users.dart';
 import 'package:sib_utrecht_app/model/api/utils.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
+import 'package:sib_utrecht_app/model/booking.dart';
 import 'package:sib_utrecht_app/model/cacheable_list.dart';
 import 'package:sib_utrecht_app/model/entity.dart';
 import 'package:sib_utrecht_app/model/event.dart';
@@ -37,10 +38,10 @@ class Events {
   //   return parseEvent(raw["data"]["event"] as Map);
   // }
 
-  Future<FetchResult<Event>> getEvent(
+  RetrievalRoute<Event> getEvent(
           {required String eventId, required bool requireBody}) =>
       retrieve(
-          conn: apiConnector,
+          // conn: apiConnector,
           fromCached: (pool) {
             var event = pool.get<Event>(eventId);
             // log.info("In Event fromCached, event $eventId, cached fetchResult is $event");
@@ -95,18 +96,18 @@ class Events {
   }
 
 
-  Future<FetchResult<List<Future<AnnotatedUser>>>> listParticipants(
-          {required String eventId}) =>
-      retrieve(
-          conn: apiConnector,
-          fromCached: null,
-          url: "/events/$eventId/participants",
-          parse: (res, unpacker) => (res["data"]["participants"] as Iterable)
-              .map((e) async => AnnotatedUser(
-                  user:
-                      await Users(apiConnector).readUser(e["entity"], unpacker),
-                  comment: e["comment"] as String?))
-              .toList());
+  // RetrievalRoute<List<Future<AnnotatedUser>>> listParticipants(
+  //         {required String eventId}) =>
+  //     retrieve(
+  //         // conn: apiConnector,
+  //         fromCached: null,
+  //         url: "/events/$eventId/participants",
+  //         parse: (res, unpacker) => (res["data"]["participants"] as Iterable)
+  //             .map((e) async => AnnotatedUser(
+  //                 user:
+  //                     await Users(apiConnector).readUser(e["entity"], unpacker),
+  //                 comment: e["comment"] as String?))
+  //             .toList());
 
   // Future<List<AnnotatedUser>> listParticipants({required int eventId}) async {
   //   log.info("Fetching participants for event $eventId");
@@ -154,16 +155,16 @@ class Events {
   //   }));
   // }
 
-  Future<FetchResult<List<String>>> listParticipantsIds(
-          {required int eventId}) =>
-      retrieve(
-          conn: apiConnector,
-          fromCached: (p) => p.get<CacheableList<Entity>>("event-$eventId-participants"),
-          url: "/events/$eventId/participants",
-          parse: (res, unpacker) => unpacker.parse<CacheableList<Entity>>({
-                "id": "event-$eventId-participants",
-                "data": res["data"]["participants"],
-              }));
+  // RetrievalRoute<EventBookings> listBookings(
+  //         {required int eventId}) =>
+  //     retrieve(
+  //         // conn: apiConnector,
+  //         fromCached: (p) => p.get<CacheableList<Booking>>("event-$eventId-bookings"),
+  //         url: "/events/$eventId/participants",
+  //         parse: (res, unpacker) => unpacker.parse<CacheableList<Booking>>({
+  //               "id": "event-$eventId-participants",
+  //               "data": res["data"]["participants"],
+  //             }));
   // (res["data"]["participants"] as Iterable)
   //     .map((e) => unpacker.abstract<Entity>(e["entity"]))
   //     .toList());
@@ -183,8 +184,8 @@ class Events {
   //       (raw["data"]["events"] as Iterable<dynamic>).map((e) => parseEvent(e)));
   // }
 
-  Future<FetchResult<List<String>>> list() => retrieve(
-      conn: apiConnector,
+  RetrievalRoute<List<String>> list() => retrieve(
+      // conn: apiConnector,
       fromCached: (p) => p.get<CacheableList<Event>>("events"),
       url: "/events",
       parse: (res, unpacker) =>

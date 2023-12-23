@@ -20,6 +20,7 @@ import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
+import 'package:sib_utrecht_app/view_model/provider/event_bookings_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/event_participants_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/event_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/participation_provider.dart';
@@ -229,42 +230,43 @@ class EventPageContents extends StatelessWidget {
                       const SizedBox(height: 32),
                       EventParticipantsProvider(
                           eventId: event.id,
-                          builder: (context, participantFutures, _) =>
-                              FutureBuilderPatched(
-                                  future: Future.wait(participantFutures),
-                                  builder: (context, snapshot)
-                                      // UserProvider.Multiplexed(
-                                      //     query: bookings
-                                      //         .map((e) => e.userId)
-                                      //         .toList(),
-                                      //     builder: (context, users)
-                                      {
-                                    final participants = snapshot.data;
+                          builder: (context, participants)
+                              //  =>
+                              // FutureBuilderPatched(
+                              //     future: Future.wait(participantFutures),
+                              //     builder: (context, snapshot)
+                              // UserProvider.Multiplexed(
+                              //     query: bookings
+                              //         .map((e) => e.userId)
+                              //         .toList(),
+                              //     builder: (context, users)
+                              {
+                            // final participants = snapshot.data;
 
-                                    if (participants == null) {
-                                      return const SizedBox();
-                                    }
+                            // if (participants == null) {
+                            //   return const SizedBox();
+                            // }
 
-                                    if (participants.isEmpty &&
-                                        !event.doesExpectParticipants()) {
-                                      return const SizedBox();
-                                    }
+                            if (participants.isEmpty &&
+                                !event.doesExpectParticipants()) {
+                              return const SizedBox();
+                            }
 
-                                    // var participants = bookings.mapIndexed((index, element) =>
-                                    //   AnnotatedUser(
-                                    //     user: users[index],
-                                    //     comment: element.comment
-                                    //   )
-                                    // ).toList();
+                            // var participants = bookings.mapIndexed((index, element) =>
+                            //   AnnotatedUser(
+                            //     user: users[index],
+                            //     comment: element.comment
+                            //   )
+                            // ).toList();
 
-                                    // if ()
-                                    return EventParticipants(event,
-                                        participants: participants);
+                            // if ()
+                            return EventParticipants(event,
+                                participants: participants);
 
-                                    // if (expectParticipants) ...[
-                                    //   EventParticipants(event, eventProvider: eventProvider)
-                                    // ]
-                                  }))
+                            // if (expectParticipants) ...[
+                            //   EventParticipants(event, eventProvider: eventProvider)
+                            // ]
+                          })
                     ])))
           ])),
     ]));

@@ -206,11 +206,17 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
     //     child: ResourcePoolProvider(
     //         child: ));
 
-    return Super(APIAccess(
-        state: loginState,
-        child: ResourcePoolProvider(
-          child: widget.navigationShell,
-        )));
+    return Super(
+        // APIAccess(
+        //   state: loginState,
+        //   child:
+        ResourcePoolProvider(
+      state: loginState,
+
+      // TODO add channel name
+      channelName: null,
+      child: widget.navigationShell,
+    ));
   }
 
   void _onDestinationSelected(index) {

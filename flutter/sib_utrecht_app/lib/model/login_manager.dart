@@ -39,8 +39,7 @@ class LoginManager extends ChangeNotifier {
       log.info("Returning LoginState not logged in");
 
       return LoginState(
-          connector: CacherApiConnector.fromHTTP(
-              HTTPApiConnector(apiAddress: defaultApiUrl)),
+          connector: HTTPApiConnector(apiAddress: defaultApiUrl),
           profiles: profiles.map(
               (key, value) => MapEntry(key, value as Map<String, dynamic>)),
           activeProfileName: null,
@@ -52,10 +51,10 @@ class LoginManager extends ChangeNotifier {
     log.info("Returning LoginState logged in with $activeProfileName");
 
     return LoginState(
-        connector: CacherApiConnector.fromHTTP(HTTPApiConnector(
+        connector: HTTPApiConnector(
             apiAddress: activeProfile["api"]?["url"] ?? defaultApiUrl,
             user: activeProfile["user"],
-            apiSecret: activeProfile["apiSecret"])),
+            apiSecret: activeProfile["apiSecret"]),
         profiles: profiles
             .map((key, value) => MapEntry(key, value as Map<String, dynamic>)),
         activeProfileName: activeProfileName,

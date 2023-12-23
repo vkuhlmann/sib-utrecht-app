@@ -1,9 +1,12 @@
 import 'dart:convert';
 
+import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/api/utils.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/booking.dart';
 import 'package:sib_utrecht_app/model/cacheable_list.dart';
+import 'package:sib_utrecht_app/model/entity.dart';
+import 'package:sib_utrecht_app/model/event_bookings.dart';
 import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/model/user.dart';
@@ -26,8 +29,25 @@ class Bookings {
   //   return bookings;
   // }
 
-  Future<FetchResult<UserBookings>> getMyBookings() => retrieve(
-      conn: apiConnector,
+  RetrievalRoute<EventBookings> getEventBookings({required String eventId}) =>
+      retrieve(
+          fromCached: (pool) => pool.get<EventBookings>(eventId),
+          url: "/events/$eventId/participants",
+          parse: (res, unpacker) {
+            // log.info("In EventBookings parse, res is $res");
+            return unpacker.parse<EventBookings>({
+              "id": eventId,
+              "bookings": (res["data"]["participants"] as Iterable<dynamic>)
+                  .map((e) => {
+                        "entity_id": unpacker.abstract<Entity>(e["entity"]),
+                        "comment": e["comment"] as String?
+                      })
+                  .toList()
+            });
+          });
+
+  RetrievalRoute<UserBookings> getMyBookings() => retrieve(
+      // conn: apiConnector,
       fromCached: (pool) => pool.get<UserBookings>("me"),
       url: "/users/me/bookings",
       parse: (res, unpacker) => unpacker.parse<UserBookings>({
@@ -36,6 +56,7 @@ class Bookings {
                 .where((v) => v["booking"]["status"] == "approved")
                 .map((e) =>
                     {"event_id": e["event"]["event_id"], "comment": null})
+                .toList()
           }));
 
   Future<void> addMeBooking({required String eventId}) async {

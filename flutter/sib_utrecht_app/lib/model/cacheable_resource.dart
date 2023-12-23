@@ -1,6 +1,7 @@
 import 'package:sib_utrecht_app/model/cacheable_list.dart';
 import 'package:sib_utrecht_app/model/entity.dart';
 import 'package:sib_utrecht_app/model/event.dart';
+import 'package:sib_utrecht_app/model/event_bookings.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/model/members.dart';
 import 'package:sib_utrecht_app/model/membership.dart';
@@ -79,6 +80,10 @@ abstract mixin class CacheableResource {
 
     if (T == UserBookings) {
       return UserBookings.fromJson(json) as T;
+    }
+
+    if (T == EventBookings) {
+      return EventBookings.fromJson(json) as T;
     }
 
     throw Exception("Unknown type $T");

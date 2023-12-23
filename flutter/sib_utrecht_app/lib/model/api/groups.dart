@@ -42,8 +42,8 @@ class Groups {
   //   return val;
   // }
 
-  Future<FetchResult<Group>> getGroup({required String groupName}) => retrieve(
-        conn: apiConnector,
+  RetrievalRoute<Group> getGroup({required String groupName}) => retrieve(
+        // conn: apiConnector,
         fromCached: (pool) => pool.get<Group>(groupName),
         url: "/groups/@$groupName",
         parse: (res, unpacker) => unpacker.parse<Group>(res["data"]["group"]),
@@ -55,9 +55,9 @@ class Groups {
   //   return parseGroup(raw["data"]["group"] as Map);
   // }
 
-  Future<FetchResult<Members>> getMembers({required String groupName}) =>
+  RetrievalRoute<Members> getMembers({required String groupName}) =>
       retrieve(
-        conn: apiConnector,
+        // conn: apiConnector,
         fromCached: (pool) => pool.get<Members>(groupName),
         url: "/groups/@$groupName/members",
         parse: (res, unpacker) => unpacker.parse<Members>({
@@ -74,8 +74,8 @@ class Groups {
   //       .toList();
   // }
 
-  Future<FetchResult<List<Group>>> getGroups() => retrieve(
-      conn: apiConnector,
+  RetrievalRoute<List<Group>> getGroups() => retrieve(
+      // conn: apiConnector,
       fromCached: null,
       url: "/groups",
       parse: (res, unpacker) => (res["data"]["groups"] as Iterable)

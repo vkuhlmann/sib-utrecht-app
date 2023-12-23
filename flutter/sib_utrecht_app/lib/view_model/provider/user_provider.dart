@@ -14,7 +14,7 @@ class UserProvider {
         query: query,
         builder: builder,
         errorTitle: (loc) => loc.couldNotLoad(loc.dataUsers),
-        obtain: (q, c) async => (await Users(c).getUser(entityName: q)),
+        obtain: (q, c) => Users(c).getUser(entityName: q),
         // changeListener: (p) => p._users,
       );
 
@@ -25,10 +25,10 @@ class UserProvider {
         query: query,
         builder: builder,
         errorTitle: (loc) => loc.couldNotLoad(loc.dataUser),
-        obtain: (String q, c) async {
-            log.info("UserProvider: obtaining $q with $c");
-            final ans = (await Users(c).getUser(entityName: q));
-            log.info("UserProvider: obtained $ans");
+        obtain: (String q, c) {
+            // log.info("UserProvider: obtaining $q with $c");
+            final ans = Users(c).getUser(entityName: q);
+            // log.info("UserProvider: obtained $ans");
             return ans;
         },
         // changeListener: (p) => p._users,

@@ -37,21 +37,22 @@ class Users {
   // return val;
   // }
 
-  Future<User> readUser(dynamic data, AnchoredUnpacker unpacker) async {
-    var conn = apiConnector;
-    if (conn is CacheApiConnectorMonitor) {
-      bool isOnlyCache = conn.base is CacheApiConnector;
+  // Future<User> readUser(dynamic data, AnchoredUnpacker unpacker) async {
+  //   var conn = apiConnector;
+  //   if (conn is CacheApiConnectorMonitor) {
+  //     bool isOnlyCache = conn.base is CacheApiConnector;
 
-      if (isOnlyCache) {
-        data = unpacker.abstract<User>(data);
-      }
-    }
+  //     if (isOnlyCache) {
+  //       data = unpacker.abstract<User>(data);
+  //     }
+  //   }
 
-    if (data is String) {
-      return (await getUser(entityName: data)).value;
-    }
-    return unpacker.parse<User>(data);
-  }
+  //   if (data is String) {
+  //     return (await getUser(entityName: data)).value;
+  //   }
+  //   return unpacker.parse<User>(data);
+  // }
+
 
   // String abstractUser(dynamic data) {
   //   if (data is String) {
@@ -63,8 +64,8 @@ class Users {
 
   // String abstractEntity(dynamic data) => abstractUser(data);
 
-  Future<FetchResult<User>> getUser({required String entityName}) => retrieve(
-      conn: apiConnector,
+  RetrievalRoute<User> getUser({required String entityName}) => retrieve(
+      // conn: apiConnector,
       fromCached: (pool) => pool.get<User>(entityName),
       url: "/users/@$entityName",
       parse: (res, unpacker) => unpacker.parse<User>(res["data"]["user"]));
@@ -99,8 +100,8 @@ class Users {
   //       .map((v) => unpacker.parse<User>(v))
   //       .toList();
 
-  Future<FetchResult<List<User>>> list() => retrieve(
-      conn: apiConnector,
+  RetrievalRoute<List<User>> list() => retrieve(
+      // conn: apiConnector,
       fromCached: null,
       url: "/users",
       parse: (res, unpacker) => (res["data"]["users"] as Iterable)
@@ -121,8 +122,8 @@ class Users {
   //     .toList();
   // }
 
-  Future<FetchResult<List<User>>> listWP() => retrieve(
-      conn: apiConnector,
+  RetrievalRoute<List<User>> listWP() => retrieve(
+      // conn: apiConnector,
       fromCached: null,
       url: "/wp-users",
       parse: (res, unpacker) => (res["data"]["wp-users"] as Iterable)

@@ -1,6 +1,7 @@
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cache.dart';
+import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/group.dart';
 import 'package:sib_utrecht_app/model/members.dart';
@@ -10,7 +11,7 @@ import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class CacheApiConnectorMonitor extends APIConnector {
   final APIConnector base;
-  final ResourcePool? pool;
+  // final ResourcePool? pool;
 
   bool isInvalidated = false;
   bool hasEncounteredNullTimestamp = false;
@@ -23,7 +24,8 @@ class CacheApiConnectorMonitor extends APIConnector {
     return FetchResult(val, freshnessTimestamp, invalidated: isInvalidated);
   }
 
-  CacheApiConnectorMonitor(this.base, {required this.pool});
+  CacheApiConnectorMonitor(this.base);
+  //, {required this.pool});
 
   void _impactTimestamp(DateTime? ts, bool invalidated) {
     if (ts == null) {
@@ -58,16 +60,18 @@ class CacheApiConnectorMonitor extends APIConnector {
 
   FetchResult<T>? attemptPoolRetrieve<T>(
       FetchResult<T>? Function(ResourcePool pool) obtain) {
-    var p = pool;
-    if (p == null) {
+    // var p = pool;
+    // if (p == null) {
+    //   return null;
+    // }
+
+    final base = this.base;
+
+    if (base is! CacherApiConnector) {
       return null;
     }
 
-    if (base is! CacheApiConnector) {
-      return null;
-    }
-
-    var result = obtain(p);
+    var result = obtain(base.pool);
     if (result == null) {
       return null;
     }

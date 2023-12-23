@@ -19,7 +19,7 @@ class UserBookings with CacheableResource {
       (json['bookings'] as Iterable)
           .map((e) => Booking(eventId: e["event_id"].toString(),
               comment: e["comment"],
-              userId: userId,
+              entityId: userId,
           )).map((e) => MapEntry(e.eventId, e)))
           // .toSet(),
     );

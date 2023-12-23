@@ -34,9 +34,9 @@ class Entities {
   //   throw Exception("Unknown entity type: $type");
   // }
 
-  Future<FetchResult<Entity>> getEntity({required String entityName}) =>
+  RetrievalRoute<Entity> getEntity({required String entityName}) =>
       retrieve(
-          conn: apiConnector,
+          // conn: apiConnector,
           fromCached: (pool) =>
               pool.get<User>(entityName) ?? pool.get<Group>(entityName),
           url: "/entities/@$entityName",

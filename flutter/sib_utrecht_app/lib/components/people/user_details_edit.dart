@@ -144,7 +144,7 @@ class _EditUserDetailsState extends State<EditUserDetails> {
 
   @override
   Widget build(BuildContext context) {
-    ResourcePool? pool = ResourcePoolAccess.maybeOf(context)?.pool;
+    // ResourcePool? pool = ResourcePoolAccess.maybeOf(context)?.pool;
 
     return Column(children: [
       Row(

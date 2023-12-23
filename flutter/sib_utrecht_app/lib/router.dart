@@ -242,7 +242,9 @@ GoRouter createRouter() {
                         Route(
                             path: '/event/new',
                             builder: (context, state) =>
-                                const EventEditPage(eventId: null)),
+                                const EventEditPage(
+                                  key: ValueKey("event/new"),
+                                  eventId: null)),
                         Route(
                             path: '/event/:event_id',
                             builder: (context, state) {

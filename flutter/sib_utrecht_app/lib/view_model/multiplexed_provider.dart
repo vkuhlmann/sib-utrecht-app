@@ -8,6 +8,7 @@ import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/log.dart';
+import 'package:sib_utrecht_app/model/api/utils.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
@@ -66,7 +67,9 @@ import 'package:sib_utrecht_app/view_model/load_stability.dart';
 class MultiplexedProvider<T, U> extends StatefulWidget {
   final List<T> query;
   // final CachedProvider<U> Function(T)? obtainProvider;
-  final FutureOr<FetchResult<U>> Function(T, APIConnector) obtain;
+  // final FutureOr<FetchResult<U>> Function(T, APIConnector) obtain;
+  final RetrievalRoute<U> Function(T, APIConnector) obtain;
+
   // final Listenable Function(ResourcePoolBase)? changeListener;
 
   final Widget Function(BuildContext context, List<FetchResult<U>> data)
@@ -101,8 +104,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
   Listenable? activeListener;
 
-  ResourcePool? pool;
-  Future<APIConnector>? apiConnector;
+  // ResourcePool? pool;
+  Future<CacherApiConnector>? apiConnector;
 
   @override
   void dispose() {
@@ -138,11 +141,15 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
     }
     activeListener = null;
 
-    var newPool = ResourcePoolAccess.maybeOf(context)?.pool;
-    var newConnector = APIAccess.maybeOf(context)?.connector;
+    final access = APIAccess.maybeOf(context);
 
-    if (newPool != this.pool || newConnector != apiConnector) {
-      this.pool = newPool;
+    // var newPool = ResourcePoolAccess.maybeOf(context)?.pool;
+    var newConnector = access?.connector;
+
+    if (
+      // newPool != this.pool || 
+      newConnector != apiConnector) {
+      // this.pool = newPool;
       apiConnector = newConnector;
 
       data = initData();
@@ -150,7 +157,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
     // var changeList = widget.changeListener;
 
-    final pool = this.pool;
+    final pool = access?.pool;
     // if (pool != null && changeList != null) {
     //   var listener = changeList(pool);
     //   listener.addListener(updateData);
@@ -238,7 +245,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
       return [];
     }
 
-    var pool = ResourcePoolAccess.maybeOf(context)?.pool;
+    var pool = APIAccess.of(context).pool;
     var conn = APIAccess.of(context).connector;
 
     bool allowAutoRefresh = getAllowAutoRefresh();
