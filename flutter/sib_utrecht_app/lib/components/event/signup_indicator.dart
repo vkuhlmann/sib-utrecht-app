@@ -5,8 +5,9 @@ import '../../view_model/event/annotated_event.dart';
 
 class SignupIndicator extends StatefulWidget {
   final AnnotatedEvent event;
+  final bool isFixedWidth;
 
-  const SignupIndicator({Key? key, required this.event}) : super(key: key);
+  const SignupIndicator({Key? key, required this.event, required this.isFixedWidth}) : super(key: key);
 
   @override
   State<SignupIndicator> createState() => _SignupIndicatorState();
@@ -17,7 +18,11 @@ class _SignupIndicatorState extends State<SignupIndicator> {
   Widget build(BuildContext context) {
     var inner = buildInner(context);
     if (inner == null) {
-      return const SizedBox();
+      if (!widget.isFixedWidth) {
+        return const SizedBox();
+      }
+
+      inner = const SizedBox();
     }
 
     return SizedBox(

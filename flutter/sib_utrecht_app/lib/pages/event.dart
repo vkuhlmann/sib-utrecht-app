@@ -54,7 +54,7 @@ class EventHeader extends StatelessWidget {
                 child: ListTile(
                     title: Text(event
                         .getLocalEventName(Localizations.localeOf(context)))))),
-        SignupIndicator(event: event),
+        SignupIndicator(event: event, isFixedWidth: false,),
         IconButton(
             onPressed: () {
               router.goNamed("event_edit",

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
+import 'package:sib_utrecht_app/components/event/event_tile2.dart';
 import 'package:sib_utrecht_app/pages/home.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider_old.dart';
@@ -27,11 +28,6 @@ class EventsPage extends StatefulWidget {
   @override
   State<EventsPage> createState() => _EventsPageState();
 
-  static Widget buildItem(AnnotatedEvent event) {
-    return EventTile(
-        key: ValueKey(("eventsItem", event.id, event.placement?.date)),
-        event: event);
-  }
 }
 
 class _EventsPageState extends State<EventsPage> {
@@ -67,6 +63,7 @@ class _EventsPageState extends State<EventsPage> {
             builder: (context) => Column(
                 children: v
                     .map<Widget>((entry) => EventsGroup(
+                        isMultiWeek: entry.isMultiWeek,
                         key: ValueKey(("EventsGroup", k, entry.key)),
                         title: entry.title(context),
                         isMajor: k == RelativeWeek.upcomingWeek,

@@ -17,8 +17,13 @@ class EventsGroupInfo<T> {
   String key;
   String Function(BuildContext) title;
   List<T> elements;
+  bool isMultiWeek;
 
-  EventsGroupInfo(this.key, this.title, this.elements);
+  EventsGroupInfo(
+      {required this.key,
+      required this.title,
+      required this.elements,
+      required this.isMultiWeek});
 }
 
 class WeekChunked<T> {
@@ -31,7 +36,8 @@ class WeekChunked<T> {
       RelativeWeek.past: "Past",
       RelativeWeek.lastWeek: loc.lastWeek,
       RelativeWeek.upcomingWeek: lookAhead ? loc.upcomingWeek : loc.thisWeek,
-      RelativeWeek.nextWeek: lookAhead ? loc.weekAfterUpcomingWeek : loc.nextWeek,
+      RelativeWeek.nextWeek:
+          lookAhead ? loc.weekAfterUpcomingWeek : loc.nextWeek,
       RelativeWeek.future: loc.future,
       RelativeWeek.ongoing: loc.eventCategoryOngoing,
     };
@@ -58,6 +64,12 @@ class WeekChunked<T> {
     return toBeginningOfSentenceCase(
             val, Localizations.localeOf(context).toString()) ??
         val;
+  }
+
+  static String getMonthYear(DateTime date) {
+    // return DateFormat("y-M").format(date);
+    date = date.subtract(Duration(days: date.weekday - 4));
+    return date.toIso8601String().substring(0, 7);
   }
 
   WeekChunked(List<T> items, DateTime? Function(T) getDate) {
@@ -117,20 +129,26 @@ class WeekChunked<T> {
     isLookingAhead = upcomingWeek != currentWeek;
 
     superGroups = groups.map((key, value) {
-      if (key != RelativeWeek.past) {
+      if (key != RelativeWeek.past && key != RelativeWeek.future) {
         return MapEntry(key, [
-          EventsGroupInfo(key.toString(),
-              (context) => keyToTitle(context, key, isLookingAhead), value)
+          EventsGroupInfo(
+            key: key.toString(),
+            title: (context) => keyToTitle(context, key, isLookingAhead),
+            elements: value,
+            isMultiWeek: key == RelativeWeek.future,
+          )
         ]);
       }
 
-      var pastGroups = groupBy(
-              value, (e) => getDate(e)!.toIso8601String().substring(0, 7))
+      var pastGroups = groupBy(value, (e) => getMonthYear(getDate(e)!))
           // .map((key, value) => MapEntry(formatMonthYear(key), value));
           .entries
           .sortedBy((element) => element.key)
           .map((element) => EventsGroupInfo(
-              element.key, (context) => formatMonthYear(context, element.key), element.value));
+              key: element.key,
+              title: (context) => formatMonthYear(context, element.key),
+              elements: element.value,
+              isMultiWeek: true));
 
       return MapEntry(key, pastGroups.toList());
     });

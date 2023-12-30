@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import "package:collection/collection.dart";
+import 'package:sib_utrecht_app/components/event/event_tile2.dart';
+import 'package:sib_utrecht_app/components/event/event_week.dart';
 
 import '../../utils.dart';
 import '../../view_model/event/annotated_event.dart';
@@ -9,13 +11,23 @@ import '../../pages/events.dart';
 class EventsGroup extends StatelessWidget {
   final bool initiallyExpanded;
   final bool isMajor;
+  final bool isMultiWeek;
 
-  const EventsGroup({Key? key, required this.children, required this.title,
+  const EventsGroup({
+    Key? key, required this.children, required this.title,
     required this.initiallyExpanded,
-    required this.isMajor
+    required this.isMajor,
+    required this.isMultiWeek
     // required this.start, required this.end
   })
       : super(key: key);
+
+  
+  // static Widget buildItem(AnnotatedEvent event) {
+  //   return EventTile2(
+  //       key: ValueKey(("eventsItem", event.id, event.placement?.date)),
+  //       event: event);
+  // }
 
   final List<AnnotatedEvent> children;
   final String title;
@@ -26,67 +38,31 @@ class EventsGroup extends StatelessWidget {
   Iterable<Widget> getChildrenWeekDivided() sync* {
     var division = groupBy(children, (p0) => formatWeekNumber(p0.placement?.date ?? p0.start))
     .entries.sorted((a, b) => a.key.compareTo(b.key));
-    
-    // division.entries.sorted((a, b) => a.key.compareTo(b.key)).map((e) => )
-
-    // String currentWeek = formatWeekNumber(DateTime.now());
-    // String upcomingWeek = formatWeekNumber(DateTime.now().add(const Duration(days: 2)));
 
     for (var entry in division) {
-      // String weekNumber = entry.key;
-
-      // if (weekNumber == upcomingWeek) {
-      //   String text = (weekNumber == currentWeek) ? "This week" : "Upcoming week";
-      //   yield const SizedBox(height: 32);
-
-      //   // BEGIN Based on: https://stackoverflow.com/questions/54058228/horizontal-divider-with-text-in-the-middle-in-flutter
-      //   // answer by https://stackoverflow.com/users/10826159/jerome-escalante
-      //   yield Builder(builder: (context) =>
-      //   Row(
-      //       children: <Widget>[
-      //           Expanded(
-      //               child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
-      //           ),
-      //           const SizedBox(width: 16,),
-      //           Text(text, style: Theme.of(context).textTheme.headlineSmall),
-      //           const SizedBox(width: 16,),
-      //           Expanded(
-      //               child: Divider(color: Theme.of(context).colorScheme.secondary, thickness: 2)
-      //           ),
-      //       ]
-      //   ));
-      //   // END Based on
-
-
-      //   // yield Divider(color: Colors.red[700], thickness: 3);
-      //   // if (weekNumber == currentWeek) {
-      //   //   yield Builder(builder: (context) => 
-      //   //   ListTile(title: Text("This week", style: Theme.of(context).textTheme.headlineSmall?.copyWith())));
-      //   //   yield const SizedBox(height: 16);  
-      //   // } else {
-      //   //   yield const ListTile(title: Text("Upcoming week"));
-      //   // }
-      // }
-
-      for (var v in entry.value.sortedBy((element) => element.placement?.date ?? element.start)) {
-        // if (v.participation == null) {
-        //   yield EventOngoing(event: v, );
-        //   continue;
-        // }
-        // yield EventTile(event: v);
-
-        yield EventsPage.buildItem(v);
+      String? weekTitle;
+      if (isMultiWeek) {
+        // weekTitle = "Week ${entry.key}";
+        weekTitle = "Week ${int.parse(entry.key.substring(6))}";
       }
+
+      yield EventWeek(weekTitle: weekTitle, events: entry.value);
+
+      // for (var v in entry.value.sortedBy((element) => element.placement?.date ?? element.start)) {
+      //   // if (v.participation == null) {
+      //   //   yield EventOngoing(event: v, );
+      //   //   continue;
+      //   // }
+      //   // yield EventTile(event: v);
+
+      //   yield buildItem(v);
+      // }
 
       if (entry.key != division.last.key) {
         yield const SizedBox(height: 8);
         yield Divider(key: ValueKey(("divider", entry.key)));
         yield const SizedBox(height: 8);
       }
-
-      // if (weekNumber == upcomingWeek) {
-      //   yield const SizedBox(height: 32);
-      // }
     }
   }
 
