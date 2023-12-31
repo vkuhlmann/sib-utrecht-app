@@ -145,6 +145,9 @@ class RenderSliverStickyHeader extends RenderSliver with RenderSliverHelpers {
     AxisDirection axisDirection = applyGrowthDirectionToAxisDirection(
         constraints.axisDirection, constraints.growthDirection);
 
+    axisDirection = constraints.axisDirection;
+
+
     if (header != null) {
       header!.layout(
         BoxValueConstraints<SliverStickyHeaderState>(

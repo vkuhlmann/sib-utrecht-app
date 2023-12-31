@@ -2,29 +2,115 @@ import 'package:flutter/material.dart';
 import "package:collection/collection.dart";
 import 'package:sib_utrecht_app/components/event/event_tile2.dart';
 import 'package:sib_utrecht_app/components/event/event_week.dart';
+import 'package:sib_utrecht_app/components/flutter_sticky_header-0.6.5/lib/flutter_sticky_header.dart';
+import 'package:sliver_tools/sliver_tools.dart';
 
 import '../../utils.dart';
 import '../../view_model/event/annotated_event.dart';
 
 import '../../pages/events.dart';
 
-class EventsGroup extends StatelessWidget {
+Widget EventsGroup(
+    {Key? key,
+    required List<AnnotatedEvent> children,
+    required String title,
+    required bool initiallyExpanded,
+    required bool isMajor,
+    required bool isMultiWeek,
+    required bool divideEvents
+    // required this.start, required this.end
+    }) {
+  return
+      // MultiSliver(
+      //   key: ValueKey((key, title)),
+      //   children: [
+
+      //   ]);
+      SliverStickyHeader.builder(
+          builder: (context, state) =>
+              FancyHeader(title: title, isMajor: isMajor),
+          sliver: EventsGroupContent(
+              children: children,
+              title: title,
+              initiallyExpanded: initiallyExpanded,
+              isMajor: isMajor,
+              isMultiWeek: isMultiWeek,
+              divideEvents: divideEvents));
+}
+
+class FancyHeader extends StatelessWidget {
+  final String title;
+  final bool isMajor;
+
+  const FancyHeader({Key? key, required this.title, required this.isMajor})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    Color? headlineColor;
+    Color dividerColor = Theme.of(context).colorScheme.primary;
+
+    dividerColor =
+        Theme.of(context).textTheme.headlineSmall?.color ?? dividerColor;
+
+    if (!isMajor) {
+      headlineColor = Theme.of(context).colorScheme.secondary;
+      dividerColor = headlineColor.withOpacity(0.5);
+
+      // dividerColor = Theme.of(context).colorScheme.secondaryContainer;
+      // dividerColor = Theme.of(context).colorScheme.secondary;
+      // headlineColor = dividerColor
+      // dividerColor = dividerColor.withOpacity(0.9);
+    }
+
+    return
+        // BEGIN Based on: https://stackoverflow.com/questions/54058228/horizontal-divider-with-text-in-the-middle-in-flutter
+        // answer by https://stackoverflow.com/users/10826159/jerome-escalante
+        Row(children: <Widget>[
+      const SizedBox(width: 8),
+      Expanded(
+          child: Divider(color: dividerColor, thickness: isMajor ? 2 : 1.5)),
+      const SizedBox(
+        width: 16,
+      ),
+      Text(title,
+          style:
+              // isMajor ?
+              Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  // color: isMajor ? null : dividerColor
+                  // color: dividerColor
+                  color: headlineColor)
+          // :
+          // Theme.of(context).textTheme.titleSmall
+          ),
+      const SizedBox(
+        width: 16,
+      ),
+      Expanded(
+          child: Divider(color: dividerColor, thickness: isMajor ? 2 : 1.5)),
+      const SizedBox(width: 8)
+    ]);
+  }
+}
+
+class EventsGroupContent extends StatelessWidget {
   final bool initiallyExpanded;
   final bool isMajor;
   final bool isMultiWeek;
   final bool divideEvents;
 
-  const EventsGroup({
-    Key? key, required this.children, required this.title,
-    required this.initiallyExpanded,
-    required this.isMajor,
-    required this.isMultiWeek,
-    required this.divideEvents
-    // required this.start, required this.end
-  })
+  const EventsGroupContent(
+      {Key? key,
+      required this.children,
+      required this.title,
+      required this.initiallyExpanded,
+      required this.isMajor,
+      required this.isMultiWeek,
+      required this.divideEvents
+      // required this.start, required this.end
+      })
       : super(key: key);
 
-  
   // static Widget buildItem(AnnotatedEvent event) {
   //   return EventTile2(
   //       key: ValueKey(("eventsItem", event.id, event.placement?.date)),
@@ -38,14 +124,16 @@ class EventsGroup extends StatelessWidget {
   // final bool demark
 
   Iterable<Widget> getChildrenWeekDivided() sync* {
-    var division = groupBy(children, (p0) => formatWeekNumber(p0.placement?.date ?? p0.start))
-    .entries.sorted((a, b) => a.key.compareTo(b.key));
+    var division = groupBy(
+            children, (p0) => formatWeekNumber(p0.placement?.date ?? p0.start))
+        .entries
+        .sorted((a, b) => a.key.compareTo(b.key));
 
     for (var entry in division) {
       if (isMultiWeek) {
         yield const SizedBox(height: 20);
       }
-      
+
       String? weekTitle;
       if (isMultiWeek) {
         // weekTitle = "Week ${entry.key}";
@@ -66,7 +154,9 @@ class EventsGroup extends StatelessWidget {
 
       if (entry.key != division.last.key) {
         yield const SizedBox(height: 40);
-        yield const Divider(thickness: 2,);
+        yield const Divider(
+          thickness: 2,
+        );
         yield const SizedBox(height: 20);
       }
     }
@@ -90,62 +180,18 @@ class EventsGroup extends StatelessWidget {
     //   ]);
 
     // Color dividerColor = Theme.of(context).colorScheme.secondary;
-    Color? headlineColor;
-    Color dividerColor = Theme.of(context).colorScheme.primary;
 
-    dividerColor = Theme.of(context).textTheme.headlineSmall?.color
-    ?? dividerColor;
-
-    if (!isMajor) {
-      headlineColor = Theme.of(context).colorScheme.secondary;
-      dividerColor = headlineColor.withOpacity(0.5);
-
-      // dividerColor = Theme.of(context).colorScheme.secondaryContainer;
-      // dividerColor = Theme.of(context).colorScheme.secondary;
-      // headlineColor = dividerColor
-      // dividerColor = dividerColor.withOpacity(0.9);
-    }
-
-    return Column(
-      key: ValueKey((key, title)),
-      children: [
-        const SizedBox(height: 32),
-
-        // BEGIN Based on: https://stackoverflow.com/questions/54058228/horizontal-divider-with-text-in-the-middle-in-flutter
-        // answer by https://stackoverflow.com/users/10826159/jerome-escalante
-        Row(
-            children: <Widget>[
-                const SizedBox(width: 8),
-                Expanded(
-                    child: Divider(color: dividerColor, thickness: isMajor ? 2 : 1.5)
-                ),
-                const SizedBox(width: 16,),
-                Text(title, style: 
-                // isMajor ?
-                Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  // color: isMajor ? null : dividerColor
-                  // color: dividerColor
-                  color: headlineColor
-                )
-                // :
-                // Theme.of(context).textTheme.titleSmall
-                ),
-                const SizedBox(width: 16,),
-                Expanded(
-                    child: Divider(color: dividerColor, thickness: isMajor ? 2 : 1.5)
-                ),
-                const SizedBox(width: 8)
-            ]
-        ),
+    return Column(key: ValueKey((key, title)), children: [
+      const SizedBox(height: 32),
+      FancyHeader(title: title, isMajor: isMajor),
       const SizedBox(height: 16),
       if (divideEvents)
         ...getChildrenWeekDivided().toList()
       else
         for (var event in children)
           EventTile2(
-            key: ValueKey(("eventsItem", event.id, event.placement?.date)),
-            event: event
-          ),
+              key: ValueKey(("eventsItem", event.id, event.placement?.date)),
+              event: event),
       const SizedBox(height: 16)
     ]);
 
@@ -179,5 +225,3 @@ class EventsGroup extends StatelessWidget {
     // );
   }
 }
-
-
