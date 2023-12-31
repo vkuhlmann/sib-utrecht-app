@@ -59,9 +59,9 @@ class EventsGroup extends StatelessWidget {
       // }
 
       if (entry.key != division.last.key) {
-        yield const SizedBox(height: 8);
-        yield Divider(key: ValueKey(("divider", entry.key)));
-        yield const SizedBox(height: 8);
+        yield const SizedBox(height: 40);
+        yield const Divider(thickness: 2,);
+        yield const SizedBox(height: 20);
       }
     }
   }

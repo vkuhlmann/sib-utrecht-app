@@ -198,11 +198,11 @@ GoRouter createRouter() {
                 // navigatorKey: _sectionNavigatorKey,
                 initialLocation: '/',
                 routes: <RouteBase>[
-                  GoRoute(
+                  Route(
                       path: '/',
                       builder: (context, state) => const HomePage(),
                       routes: [
-                        GoRoute(
+                        Route(
                           path: 'events',
                           builder: (context, state) => const EventsPage(),
                         ),

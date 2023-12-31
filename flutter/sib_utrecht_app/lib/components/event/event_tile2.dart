@@ -76,6 +76,8 @@ class _EventTile2State extends State<EventTile2> {
     //   weekDay = format.format(placement.date);
     // }
 
+    final bool isActive = widget.event.isActive;
+
     return
         // Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         //   if (weekDay != null)
@@ -86,72 +88,97 @@ class _EventTile2State extends State<EventTile2> {
         //       padding: const EdgeInsets.symmetric(horizontal: 12),
         //       child:
         Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                side: isActive
+                    ? BorderSide(
+                        color: isActive
+                            ? Theme.of(context).colorScheme.primary
+                            :
+                            // null
+                            Theme.of(context).colorScheme.secondary)
+                    : BorderSide.none),
+            color: Theme.of(context).colorScheme.primaryContainer,
             child: ListTile(
                 onTap: () {
                   GoRouter.of(context).push("/event/${widget.event.id}");
                 },
+                leading: (placement?.isContinuation != true)
+                    ? SignupIndicator.Maybe(widget.event)
+                    : null,
                 title: Row(
                   children: [
                     // if (placement?.isContinuation != true)
                     //       SignupIndicator(event: widget.event),
-                    Text(
-                        widget.event
-                            .getLocalEventName(Localizations.localeOf(context)),
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(width: 16),
+                    // if (placement?.isContinuation != true)
+                    //   Padding(
+                    //       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                    //       child: SignupIndicator(
+                    //         event: widget.event,
+                    //         isFixedWidth: false,
+                    //       )),
                     Expanded(
-                        child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                          constraints: const BoxConstraints(maxWidth: 130),
-                          // alignment: Alignment.centerRight,
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                // Container(
-                                //     constraints: const BoxConstraints(minWidth: 55),
-                                //     // alignment: Alignment.centerRight,
-                                //     child:
-                                // SizedBox(
-                                //     width: 70,
-                                //     child:
-                                // dayMonth == null
-                                //     ? const SizedBox()
-                                //     : Align(
-                                //         alignment: Alignment.centerRight,
-                                //       child: Text(dayMonth)),
-                                if (primaryInfoLine.isNotEmpty)
-                                  Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(primaryInfoLine)),
+                        child: Text(
+                            widget.event.getLocalEventName(
+                                Localizations.localeOf(context)),
+                            textAlign: TextAlign.left,
+                            style: Theme.of(context).textTheme.titleMedium)),
+                    const SizedBox(width: 16),
+                    // Expanded(
+                    //     child:
+                    //   Align(
+                    // alignment: Alignment.centerRight,
+                    // child: Container(
+                    //     constraints: const BoxConstraints(maxWidth: 130),
+                    SizedBox(
+                        width: 140,
+                        // alignment: Alignment.centerRight,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              // Container(
+                              //     constraints: const BoxConstraints(minWidth: 55),
+                              //     // alignment: Alignment.centerRight,
+                              //     child:
+                              // SizedBox(
+                              //     width: 70,
+                              //     child:
+                              // dayMonth == null
+                              //     ? const SizedBox()
+                              //     : Align(
+                              //         alignment: Alignment.centerRight,
+                              //       child: Text(dayMonth)),
+                              if (primaryInfoLine.isNotEmpty)
+                                Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(primaryInfoLine)),
 
-                                // Container(
-                                //     alignment: Alignment.center,
-                                //     // padding: const EdgeInsets.all(0),
-                                //     // margin: const EdgeInsets.all(5),
-                                //     child: Text(dayMonth)),
-                                if (secondaryInfoLine.isNotEmpty)
-                                  Text(secondaryInfoLine,
-                                      textAlign: TextAlign.right,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          color: Theme.of(context).brightness ==
-                                                  Brightness.light
-                                              ? Colors.grey[600]
-                                              : Colors.grey[400],
-                                          fontSize: 12))
-                              ])),
-                    )),
-                    if (placement?.isContinuation != true)
-                      Padding(
-                          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                          child: SignupIndicator(
-                            event: widget.event,
-                            isFixedWidth: true,
-                          ))
-                    else
-                      const SizedBox(width: 50),
+                              // Container(
+                              //     alignment: Alignment.center,
+                              //     // padding: const EdgeInsets.all(0),
+                              //     // margin: const EdgeInsets.all(5),
+                              //     child: Text(dayMonth)),
+                              if (secondaryInfoLine.isNotEmpty)
+                                Text(secondaryInfoLine,
+                                    textAlign: TextAlign.right,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.light
+                                            ? Colors.grey[600]
+                                            : Colors.grey[400],
+                                        fontSize: 12))
+                            ])),
+                    // if (placement?.isContinuation != true)
+                    //   Padding(
+                    //       padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                    //       child: SignupIndicator(
+                    //         event: widget.event,
+                    //         isFixedWidth: false,
+                    //       ))
+                    // else
+                    //   const SizedBox(width: 50),
                   ],
                 )));
 

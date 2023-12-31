@@ -25,7 +25,7 @@ class EventDay extends StatelessWidget {
       children: [
         if (day != null)
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 20, 0, 0),
+            padding: const EdgeInsets.fromLTRB(8, 20, 0, 4),
             child: Text(weekdayFormat.format(day),
                 style: Theme.of(context).textTheme.titleSmall)),
         for (final event in events) ...[

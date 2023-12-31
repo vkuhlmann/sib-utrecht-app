@@ -18,7 +18,7 @@ class EventWeek extends StatelessWidget {
     return Column(
       children: [
         if (weekTitle != null)
-        Padding(padding: const EdgeInsets.only(top: 16),
+        Padding(padding: const EdgeInsets.only(top: 16, bottom: 2),
         child:
           Align(
               alignment: Alignment.center,
@@ -35,7 +35,10 @@ class EventWeek extends StatelessWidget {
                     .substring(0, 10))
             .entries
             .sortedBy<String>((element) => element.key))
-          EventDay(day: DateTime.parse(day.key), events: day.value),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child:
+          EventDay(day: DateTime.parse(day.key), events: day.value)),
       ],
     );
   }

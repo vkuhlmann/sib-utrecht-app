@@ -7,6 +7,7 @@ import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/event/event_tile.dart';
 import 'package:sib_utrecht_app/components/event/event_tile2.dart';
+import 'package:sib_utrecht_app/components/event/event_week.dart';
 import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
@@ -25,6 +26,7 @@ class HomePageContents extends StatelessWidget {
     var todayFormatted =
         DateFormat.MMMMEEEEd(Localizations.localeOf(context).toString())
             .format(DateTime.now());
+
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(group.title(context),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -56,18 +58,20 @@ class HomePageContents extends StatelessWidget {
                     //                   // color: Colors.orange[200]
                     //                   ))
                     //     ])),
-                    ...group.elements
-                        .map((event) => EventTile2(
-                            key: ValueKey((
-                              "eventsItem",
-                              event.id,
-                              event.placement?.date
-                            )),
-                            event: event))
-                        .toList()
+                    EventWeek(weekTitle: null, events: 
+                    group.elements)
+                    // ...group.elements
+                    //     .map((event) => EventTile2(
+                    //         key: ValueKey((
+                    //           "eventsItem",
+                    //           event.id,
+                    //           event.placement?.date
+                    //         )),
+                    //         event: event))
+                    //     .toList()
                   ]))),
       Padding(
-          padding: const EdgeInsets.fromLTRB(8, 16, 8, 0),
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             // Icon(
             //   Icons.arrow_right_rounded,
@@ -88,7 +92,7 @@ class HomePageContents extends StatelessWidget {
   Widget buildSecondaryCard(
           BuildContext context, EventsGroupInfo<AnnotatedEvent> group) =>
       Opacity(
-          opacity: 0.8,
+          opacity: 1,
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(group.title(context),
@@ -96,20 +100,39 @@ class HomePageContents extends StatelessWidget {
                     // fontFeatures: [const FontFeature.enable('smcp')]
                     )),
             const SizedBox(height: 8),
+            // Container(
+              
+            // )
             Card(
-                color: Theme.of(context).colorScheme.secondaryContainer,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(
+                      color: 
+                      // Theme.of(context).colorScheme.secondaryContainer,
+                      Theme.of(context).colorScheme.primaryContainer,
+                      width: 2)),
+                color: Colors.transparent,
+                shadowColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                // color: Theme.of(context).colorScheme.secondaryContainer,
                 child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                    child: Column(
-                        children: group.elements
-                            .map((event) => EventTile2(
-                                key: ValueKey((
-                                  "eventsItem",
-                                  event.id,
-                                  event.placement?.date
-                                )),
-                                event: event))
-                            .toList())))
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                    child: 
+                    EventWeek(weekTitle: null, events: 
+                    group.elements)
+                    // Column(
+                    //     children: 
+                    //     group.elements
+                    //         .map((event) => EventTile2(
+                    //             key: ValueKey((
+                    //               "eventsItem",
+                    //               event.id,
+                    //               event.placement?.date
+                    //             )),
+                    //             event: event))
+                    //         .toList())
+                            
+                            ))
           ]));
 
   Widget buildFurtherEventsCard(BuildContext context) {
@@ -233,9 +256,9 @@ class HomePageContents extends StatelessWidget {
           // Upcoming week
           if (upcomingWeek.isEmpty)
             Padding(
-              padding: const EdgeInsets.all(32),
-              child: Text("No upcoming events",
-                  style: Theme.of(context).textTheme.headlineMedium),
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: Text("No events this week",
+                  style: Theme.of(context).textTheme.headlineSmall),
             )
           else
             Container(
@@ -249,12 +272,16 @@ class HomePageContents extends StatelessWidget {
           // Next week
           if (nextWeek.isEmpty)
             Padding(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.symmetric(vertical: 32),
               child: Text("No events next week",
                   style: Theme.of(context).textTheme.headlineMedium),
             )
           else
-            ...nextWeek.map((e) => buildSecondaryCard(context, e)),
+            ...nextWeek.map((e) => 
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child:
+            buildSecondaryCard(context, e))),
 
           // Future
           // if (future.isNotEmpty)

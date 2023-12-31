@@ -12,7 +12,6 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import '../globals.dart';
 
 import '../view_model/event/annotated_event.dart';
-import '../view_model/async_patch.dart';
 import '../components/event/event_group.dart';
 import '../components/actions/alerts_panel.dart';
 import '../components/event/event_tile.dart';
