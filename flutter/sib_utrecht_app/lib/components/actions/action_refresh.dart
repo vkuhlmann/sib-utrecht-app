@@ -3,13 +3,14 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/log.dart';
+import 'package:sib_utrecht_app/utils.dart';
 import '../../view_model/async_patch.dart';
 
 // Contains code from https://www.kindacode.com/article/flutter-spinning-animation/
 
 class ActionRefreshButton extends StatefulWidget {
   final Future<DateTime>? refreshFuture;
-  final void Function() triggerRefresh;
+  final void Function(DateTime) triggerRefresh;
 
   const ActionRefreshButton(
       {super.key, required this.refreshFuture, required this.triggerRefresh});
@@ -21,7 +22,7 @@ class ActionRefreshButton extends StatefulWidget {
 class ActionRefreshButtonWithState extends StatefulWidget {
   final AsyncSnapshot<void> snapshot;
   final bool isResultNew;
-  final void Function() triggerRefresh;
+  final void Function(DateTime) triggerRefresh;
 
   const ActionRefreshButtonWithState(
       {super.key,
@@ -112,7 +113,12 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
       log.warning(
           "Error in ActionRefreshButtonWithState: ${widget.snapshot.error}");
 
-      icon = OverflowBox(
+      icon =
+      Tooltip(
+        message: formatErrorMsg(widget.snapshot.error?.toString()),
+        triggerMode: TooltipTriggerMode.longPress,
+        child:
+       OverflowBox(
           maxWidth: 38,
           maxHeight: 38,
           child: Stack(children: [
@@ -133,7 +139,7 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
                     backgroundColor: Colors.red,
                     radius: 8,
                     child: Icon(Icons.close, color: Colors.white, size: 12)))
-          ]));
+          ])));
     }
 
     if (widget.snapshot.connectionState == ConnectionState.done &&
@@ -160,17 +166,9 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
 
     return IconButton(
         onPressed: () {
-          widget.triggerRefresh();
+          widget.triggerRefresh(DateTime.now());
         },
         icon: SizedBox(height: 24, width: 24, child: icon));
-
-    // return IconButton(
-    //     onPressed: () {
-    //       // alertsPanelController.dismissedMessages.clear();
-    //       // calendar.refresh();
-    //       widget.triggerRefresh();
-    //     },
-    //     icon: const Icon(Icons.refresh));
   }
 }
 
@@ -181,7 +179,7 @@ class _ActionRefreshButtonState extends State<ActionRefreshButton>
     return FutureBuilderPatched(
         future: widget.refreshFuture,
         builder: (context, snapshot) => FutureBuilderPatched(
-            future: widget.refreshFuture?.then((value) async {
+            future: widget.refreshFuture?.then((value) {
               // if (value.isAfter(DateTime.now().subtract(const Duration(seconds: 30)))) {
               //   return Future.delayed(const Duration(seconds: 10));
               // }
@@ -192,13 +190,17 @@ class _ActionRefreshButtonState extends State<ActionRefreshButton>
 
               DateTime now = DateTime.now();
               if (noveltyExpiration.isAfter(now)) {
-                await Future.delayed(noveltyExpiration.difference(now));
+                return Future.delayed(noveltyExpiration.difference(now));
               }
+
+              // return false;
+              return Future.value();
               // return Future.delayed([
               //   Duration.zero, noveltyExpiration.difference(DateTime.now())
               // ].max);
-            }).catchError((error, stackTrace) async {
-              await Future.delayed(const Duration(seconds: 10));
+            }).catchError((error, stackTrace) {
+              return Future.delayed(const Duration(seconds: 10));
+              // return true;
             }),
             // whenComplete(() => Future.delayed(const Duration(seconds: 10))),
             builder: (delayContext, delaySnapshot) =>

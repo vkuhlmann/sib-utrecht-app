@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:sib_utrecht_app/components/resource_pool.dart';
+import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 
 import 'globals.dart';
 import 'model/login_manager.dart';
@@ -103,7 +103,7 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
     // }
   }
 
-  Widget buildWide() {
+  Widget buildWide(Widget child) {
     return Builder(
         builder: (context) => Scaffold(
             // bottomNavigationBar: NavigationBar(
@@ -130,11 +130,11 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
                             .toList(),
                       ),
                       const VerticalDivider(thickness: 1, width: 1),
-                      Expanded(child: widget.navigationShell)
+                      Expanded(child: child)
                     ])))));
   }
 
-  Widget buildMobile() {
+  Widget buildMobile(Widget child) {
     return Builder(
         builder: (context) => Scaffold(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -184,25 +184,39 @@ class _ScaffoldWithNavbarState extends State<ScaffoldWithNavbar> {
             body: SafeArea(
                 child: Container(
                     color: Theme.of(context).colorScheme.background,
-                    child: widget.navigationShell))));
+                    child: child))));
   }
 
   @override
   Widget build(BuildContext context) {
-    return APIAccess(
-        state: loginState,
-        // child: buildMobile()
-        // child: WithSIBAppBar(
-        //     actions: [
-        //       IconButton(onPressed: () {
+    Super(Widget child) => Builder(
+        builder: (context) => MediaQuery.sizeOf(context).width > 800
+            ? buildWide(child)
+            : buildMobile(child));
 
-        //       }, icon: const Icon(Icons.refresh))
-        //     ],
-        child: ResourcePoolProvider(
-            child: Builder(
-                builder: (context) => MediaQuery.sizeOf(context).width > 800
-                    ? buildWide()
-                    : buildMobile())));
+    // return APIAccess(
+    //     state: loginState,
+    //     // child: buildMobile()
+    //     // child: WithSIBAppBar(
+    //     //     actions: [
+    //     //       IconButton(onPressed: () {
+
+    //     //       }, icon: const Icon(Icons.refresh))
+    //     //     ],
+    //     child: ResourcePoolProvider(
+    //         child: ));
+
+    return Super(
+        // APIAccess(
+        //   state: loginState,
+        //   child:
+        ResourcePoolProvider(
+      state: loginState,
+
+      // TODO add channel name
+      channelName: null,
+      child: widget.navigationShell,
+    ));
   }
 
   void _onDestinationSelected(index) {
@@ -393,28 +407,28 @@ class _MyAppState extends State<MyApp> {
         debugMode: false,
         child: Builder(
             builder: (context) => MaterialApp.router(
-                routerConfig: router,
-                title: 'SIB-Utrecht (Bèta)',
-                theme: lightTheme,
-                darkTheme: darkTheme,
-                localizationsDelegates: const [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate
-                ],
-                supportedLocales: const [
-                  Locale('en', 'GB'),
-                  Locale('nl', 'NL'),
-                ],
-                debugShowCheckedModeBanner: false,
-                // locale: Preferences.of(context).locale,
-                locale: isDutch == true
-                    ? const Locale('nl', 'NL')
-                    : (isDutch == false ? const Locale('en', 'GB') : null),
-                themeMode: useDarkTheme == null
-                    ? ThemeMode.system
-                    : (useDarkTheme ? ThemeMode.dark : ThemeMode.light),
+                  routerConfig: router,
+                  title: 'SIB-Utrecht (Bèta)',
+                  theme: lightTheme,
+                  darkTheme: darkTheme,
+                  localizationsDelegates: const [
+                    AppLocalizations.delegate,
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate
+                  ],
+                  supportedLocales: const [
+                    Locale('en', 'GB'),
+                    Locale('nl', 'NL'),
+                  ],
+                  debugShowCheckedModeBanner: false,
+                  // locale: Preferences.of(context).locale,
+                  locale: isDutch == true
+                      ? const Locale('nl', 'NL')
+                      : (isDutch == false ? const Locale('en', 'GB') : null),
+                  themeMode: useDarkTheme == null
+                      ? ThemeMode.system
+                      : (useDarkTheme ? ThemeMode.dark : ThemeMode.light),
                 )));
   }
 }

@@ -20,7 +20,8 @@ class _SignupIndicatorState extends State<SignupIndicator> {
       return const SizedBox();
     }
 
-    return SizedBox(width: 40, height: 40, child: Center(child: buildInner(context)));
+    return SizedBox(
+        width: 40, height: 40, child: Center(child: buildInner(context)));
   }
 
   Widget? buildInner(BuildContext context) {
@@ -56,8 +57,8 @@ class _SignupIndicatorState extends State<SignupIndicator> {
       );
     }
 
-    if (signupType == "url") {
-      var url = widget.event.data["signup"]?["url"];
+    final url = widget.event.signupUrl;
+    if (signupType == "url" && url != null) {
       // if (widget.isContinuation) {
       //   return const SizedBox();
       // }
@@ -65,9 +66,8 @@ class _SignupIndicatorState extends State<SignupIndicator> {
       return IconButton(
           onPressed: () {
             launchUrl(Uri.parse(url)).catchError((e) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(
-                      "Failed to open signup link: ${widget.event.data["signup"]["url"]}")));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Failed to open signup link: $url")));
               return false;
             });
           },

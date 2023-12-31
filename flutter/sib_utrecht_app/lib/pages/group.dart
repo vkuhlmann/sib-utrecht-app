@@ -41,7 +41,7 @@ class GroupPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ActionSubscriptionAggregator(child: GroupProvider.Single(
       query: entityName,
-      builder: (context, group) => SelectionArea(
+      builder: (context, group, _) => SelectionArea(
               child: CenteredPageScroll(
             slivers: [
               GroupAppBar(group: group),

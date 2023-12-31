@@ -1,32 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:sib_utrecht_app/components/api_access.dart';
-import 'package:sib_utrecht_app/log.dart';
-import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
-import 'package:sib_utrecht_app/model/api/groups.dart';
 // import 'package:sib_utrecht_app/model/event.dart';
 // import 'package:sib_utrecht_app/model/events.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/model/api/users.dart';
-import 'package:sib_utrecht_app/utils.dart';
-import 'package:sib_utrecht_app/view_model/async_patch.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 // import '../constants.dart';
 
-import 'package:flutter/material.dart';
-import 'package:sib_utrecht_app/model/api/groups.dart';
-import 'package:sib_utrecht_app/model/group.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider.dart';
-import 'package:sib_utrecht_app/view_model/multiplexed_provider.dart';
 import 'package:sib_utrecht_app/view_model/single_provider.dart';
 
-Widget WPUsersProvider({required Widget Function(BuildContext, List<User>) builder}) => SingleProvider(
-      query: null,
-      builder: builder,
-      errorTitle: (loc) => loc.couldNotLoad(loc.dataUsers),
-      obtainProvider: (void q) => CachedProvider(
-            obtain: (c) => Users(c).listWP(),
-          ));
+Widget WPUsersProvider(
+        {required Widget Function(BuildContext, List<User>, FetchResult<void>) builder}) =>
+    SingleProvider(
+        query: null,
+        builder: builder,
+        errorTitle: (loc) => loc.couldNotLoad(loc.dataUsers),
+        // changeListener: (p) => p._users,
+        obtain: (void q, c) => Users(c).listWP());
 
 
 // class WPUsersProvider extends StatefulWidget {

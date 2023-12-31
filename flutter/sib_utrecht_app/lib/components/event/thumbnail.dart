@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
 
@@ -7,13 +8,13 @@ import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/router.dart';
 
 class EventThumbnail extends StatelessWidget {
-  final AnnotatedEvent event;
+  final Event event;
 
   const EventThumbnail(this.event, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final (_, thumbnail) = event.extractDescriptionAndThumbnail();
+    final (_, thumbnail) = event.body!.extractDescriptionAndThumbnail();
 
     return Card(
         // child: WillPopScope(
@@ -38,7 +39,7 @@ class EventThumbnail extends StatelessWidget {
                             onTap: () {
                               router.pushNamed("event_image_dialog",
                                   pathParameters: {
-                                    "event_id": event.eventId.toString()
+                                    "event_id": event.id.toString()
                                   },
                                   queryParameters: {
                                     "url": thumbnail["url"]

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
+import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 import 'package:sib_utrecht_app/components/event/event_tile.dart';
-import 'package:sib_utrecht_app/components/resource_pool.dart';
+import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider.dart';
+import 'package:sib_utrecht_app/view_model/event/events_calendar_provider_old.dart';
 import 'package:sib_utrecht_app/view_model/event/week_chunker.dart';
 
 class HomePageContents extends StatelessWidget {
@@ -56,7 +59,7 @@ class HomePageContents extends StatelessWidget {
                         .map((event) => EventTile(
                             key: ValueKey((
                               "eventsItem",
-                              event.eventId,
+                              event.id,
                               event.placement?.date
                             )),
                             event: event))
@@ -101,7 +104,7 @@ class HomePageContents extends StatelessWidget {
                             .map((event) => EventTile(
                                 key: ValueKey((
                                   "eventsItem",
-                                  event.eventId,
+                                  event.id,
                                   event.placement?.date
                                 )),
                                 event: event))
@@ -279,82 +282,58 @@ class HomePageContents extends StatelessWidget {
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
-  static Widget buildLoginPrompt(BuildContext context) => Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(children: [
-        FilledButton(
-            onPressed: () {
-              GoRouter.of(context).go("/login?immediate=true");
-            },
-            style: (Theme.of(context).filledButtonTheme.style ??
-                    FilledButton.styleFrom())
-                .copyWith(
-                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4)))),
-            child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text("Log in",
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ))))
-      ]));
+  // static Widget buildInProgress(
+  //         BuildContext context, AsyncSnapshot<void> calendarLoadSnapshot) =>
+  //     FutureBuilderPatched(
+  //         future: ResourcePoolAccess.of(context).pool.connector,
+  //         builder: (context, snapshot) {
+  //           var data = snapshot.data;
 
-  static Widget buildInProgress(
-          BuildContext context, AsyncSnapshot<void> calendarLoadSnapshot) =>
-      FutureBuilderPatched(
-          future: ResourcePoolAccess.of(context).pool.connector,
-          builder: (context, snapshot) {
-            var data = snapshot.data;
+  //           if (data != null &&
+  //               data.base is HTTPApiConnector &&
+  //               (data.base as HTTPApiConnector).user == null) {
+  //             return buildLoginPrompt(context);
+  //           }
 
-            if (data != null &&
-                data.base is HTTPApiConnector &&
-                (data.base as HTTPApiConnector).user == null) {
-              return buildLoginPrompt(context);
-            }
+  //           if (calendarLoadSnapshot.connectionState ==
+  //               ConnectionState.waiting) {
+  //             return const Padding(
+  //                 padding: EdgeInsets.all(32),
+  //                 child: Center(child: CircularProgressIndicator()));
+  //           }
 
-            if (calendarLoadSnapshot.connectionState ==
-                ConnectionState.waiting) {
-              return const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()));
-            }
+  //           if (calendarLoadSnapshot.hasError) {
+  //             return Padding(
+  //                 padding: const EdgeInsets.all(32),
+  //                 child: Center(
+  //                     child: Text(
+  //                         "Error loading events: ${calendarLoadSnapshot.error}")));
+  //           }
 
-            if (calendarLoadSnapshot.hasError) {
-              return Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Center(
-                      child: Text(
-                          "Error loading events: ${calendarLoadSnapshot.error}")));
-            }
+  //           // return const SizedBox();
+  //           return const Center(child: Text("No events"));
 
-            // return const SizedBox();
-            return const Center(child: Text("No events"));
+  //           // return Center(child: Text(calendarLoadSnapshot.connectionState.toString()));
 
-            // return Center(child: Text(calendarLoadSnapshot.connectionState.toString()));
-
-            // return Center(child: Text(calendarLoadSnapshot.hasData.toString()));
-          });
+  //           // return Center(child: Text(calendarLoadSnapshot.hasData.toString()));
+  //         });
 
   @override
   Widget build(BuildContext context) {
     return WithSIBAppBar(
         actions: const [],
-        child: EventsCalendarProvider(
-            builder: (context, calendar) => FutureBuilderPatched(
-                  future: calendar.loading,
-                  builder: (calendarLoadContext, calendarLoadSnapshot) {
-                    if (calendar.events.isEmpty) {
-                      return Center(
-                          child: buildInProgress(
-                              calendarLoadContext, calendarLoadSnapshot));
-                    }
+        child: ActionSubscriptionAggregator(
+            child: CalendarListProvider(
+          feedback: ActionFeedback(
+            sendConfirm: (m) => ActionFeedback.sendConfirmToast(context, m),
+            sendError: (m) => ActionFeedback.showErrorDialog(context, m),
+          ),
+          builder: (context, events) {
+            var superGroups =
+                WeekChunked(events, (e) => e.placement?.date).superGroups;
 
-                    var superGroups =
-                        WeekChunked(calendar.events, (e) => e.placement?.date)
-                            .superGroups;
-
-                    return HomePageContents(superGroups);
-                  },
-                )));
+            return HomePageContents(superGroups);
+          },
+        )));
   }
 }

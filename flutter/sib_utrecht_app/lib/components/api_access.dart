@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/model/api/users.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
+import 'package:sib_utrecht_app/model/resource_pool.dart';
 import '../model/login_state.dart';
 
 class APIAccess extends InheritedWidget {
-  APIAccess({super.key, required super.child, required this.state})
-  : connector = state.then((s) => s.connector);
+  
+  const APIAccess({super.key, required super.child, required this.state, required this.pool,
+  required this.connector
+  });
+  // : connector = state.then((s) => 
+  
+  // s.connector);
 
   final Future<LoginState> state;
   final Future<CacherApiConnector> connector;
+  final ResourcePool pool;
 
-  Users get users => Users(connector);
+  // Users get users => Users(connector);
 
   static APIAccess? maybeOf(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<APIAccess>();
@@ -23,5 +30,6 @@ class APIAccess extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(APIAccess oldWidget) => state != oldWidget.state;
+  bool updateShouldNotify(APIAccess oldWidget) => state != oldWidget.state
+  || pool != oldWidget.pool;
 }

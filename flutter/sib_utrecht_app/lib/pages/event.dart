@@ -7,16 +7,24 @@ import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/event/event_participants.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
-import 'package:sib_utrecht_app/components/resource_pool.dart';
+import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/signup_indicator.dart';
+import 'package:sib_utrecht_app/model/booking.dart';
+import 'package:sib_utrecht_app/model/event.dart';
+import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/utils.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider_T.dart';
+import 'package:sib_utrecht_app/view_model/annotated_user.dart';
+import 'package:sib_utrecht_app/view_model/async_patch.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
+import 'package:sib_utrecht_app/view_model/provider/event_bookings_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/event_participants_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/event_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/participation_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/user_provider.dart';
 
 import '../globals.dart';
 import '../components/actions/alerts_panel.dart';
@@ -24,7 +32,7 @@ import '../components/api_access.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({Key? key, required this.eventId}) : super(key: key);
-  final int eventId;
+  final String eventId;
 
   @override
   State<EventPage> createState() => _EventPageState();
@@ -50,7 +58,7 @@ class EventHeader extends StatelessWidget {
         IconButton(
             onPressed: () {
               router.goNamed("event_edit",
-                  pathParameters: {"event_id": event.eventId.toString()});
+                  pathParameters: {"event_id": event.id});
             },
             icon: const Icon(Icons.edit)),
       ]),
@@ -99,7 +107,8 @@ class EventHeader extends StatelessWidget {
                 ])
               ])
           ]))),
-      if (event.participation?.isActive == true && event.participation?.isParticipating == false)
+      if (event.participation?.isActive == true &&
+          event.participation?.isParticipating == false)
         // Card(
         //     child: ListTile(
         //         title:
@@ -168,13 +177,13 @@ class EventHeader extends StatelessWidget {
 }
 
 class EventDescription extends StatelessWidget {
-  final AnnotatedEvent event;
+  final Event event;
 
   const EventDescription(this.event, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final (description, _) = event.extractDescriptionAndThumbnail();
+    final (description, _) = event.body!.extractDescriptionAndThumbnail();
 
     return Card(
         child: ListTile(
@@ -210,12 +219,46 @@ class EventPageContents extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 700),
                     child: Column(children: [
                       EventHeader(event),
-                      EventDescription(event),
-                      EventThumbnail(event),
+                      EventProvider.Single(
+                        query: event.id,
+                        requireBody: true,
+                        builder: (context, event, _) => Column(children: [
+                          EventDescription(event),
+                          EventThumbnail(event),
+                        ]),
+                      ),
                       const SizedBox(height: 32),
                       EventParticipantsProvider(
-                          eventId: event.eventId,
-                          builder: (context, participants) {
+                          eventId: event.id,
+                          builder: (context, participants)
+                              //  =>
+                              // FutureBuilderPatched(
+                              //     future: Future.wait(participantFutures),
+                              //     builder: (context, snapshot)
+                              // UserProvider.Multiplexed(
+                              //     query: bookings
+                              //         .map((e) => e.userId)
+                              //         .toList(),
+                              //     builder: (context, users)
+                              {
+                            // final participants = snapshot.data;
+
+                            // if (participants == null) {
+                            //   return const SizedBox();
+                            // }
+
+                            if (participants.isEmpty &&
+                                !event.doesExpectParticipants()) {
+                              return const SizedBox();
+                            }
+
+                            // var participants = bookings.mapIndexed((index, element) =>
+                            //   AnnotatedUser(
+                            //     user: users[index],
+                            //     comment: element.comment
+                            //   )
+                            // ).toList();
+
                             // if ()
                             return EventParticipants(event,
                                 participants: participants);
@@ -232,7 +275,7 @@ class EventPageContents extends StatelessWidget {
 
 class _EventPageState extends State<EventPage> {
   final AlertsPanelController _alertsPanelController = AlertsPanelController();
-  late EventProviderNotifier _eventProvider;
+  // late EventProviderNotifier _eventProvider;
 
   @override
   void initState() {
@@ -247,103 +290,90 @@ class _EventPageState extends State<EventPage> {
     _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
         component: "participants", status: "done", data: {}));
 
-    _eventProvider = EventProviderNotifier(
-        eventId: widget.eventId, apiConnector: null, cachedEvent: null);
+    // _eventProvider = EventProviderNotifier(
+    //     eventId: widget.eventId, apiConnector: null, cachedEvent: null);
   }
 
   @override
   void didChangeDependencies() {
     final apiConnector = APIAccess.of(context).connector;
 
-    if (apiConnector != _eventProvider.apiConnector) {
-      log.info(
-          "Event page: API connector changed from ${_eventProvider.apiConnector} "
-          " to $apiConnector, reloading event data");
+    // if (apiConnector != _eventProvider.apiConnector) {
+    //   log.info(
+    //       "Event page: API connector changed from ${_eventProvider.apiConnector} "
+    //       " to $apiConnector, reloading event data");
 
-      var cachedEv = ResourcePoolAccess.of(context)
-          .pool
-          .eventsProvider
-          .events
-          .firstWhereOrNull((element) => element.eventId == widget.eventId);
+    //   var cachedEv = ResourcePoolAccess.of(context)
+    //       .pool
+    //       .eventsProvider
+    //       .events
+    //       .firstWhereOrNull((element) => element.eventId == widget.eventId);
 
-      _eventProvider = EventProviderNotifier(
-          eventId: widget.eventId,
-          apiConnector: apiConnector,
-          cachedEvent: cachedEv == null ? null : FetchResult(cachedEv, null));
-    }
+    //   _eventProvider = EventProviderNotifier(
+    //       eventId: widget.eventId,
+    //       apiConnector: apiConnector,
+    //       cachedEvent: cachedEv == null ? null : FetchResult(cachedEv, null));
+    // }
 
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
+    // var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
     return WithSIBAppBar(
         actions: const [],
         child: ActionSubscriptionAggregator(
             child: EventProvider.Single(
                 query: widget.eventId,
-                builder: (context, event) {
-                  // ListenableBuilder(
-                  //     listenable: Listenable.merge([_eventProvider, provEvents]),
-                  //     builder: (context, _) {
-                  log.fine(
-                      "Building event page for event id ${widget.eventId}");
+                requireBody: false,
+                builder: (context, event, _) =>
+                    EventParticipationProvider.Single(
+                        query: event,
+                        builder: (context, annotatedEvent) {
+                          // ListenableBuilder(
+                          //     listenable: Listenable.merge([_eventProvider, provEvents]),
+                          //     builder: (context, _) {
+                          log.fine(
+                              "Building event page for event id ${widget.eventId}");
 
-                  // var prov = _eventProvider;
-                  // var cachedEvent = prov.event.cached;
-
-                  EventParticipation? participation;
-                  // if (event != null) {
-                  participation = provEvents.getMeParticipation(event,
-                      feedback: ActionFeedback(
-                        sendConfirm: (m) =>
-                            ActionFeedback.sendConfirmToast(context, m),
-                        sendError: (m) =>
-                            ActionFeedback.showErrorDialog(context, m),
-                      ));
-                  // }
-
-                  return
-                      // WithSIBAppBar(
-                      //     actions: [
-                      //       ActionRefreshButton(
-                      //           refreshFuture: Future.wait([
-                      //             _eventProvider.event.loading,
-                      //             if (prov.doesExpectParticipants())
-                      //               _eventProvider.participants.loading
-                      //           ]).then((_) => DateTime.now()),
-                      //           triggerRefresh: _eventProvider.refresh)
-                      //     ],
-                      //     child:
-                      Column(children: [
-                    Expanded(
-                        child: EventPageContents(
-                            event: AnnotatedEvent(
-                              event: event,
-                              participation: participation,
-                              // participants: eventProvider.participants.cached,
-                            ),
-                            eventParticipation: participation)),
-                    // AlertsPanel(
-                    //     controller: _alertsPanelController,
-                    //     loadingFutures: [
-                    //       AlertsFutureStatus(
-                    //           component: "details",
-                    //           future: _eventProvider.event.loading,
-                    //           data: {
-                    //             "isRefreshing": _eventProvider.event.cached != null
-                    //           }),
-                    //       if (prov.doesExpectParticipants())
-                    //         AlertsFutureStatus(
-                    //             component: "participants",
-                    //             future: _eventProvider.participants.loading,
-                    //             data: {
-                    //               "isRefreshing":
-                    //                   _eventProvider.participants.cached != null
-                    //             })
-                    //     ])
-                  ]);
-                })));
+                          return
+                              // WithSIBAppBar(
+                              //     actions: [
+                              //       ActionRefreshButton(
+                              //           refreshFuture: Future.wait([
+                              //             _eventProvider.event.loading,
+                              //             if (prov.doesExpectParticipants())
+                              //               _eventProvider.participants.loading
+                              //           ]).then((_) => DateTime.now()),
+                              //           triggerRefresh: _eventProvider.refresh)
+                              //     ],
+                              //     child:
+                              Column(children: [
+                            Expanded(
+                                child: EventPageContents(
+                                    event: annotatedEvent,
+                                    eventParticipation:
+                                        annotatedEvent.participation)),
+                            // AlertsPanel(
+                            //     controller: _alertsPanelController,
+                            //     loadingFutures: [
+                            //       AlertsFutureStatus(
+                            //           component: "details",
+                            //           future: _eventProvider.event.loading,
+                            //           data: {
+                            //             "isRefreshing": _eventProvider.event.cached != null
+                            //           }),
+                            //       if (prov.doesExpectParticipants())
+                            //         AlertsFutureStatus(
+                            //             component: "participants",
+                            //             future: _eventProvider.participants.loading,
+                            //             data: {
+                            //               "isRefreshing":
+                            //                   _eventProvider.participants.cached != null
+                            //             })
+                            //     ])
+                          ]);
+                        }))));
   }
 }

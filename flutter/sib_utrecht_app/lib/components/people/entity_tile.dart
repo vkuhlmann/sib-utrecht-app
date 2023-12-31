@@ -64,7 +64,8 @@ class EntityTile extends StatelessWidget {
 
           showDialog(
               context: context,
-              builder: (context) => AlertDialog(
+              builder: (context) => 
+              SelectionArea(child: AlertDialog(
                     title: Text(entity
                         .getLocalLongName(Localizations.localeOf(context))),
                     // content: Text("Entity: ${entity.runtimeType}\n\n${entity.toString()}"),
@@ -99,7 +100,7 @@ class EntityTile extends StatelessWidget {
                           },
                           child: const Text("Close"))
                     ],
-                  ));
+                  )));
         },
         child: SizedBox(
             width: 90,

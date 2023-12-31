@@ -1,9 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'model/api_error.dart';
 import 'package:go_router/go_router.dart';
+
+FutureOr<U> foThen<T, U>(FutureOr<T> fut, FutureOr<U> Function(T) f) {
+  if (fut is Future<T>) {
+    return fut.then(f);
+  }
+
+  return f(fut);
+}
+
+FutureOr<T> foCatch<T>(FutureOr<T> fut, T Function(dynamic) onError) {
+  if (fut is Future<T>) {
+    return fut.catchError(onError);
+  }
+
+  return fut;
+}
 
 String formatErrorMsg(String? error) {
   if (error == null) {

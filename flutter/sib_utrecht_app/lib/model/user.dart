@@ -6,6 +6,9 @@ import 'package:sib_utrecht_app/model/entity.dart';
 class User extends Entity {
   final Map data;
 
+  @override
+  String get id => entityName ?? "wp-user-$wpId";
+  
   String? get entityName => data["entity_name"];
   String get shortName => (data["short_name"] ??
       data["short_name_unique"] ??
@@ -57,19 +60,16 @@ class User extends Entity {
 
       vals.addAll(details);
     }
+    vals.remove("details");
 
     return User(data: json);
   }
 
   @override
-  String getLocalLongName(Locale loc) {
-    return longName;
-  }
+  String getLocalLongName(Locale loc) => longName;
 
   @override
-  String getLocalShortName(Locale loc) {
-    return shortName;
-  }
+  String getLocalShortName(Locale loc) => shortName;
 
   @override
   String? get profilePage {
@@ -80,4 +80,7 @@ class User extends Entity {
     return router
         .namedLocation("user_page", pathParameters: {"entity_name": name});
   }
+  
+  @override
+  Map toJson() => data;
 }

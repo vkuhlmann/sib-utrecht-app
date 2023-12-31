@@ -349,7 +349,7 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
               Future<void> testConnection() async {
                 // throw Exception("Test aborting");
-                var result = await st.connector.get("/auth");
+                var result = await st.connector.getSimple("/auth");
                 var roles = result["data"]?["roles"];
                 if (roles == null) {
                   throw Exception("Could not retrieve available roles");

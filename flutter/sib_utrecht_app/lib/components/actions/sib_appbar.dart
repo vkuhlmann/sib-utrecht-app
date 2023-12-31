@@ -173,46 +173,51 @@ class WithSIBAppBar extends StatelessWidget {
     // return null;
   }
 
-  Widget buildBackButton() => Builder(builder: (context) {
-        String? backAddress = getBackAddress(context);
+  Widget buildBackButton(BuildContext context) {
+    String? backAddress;
+    try {
+      backAddress = getBackAddress(context);
+    } catch (e) {
+      log.warning("Error getting back address: $e");
+    }
 
-        // bool isActive = backAddress != null ||
-        //     Navigator.of(context).canPop() ||
-        //     router.canPop();
-        // if (!isActive) {
-        //   return const SizedBox();
-        // }
+    // bool isActive = backAddress != null ||
+    //     Navigator.of(context).canPop() ||
+    //     router.canPop();
+    // if (!isActive) {
+    //   return const SizedBox();
+    // }
 
-        return BackButton(
-          onPressed: () {
-            log.info("Back button pressed");
-            log.info("backAddress: $backAddress");
-            log.info("Navigator canPop: ${Navigator.of(context).canPop()}");
-            log.info("router canPop: ${router.canPop()}");
-            log.info("GoRouter canPop: ${GoRouter.of(context).canPop()}");
+    return BackButton(
+      onPressed: () {
+        log.info("Back button pressed");
+        log.info("backAddress: $backAddress");
+        log.info("Navigator canPop: ${Navigator.of(context).canPop()}");
+        log.info("router canPop: ${router.canPop()}");
+        log.info("GoRouter canPop: ${GoRouter.of(context).canPop()}");
 
-            if (router.canPop()) {
-              router.pop();
-              return;
-            }
+        if (router.canPop()) {
+          router.pop();
+          return;
+        }
 
-            if (GoRouter.of(context).canPop()) {
-              GoRouter.of(context).pop();
-              return;
-            }
+        if (GoRouter.of(context).canPop()) {
+          GoRouter.of(context).pop();
+          return;
+        }
 
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-              return;
-            }
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+          return;
+        }
 
-            if (backAddress != null) {
-              router.go(backAddress);
-              return;
-            }
-          },
-        );
-      });
+        if (backAddress != null) {
+          router.go(backAddress);
+          return;
+        }
+      },
+    );
+  }
 
   Widget buildLoginIcon(BuildContext context) {
     Future<LoginState> loginState = APIAccess.of(context).state;
@@ -272,7 +277,7 @@ class WithSIBAppBar extends StatelessWidget {
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
               leading:
                   (showBackButton && suppression?.suppressBackbutton != true)
-                      ? Center(child: buildBackButton())
+                      ? Center(child: buildBackButton(context))
                       : null,
               title: suppression?.suppressTitle == true
                   ? null
@@ -302,7 +307,9 @@ class WithSIBAppBar extends StatelessWidget {
                 if (refreshFuture != null)
                   ActionRefreshButton(
                       refreshFuture: refreshFuture,
-                      triggerRefresh: actionSubscriptions.lastOrNull?.triggerRefresh ?? () {}),
+                      triggerRefresh:
+                          actionSubscriptions.lastOrNull?.triggerRefresh ??
+                              (_) {}),
                 // const Icon(Icons.more_vert),
                 // Text("${actionSubscriptions.length}"),
                 // ...ActionProvider.of(context).controller.widgets,

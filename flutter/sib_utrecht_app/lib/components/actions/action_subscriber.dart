@@ -4,13 +4,13 @@ import 'package:flutter/scheduler.dart';
 
 abstract interface class ActionEmission {
   Future<DateTime>? get refreshFuture;
-  void triggerRefresh();
+  Future<DateTime> triggerRefresh(DateTime invalidationTime);
 }
 
 class ActionEmitter extends StatefulWidget {
   final Widget child;
   final Future<DateTime>? refreshFuture;
-  final void Function() triggerRefresh;
+  final Future<DateTime> Function(DateTime) triggerRefresh;
 
   const ActionEmitter(
       {Key? key,
@@ -28,7 +28,8 @@ class _ActionEmitterState extends State<ActionEmitter>
   @override
   Future<DateTime>? get refreshFuture => widget.refreshFuture;
   @override
-  void triggerRefresh() => widget.triggerRefresh();
+  Future<DateTime> triggerRefresh(DateTime invalidationTime) =>
+      widget.triggerRefresh(invalidationTime);
 
   ActionSubscriber? subscriber;
 
@@ -200,10 +201,30 @@ class _ActionSubscriptionAggregatorState
 
   Future<DateTime>? refreshFuture;
 
-  void triggerRefresh() {
+  Future<DateTime> _doRefresh(DateTime invalidationTime) async {
+    DateTime startTime = DateTime.now();
+    DateTime dt = startTime;
+
     for (var a in subscriptions) {
-      a.triggerRefresh();
+      DateTime? ct;
+      try {
+        ct = await Future.value(a.refreshFuture);
+      } catch (e) {
+        ct = null;
+      }
+
+      if (!(ct?.isBefore(invalidationTime) ?? true)) {
+        continue;
+      }
+
+      dt = [dt, await a.triggerRefresh(invalidationTime)].min;
     }
+
+    return dt;
+  }
+
+  Future<DateTime> triggerRefresh(DateTime invalidationTime) {
+    return refreshFuture = _doRefresh(invalidationTime);
   }
 
   void setEmission() {
@@ -217,7 +238,12 @@ class _ActionSubscriptionAggregatorState
     }
 
     setState(() {
-      refreshFuture = Future.wait(subs).then((list) => list.min);
+      // refreshFuture = subs.fold<Future<DateTime>>(
+      //   Future.value(DateTime.now()),
+      //   (previousValue, element) => previousValue.then((d) => element.then((v) => [d, v].min)),
+      // );
+      refreshFuture = Future.wait([refreshFuture, ...subs].whereNotNull())
+          .then((list) => list.min);
     });
   }
 

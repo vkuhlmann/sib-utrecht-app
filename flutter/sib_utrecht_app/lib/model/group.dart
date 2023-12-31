@@ -3,8 +3,9 @@ import 'package:sib_utrecht_app/globals.dart';
 import 'package:sib_utrecht_app/model/entity.dart';
 
 class Group extends Entity {
-  final Map<String, dynamic> data;
+  final Map data;
 
+  String get id => groupName;
   String get groupName => data["name"];
   String? get title => data["title"];
   String? get titleNL => data["titleNL"] ?? data["title"];
@@ -29,7 +30,7 @@ class Group extends Entity {
     return getLocalTitle(loc);
   }
 
-  static Group fromJson(Map<String, dynamic> json) {
+  static Group fromJson(Map json) {
     var vals = json;
 
     if (vals["details"] != null) {
@@ -39,8 +40,7 @@ class Group extends Entity {
         }
       }
 
-      vals.addAll((vals["details"] as Map)
-          .map((key, value) => MapEntry(key as String, value)));
+      vals.addAll(vals["details"] as Map);
     }
 
     return Group(data: json);
@@ -49,4 +49,7 @@ class Group extends Entity {
   @override
   String? get profilePage => router
       .namedLocation("group", pathParameters: {"group_name": groupName});
+      
+  @override
+  Map toJson() => data;
 }

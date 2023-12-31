@@ -1,18 +1,27 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:sib_utrecht_app/model/api/events.dart';
+import 'package:sib_utrecht_app/log.dart';
+import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/annotated_user.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider.dart';
-import 'package:sib_utrecht_app/view_model/single_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/event_bookings_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/user_provider.dart';
 
 Widget EventParticipantsProvider(
-        {required int eventId,
-        required Widget Function(BuildContext, List<AnnotatedUser> members)
-            builder}) =>
-    SingleProvider(
-      query: eventId,
-      builder: builder,
-      errorTitle: (loc) => loc.couldNotLoad(loc.dataParticipants),
-      obtainProvider: (int q) => CachedProvider(
-        obtain: (c) => Events(c).listParticipants(eventId: q),
-      ),
-    );
+        {required String eventId,
+        required Widget Function(BuildContext, List<AnnotatedUser>) builder}) =>
+    Builder(
+        builder: (context) => EventBookingsProvider(
+            eventId: eventId,
+            builder: (context, eventBookings, _) {
+              log.info("EventParticipantsProvider: ${eventBookings.bookings.values.length}");
+
+              return UserProvider.Multiplexed(
+                query: eventBookings.bookings.values
+                    .map((e) => e.entityId)
+                    .toList(),
+                builder: (context, users) => builder(
+                    context,
+                    eventBookings.bookings.values
+                        .mapIndexed((index, e) => AnnotatedUser(
+                            user: users[index].value, comment: e.comment))
+                        .toList()));}));
