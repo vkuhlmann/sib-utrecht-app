@@ -12,12 +12,14 @@ class EventsGroup extends StatelessWidget {
   final bool initiallyExpanded;
   final bool isMajor;
   final bool isMultiWeek;
+  final bool divideEvents;
 
   const EventsGroup({
     Key? key, required this.children, required this.title,
     required this.initiallyExpanded,
     required this.isMajor,
-    required this.isMultiWeek
+    required this.isMultiWeek,
+    required this.divideEvents
     // required this.start, required this.end
   })
       : super(key: key);
@@ -40,6 +42,10 @@ class EventsGroup extends StatelessWidget {
     .entries.sorted((a, b) => a.key.compareTo(b.key));
 
     for (var entry in division) {
+      if (isMultiWeek) {
+        yield const SizedBox(height: 20);
+      }
+      
       String? weekTitle;
       if (isMultiWeek) {
         // weekTitle = "Week ${entry.key}";
@@ -131,7 +137,15 @@ class EventsGroup extends StatelessWidget {
                 const SizedBox(width: 8)
             ]
         ),
-      ...getChildrenWeekDivided().toList(),
+      const SizedBox(height: 16),
+      if (divideEvents)
+        ...getChildrenWeekDivided().toList()
+      else
+        for (var event in children)
+          EventTile2(
+            key: ValueKey(("eventsItem", event.id, event.placement?.date)),
+            event: event
+          ),
       const SizedBox(height: 16)
     ]);
 

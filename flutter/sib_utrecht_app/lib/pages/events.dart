@@ -7,7 +7,8 @@ import 'package:sib_utrecht_app/pages/home.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider.dart';
 import 'package:sib_utrecht_app/view_model/event/events_calendar_provider_old.dart';
 import 'package:sib_utrecht_app/view_model/event/week_chunker.dart';
-import 'package:flutter_sticky_header/flutter_sticky_header.dart';
+import 'package:sib_utrecht_app/components/flutter_sticky_header-0.6.5/lib/flutter_sticky_header.dart';
+import 'package:sliver_tools/sliver_tools.dart';
 
 import '../globals.dart';
 
@@ -68,7 +69,9 @@ class _EventsPageState extends State<EventsPage> {
                         isMajor: k == RelativeWeek.upcomingWeek,
                         initiallyExpanded: k != RelativeWeek.ongoing &&
                             k != RelativeWeek.future,
-                        children: entry.elements))
+                        children: entry.elements,
+                        divideEvents: k != RelativeWeek.ongoing,
+                        ))
                     .toList()))));
   }
 
@@ -149,6 +152,25 @@ class _EventsPageState extends State<EventsPage> {
                         child: events[RelativeWeek.past] ?? const SizedBox())),
               ],
             ),
+
+            SliverStickyHeader(
+            header: Container(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                    child:
+                        // Row(children: [],)
+                        Center(
+                            child: Text(
+                      "User details",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    )))),
+            sliver: SliverCrossAxisConstrained(
+                maxCrossAxisExtent: 700,
+                child: SliverPadding(
+            padding: const EdgeInsets.fromLTRB(8, 16, 8, 32),
+                    sliver: SliverToBoxAdapter(child: Text("Test"),)
+                ))),
             SliverToBoxAdapter(
                 key: _center,
                 child: Padding(

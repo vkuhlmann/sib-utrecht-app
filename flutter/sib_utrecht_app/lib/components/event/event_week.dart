@@ -18,7 +18,7 @@ class EventWeek extends StatelessWidget {
     return Column(
       children: [
         if (weekTitle != null)
-        Padding(padding: const EdgeInsets.only(top: 16, bottom: 2),
+        Padding(padding: const EdgeInsets.only(bottom: 2),
         child:
           Align(
               alignment: Alignment.center,

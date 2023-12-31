@@ -125,6 +125,11 @@ class WeekChunked<T> {
 
       return RelativeWeek.future;
     });
+    groups[RelativeWeek.upcomingWeek] ??= [];
+    groups[RelativeWeek.nextWeek] ??= [];
+    groups[RelativeWeek.lastWeek] ??= [];
+    groups[RelativeWeek.past] ??= [];
+    groups[RelativeWeek.future] ??= [];
 
     isLookingAhead = upcomingWeek != currentWeek;
 
