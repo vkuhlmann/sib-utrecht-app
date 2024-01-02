@@ -3,6 +3,7 @@ import "package:collection/collection.dart";
 import 'package:sib_utrecht_app/components/event/event_tile2.dart';
 import 'package:sib_utrecht_app/components/event/event_week.dart';
 import 'package:sib_utrecht_app/components/flutter_sticky_header-0.6.5/lib/flutter_sticky_header.dart';
+import 'package:sib_utrecht_app/week.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
 import '../../utils.dart';
@@ -10,32 +11,74 @@ import '../../view_model/event/annotated_event.dart';
 
 import '../../pages/events.dart';
 
-Widget EventsGroup(
-    {Key? key,
-    required List<AnnotatedEvent> children,
-    required String title,
-    required bool initiallyExpanded,
-    required bool isMajor,
-    required bool isMultiWeek,
-    required bool divideEvents
-    // required this.start, required this.end
-    }) {
+typedef WeekBuilder = Widget Function(
+      {required Week week,
+      required List<AnnotatedEvent> events});
+
+Widget EventGroup(
+        {Key? key,
+        required Widget sliver,
+        required String title,
+        required bool isMajor}) =>
+    SliverStickyHeader.builder(
+        builder: (context, state) =>
+            SolidHeader(title: title, isMajor: isMajor),
+        sliver: SliverCrossAxisConstrained(
+            maxCrossAxisExtent: 700,
+            child: SliverPadding(
+                padding: const EdgeInsets.only(top: 40), sliver: sliver)));
+
+Widget EventMonth({
+  Key? key,
+  required List<MapEntry<Week, List<AnnotatedEvent>>> children,
+  required String title,
+  required bool initiallyExpanded,
+  required bool isMajor,
+  WeekBuilder? weekBuilder,
+  // required bool isMultiWeek,
+  // required bool divideEvents,
+  // required List<Week> weeks,
+  // required this.start, required this.end
+}) {
   return
       // MultiSliver(
       //   key: ValueKey((key, title)),
       //   children: [
 
       //   ]);
-      SliverStickyHeader.builder(
-          builder: (context, state) =>
-              FancyHeader(title: title, isMajor: isMajor),
-          sliver: EventsGroupContent(
-              children: children,
-              title: title,
-              initiallyExpanded: initiallyExpanded,
-              isMajor: isMajor,
-              isMultiWeek: isMultiWeek,
-              divideEvents: divideEvents));
+      EventGroup(
+          title: title,
+          isMajor: isMajor,
+          sliver: SliverToBoxAdapter(
+              child: EventMonthContent(
+            children: children,
+            // title: title,
+            initiallyExpanded: initiallyExpanded,
+            isMajor: isMajor,
+            isMultiWeek: true,
+            buildWeek: weekBuilder ?? EventWeek.new,
+            // weeks: weeks,
+            // divideEvents: divideEvents
+          )));
+}
+
+class SolidHeader extends StatelessWidget {
+  final String title;
+  final bool isMajor;
+
+  const SolidHeader({Key? key, required this.title, required this.isMajor})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Container(
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+          child: Center(
+              child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge,
+          ))));
 }
 
 class FancyHeader extends StatelessWidget {
@@ -93,23 +136,28 @@ class FancyHeader extends StatelessWidget {
   }
 }
 
-class EventsGroupContent extends StatelessWidget {
+class EventMonthContent extends StatelessWidget {
   final bool initiallyExpanded;
   final bool isMajor;
   final bool isMultiWeek;
-  final bool divideEvents;
+  // final bool divideEvents;
+  // final List<Week> weeks;
 
-  const EventsGroupContent(
-      {Key? key,
-      required this.children,
-      required this.title,
-      required this.initiallyExpanded,
-      required this.isMajor,
-      required this.isMultiWeek,
-      required this.divideEvents
-      // required this.start, required this.end
-      })
-      : super(key: key);
+  final WeekBuilder buildWeek;
+
+  const EventMonthContent({
+    Key? key,
+    required this.children,
+    required this.initiallyExpanded,
+    required this.isMajor,
+    required this.isMultiWeek,
+    this.buildWeek = EventWeek.new
+    // required this.divideEvents,
+    // required this.weeks
+    // required this.start, required this.end
+  }) : super(key: key);
+
+  // static Widget defaultBuildWeek = EventWeek;
 
   // static Widget buildItem(AnnotatedEvent event) {
   //   return EventTile2(
@@ -117,30 +165,39 @@ class EventsGroupContent extends StatelessWidget {
   //       event: event);
   // }
 
-  final List<AnnotatedEvent> children;
-  final String title;
+  final List<MapEntry<Week, List<AnnotatedEvent>>> children;
   // final DateTime? start;
   // final DateTime? end;
   // final bool demark
 
   Iterable<Widget> getChildrenWeekDivided() sync* {
-    var division = groupBy(
-            children, (p0) => formatWeekNumber(p0.placement?.date ?? p0.start))
-        .entries
-        .sorted((a, b) => a.key.compareTo(b.key));
+    // var grouped = groupBy(
+    //     children, (p0) => Week.fromDate(p0.placement?.date ?? p0.start));
+    // for (var l in weeks) {
+    //   // grouped.putIfAbsent(l, () => []);
+    //   grouped[l] ??= [];
+    // }
 
-    for (var entry in division) {
+    // var division = grouped.entries.sorted((a, b) => a.key.compareTo(b.key));
+    // final division = children;
+
+    for (var entry in children) {
       if (isMultiWeek) {
         yield const SizedBox(height: 20);
       }
 
-      String? weekTitle;
-      if (isMultiWeek) {
-        // weekTitle = "Week ${entry.key}";
-        weekTitle = "Week ${int.parse(entry.key.substring(6))}";
-      }
+      // String? weekTitle;
+      // if (isMultiWeek) {
+      //   // weekTitle = "Week ${entry.key}";
+      //   weekTitle = "Week ${entry.key.weekNum}";
+      // }
 
-      yield EventWeek(weekTitle: weekTitle, events: entry.value);
+      yield KeyedSubtree(
+        key: ValueKey(entry.key),
+        child: buildWeek(week: entry.key, events: entry.value));
+
+      // yield EventWeekCore(
+      //     key: ValueKey(entry.key), week: entry.key, events: entry.value);
 
       // for (var v in entry.value.sortedBy((element) => element.placement?.date ?? element.start)) {
       //   // if (v.participation == null) {
@@ -152,7 +209,7 @@ class EventsGroupContent extends StatelessWidget {
       //   yield buildItem(v);
       // }
 
-      if (entry.key != division.last.key) {
+      if (entry.key != children.last.key || true) {
         yield const SizedBox(height: 40);
         yield const Divider(
           thickness: 2,
@@ -181,17 +238,17 @@ class EventsGroupContent extends StatelessWidget {
 
     // Color dividerColor = Theme.of(context).colorScheme.secondary;
 
-    return Column(key: ValueKey((key, title)), children: [
-      const SizedBox(height: 32),
-      FancyHeader(title: title, isMajor: isMajor),
-      const SizedBox(height: 16),
-      if (divideEvents)
-        ...getChildrenWeekDivided().toList()
-      else
-        for (var event in children)
-          EventTile2(
-              key: ValueKey(("eventsItem", event.id, event.placement?.date)),
-              event: event),
+    return Column(children: [
+      // const SizedBox(height: 32),
+      // FancyHeader(title: title, isMajor: isMajor),
+      // const SizedBox(height: 16),
+      // if (divideEvents)
+      ...getChildrenWeekDivided().toList(),
+      // else
+      //   for (var event in children)
+      //     EventTile2(
+      //         key: ValueKey(("eventsItem", event.id, event.placement?.date)),
+      //         event: event),
       const SizedBox(height: 16)
     ]);
 
