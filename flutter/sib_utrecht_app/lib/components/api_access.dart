@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sib_utrecht_app/model/api/users.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import '../model/login_state.dart';

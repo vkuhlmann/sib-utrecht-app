@@ -83,7 +83,7 @@ class WeekChunked<T> {
         .maxOrNull;
 
     DateTime upcomingAnchor = [
-      now.add(const Duration(days: 3)),
+      now.add(const Duration(days: 5)),
       lastInCurrentWeek?.add(const Duration(hours: 2))
     ].whereNotNull().max;
 
@@ -94,7 +94,7 @@ class WeekChunked<T> {
 
   WeekChunked(List<T> items, DateTime? Function(T) getDate) {
     DateTime now = DateTime.now();
-    now = now.add(const Duration(days: 8));
+    // now = now.add(const Duration(days: 8));
 
     final anchor = getUpcomingWeek(
       items.map((e) => getDate(e)), now: now);

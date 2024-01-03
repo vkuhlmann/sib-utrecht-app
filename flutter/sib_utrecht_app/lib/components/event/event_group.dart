@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
-import "package:collection/collection.dart";
-import 'package:sib_utrecht_app/components/event/event_tile2.dart';
 import 'package:sib_utrecht_app/components/event/event_week.dart';
 import 'package:sib_utrecht_app/components/flutter_sticky_header-0.6.5/lib/flutter_sticky_header.dart';
 import 'package:sib_utrecht_app/week.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
-import '../../utils.dart';
 import '../../view_model/event/annotated_event.dart';
 
-import '../../pages/events.dart';
-
 typedef WeekBuilder = Widget Function(
-      {required Week week,
-      required List<AnnotatedEvent> events});
+    {required Week week, required List<AnnotatedEvent> events});
 
 Widget EventGroup(
         {Key? key,
@@ -145,17 +139,18 @@ class EventMonthContent extends StatelessWidget {
 
   final WeekBuilder buildWeek;
 
-  const EventMonthContent({
-    Key? key,
-    required this.children,
-    required this.initiallyExpanded,
-    required this.isMajor,
-    required this.isMultiWeek,
-    this.buildWeek = EventWeek.new
-    // required this.divideEvents,
-    // required this.weeks
-    // required this.start, required this.end
-  }) : super(key: key);
+  const EventMonthContent(
+      {Key? key,
+      required this.children,
+      required this.initiallyExpanded,
+      required this.isMajor,
+      required this.isMultiWeek,
+      this.buildWeek = EventWeek.new
+      // required this.divideEvents,
+      // required this.weeks
+      // required this.start, required this.end
+      })
+      : super(key: key);
 
   // static Widget defaultBuildWeek = EventWeek;
 
@@ -193,8 +188,8 @@ class EventMonthContent extends StatelessWidget {
       // }
 
       yield KeyedSubtree(
-        key: ValueKey(entry.key),
-        child: buildWeek(week: entry.key, events: entry.value));
+          key: ValueKey(entry.key),
+          child: buildWeek(week: entry.key, events: entry.value));
 
       // yield EventWeekCore(
       //     key: ValueKey(entry.key), week: entry.key, events: entry.value);

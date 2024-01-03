@@ -3,21 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sib_utrecht_app/components/event/event_day.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
-import 'package:sib_utrecht_app/view_model/event/week_chunker.dart';
 import 'package:sib_utrecht_app/week.dart';
 
-// class PrimaryEventCard extends StatelessWidget {
-
-// }
-
 class ThisWeekCard extends StatelessWidget {
-  // final EventsGroupInfo<AnnotatedEvent> group;
   final List<AnnotatedEvent> events;
   final Week week;
   final String title;
 
-  const ThisWeekCard({required this.events, required this.week, Key? key,
-  required this.title})
+  const ThisWeekCard(
+      {required this.events, required this.week, Key? key, required this.title})
       : super(key: key);
 
   @override
@@ -27,9 +21,8 @@ class ThisWeekCard extends StatelessWidget {
             .format(DateTime.now());
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(
-        title,
-        // group.title(context),
+      Text(title,
+          // group.title(context),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
               // fontFeatures: [const FontFeature.enable('smcp')]
               )),
@@ -37,16 +30,16 @@ class ThisWeekCard extends StatelessWidget {
       Card(
           // color: Theme.of(context).colorScheme.secondaryContainer,
           shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(
-                        color:
-                            // Theme.of(context).colorScheme.secondaryContainer,
-                            // Theme.of(context).colorScheme.primaryContainer,
-                            Theme.of(context).colorScheme.primary,
-                        width: 2)),
-                color: Colors.transparent,
-                shadowColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(
+                  color:
+                      // Theme.of(context).colorScheme.secondaryContainer,
+                      // Theme.of(context).colorScheme.primaryContainer,
+                      Theme.of(context).colorScheme.primary,
+                  width: 2)),
+          color: Colors.transparent,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
           child: Padding(
               padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
               child: events.isEmpty
@@ -56,7 +49,11 @@ class ThisWeekCard extends StatelessWidget {
                           padding: const EdgeInsets.all(16),
                           child: Text("No events",
                               style: Theme.of(context).textTheme.bodyLarge)))
-                  : EventWeekCore(week: week, events: events, showWeekNumber: false,)
+                  : EventWeekCore(
+                      week: week,
+                      events: events,
+                      showWeekNumber: false,
+                    )
               //  [
               //   // Padding(
               //   //     padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),

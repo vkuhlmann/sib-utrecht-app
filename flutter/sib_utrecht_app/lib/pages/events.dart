@@ -135,7 +135,7 @@ class _EventsPageState extends State<EventsPage> {
     final byMonth = byWeek.chunkBy<Month>((elem) => elem.key.month);
 
     DateTime now = DateTime.now();
-    now = now.add(const Duration(days: 8));
+    // now = now.add(const Duration(days: 8));
 
     final anchor = WeekChunked.getUpcomingWeek(
         events.map((e) => e.placement?.date),
@@ -273,13 +273,15 @@ class _EventsPageState extends State<EventsPage> {
               isMajor: false,
               initiallyExpanded: true,
               children: monthEntry.value,
-              weekBuilder: ({required events, required week}) =>
-                  week == upcomingWeek
-                      ? ThisWeekCard(
+              weekBuilder: ({required events, required week}) => week ==
+                      upcomingWeek
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: ThisWeekCard(
                           events: events,
                           week: week,
-                          title: lookAhead ? loc.nextWeek : loc.upcomingWeek)
-                      : EventWeek(events: events, week: week),
+                          title: lookAhead ? loc.upcomingWeek : loc.thisWeek))
+                  : EventWeek(events: events, week: week),
             ),
 
           // SliverCrossAxisConstrained(

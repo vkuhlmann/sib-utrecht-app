@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../view_model/event/annotated_event.dart';
 
-import 'weekday_indicator.dart';
 import 'signup_indicator.dart';
 
 class EventTile2 extends StatefulWidget {
@@ -54,7 +53,7 @@ class _EventTile2State extends State<EventTile2> {
           .firstMatch(locationFull)!;
 
       String locationName = match.namedGroup("name")!;
-      String locationAddress = match.namedGroup("address") ?? "";
+      // String locationAddress = match.namedGroup("address") ?? "";
 
       secondaryInfoLine += "@ $locationName";
     }

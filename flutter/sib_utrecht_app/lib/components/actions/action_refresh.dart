@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/utils.dart';
@@ -113,33 +111,32 @@ class _ActionRefreshButtonWithState extends State<ActionRefreshButtonWithState>
       log.warning(
           "Error in ActionRefreshButtonWithState: ${widget.snapshot.error}");
 
-      icon =
-      Tooltip(
-        message: formatErrorMsg(widget.snapshot.error?.toString()),
-        triggerMode: TooltipTriggerMode.longPress,
-        child:
-       OverflowBox(
-          maxWidth: 38,
-          maxHeight: 38,
-          child: Stack(children: [
-            icon,
-            // const Positioned(
-            //     top: 0,
-            //     right: 1,
-            //     // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
-            //     child: Icon(Icons.error, color: Colors.red, size: 14)
-            //     )
-            const Positioned(
-                bottom: 4,
-                left: 4,
-                // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
-                // child: Icon(Icons.check, color: Colors.green, size: 18)
-                // child: Icon(Icons.check_circle, color: Colors.green, size: 18)
-                child: CircleAvatar(
-                    backgroundColor: Colors.red,
-                    radius: 8,
-                    child: Icon(Icons.close, color: Colors.white, size: 12)))
-          ])));
+      icon = Tooltip(
+          message: formatErrorMsg(widget.snapshot.error?.toString()),
+          triggerMode: TooltipTriggerMode.longPress,
+          child: OverflowBox(
+              maxWidth: 38,
+              maxHeight: 38,
+              child: Stack(children: [
+                icon,
+                // const Positioned(
+                //     top: 0,
+                //     right: 1,
+                //     // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
+                //     child: Icon(Icons.error, color: Colors.red, size: 14)
+                //     )
+                const Positioned(
+                    bottom: 4,
+                    left: 4,
+                    // child: Icon(Icons.close, color: Colors.red, size: 20, weight: 64)
+                    // child: Icon(Icons.check, color: Colors.green, size: 18)
+                    // child: Icon(Icons.check_circle, color: Colors.green, size: 18)
+                    child: CircleAvatar(
+                        backgroundColor: Colors.red,
+                        radius: 8,
+                        child:
+                            Icon(Icons.close, color: Colors.white, size: 12)))
+              ])));
     }
 
     if (widget.snapshot.connectionState == ConnectionState.done &&

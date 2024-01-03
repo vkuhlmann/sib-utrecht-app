@@ -208,7 +208,7 @@ class HomePageContents extends StatelessWidget {
               child: ThisWeekCard(
                 events: upcomingWeek.single.elements,
                 week: anchor.upcomingWeek,
-                title: lookAhead ? loc.nextWeek : loc.thisWeek)),
+                title: lookAhead ? loc.upcomingWeek : loc.thisWeek)),
           const SizedBox(height: 32),
 
           // Next week
