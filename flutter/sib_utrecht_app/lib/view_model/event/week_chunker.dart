@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sib_utrecht_app/utils.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/week.dart';
 
 enum RelativeWeek {
   past,
@@ -72,32 +73,37 @@ class WeekChunked<T> {
     return date.toIso8601String().substring(0, 7);
   }
 
-  WeekChunked(List<T> items, DateTime? Function(T) getDate) {
-    DateTime now = DateTime.now();
-
-    String currentWeek = formatWeekNumber(now);
+  static ({Week currentWeek, Week upcomingWeek})
+  getUpcomingWeek(Iterable<DateTime?> items, {required DateTime now}) {
+  Week currentWeek = Week.fromDate(now);
 
     DateTime? lastInCurrentWeek = items
-        .map(getDate)
-        .where((v) => v != null)
-        .map((v) => v!)
-        .where((v) => formatWeekNumber(v) == currentWeek)
-        .sortedBy((v) => v)
-        .lastOrNull;
+        .whereNotNull()
+        .where((v) => Week.fromDate(v) == currentWeek)
+        .maxOrNull;
 
-    DateTime upcomingAnchor = now.add(const Duration(days: 3));
-    DateTime? activeEnd = lastInCurrentWeek?.add(const Duration(hours: 2));
+    DateTime upcomingAnchor = [
+      now.add(const Duration(days: 5)),
+      lastInCurrentWeek?.add(const Duration(hours: 2))
+    ].whereNotNull().max;
 
-    if (activeEnd != null && activeEnd.isAfter(now) == true) {
-      upcomingAnchor = now;
-    }
+    Week upcomingWeek = Week.fromDate(upcomingAnchor);
 
-    String upcomingWeek = formatWeekNumber(upcomingAnchor);
+    return (currentWeek: currentWeek, upcomingWeek: upcomingWeek);
+  }
 
-    String pastWeek =
-        formatWeekNumber(upcomingAnchor.subtract(const Duration(days: 7)));
-    String nextWeek =
-        formatWeekNumber(upcomingAnchor.add(const Duration(days: 7)));
+  WeekChunked(List<T> items, DateTime? Function(T) getDate) {
+    DateTime now = DateTime.now();
+    // now = now.add(const Duration(days: 8));
+
+    final anchor = getUpcomingWeek(
+      items.map((e) => getDate(e)), now: now);
+
+    final currentWeek = anchor.currentWeek;
+    final upcomingWeek = anchor.upcomingWeek;
+    
+    Week pastWeek = upcomingWeek.previous;
+    Week nextWeek = upcomingWeek.next;
 
     var groups = groupBy(items, (e) {
       var date = getDate(e);
@@ -105,26 +111,32 @@ class WeekChunked<T> {
         return RelativeWeek.ongoing;
       }
 
-      String weekId = formatWeekNumber(date);
+      // String weekId = formatWeekNumber(date);
+      Week w = Week.fromDate(date);
 
-      if (weekId.compareTo(pastWeek) < 0) {
+      if (w < pastWeek) {
         return RelativeWeek.past;
       }
-      if (weekId == pastWeek) {
+      if (w == pastWeek) {
         return RelativeWeek.lastWeek;
       }
-      if (weekId == upcomingWeek) {
+      if (w == upcomingWeek) {
         return RelativeWeek.upcomingWeek;
       }
-      if (weekId == nextWeek) {
+      if (w == nextWeek) {
         return RelativeWeek.nextWeek;
       }
-      if (weekId.compareTo(nextWeek) > 0) {
+      if (w > nextWeek) {
         return RelativeWeek.future;
       }
 
       return RelativeWeek.future;
     });
+    groups[RelativeWeek.upcomingWeek] ??= [];
+    groups[RelativeWeek.nextWeek] ??= [];
+    groups[RelativeWeek.lastWeek] ??= [];
+    groups[RelativeWeek.past] ??= [];
+    groups[RelativeWeek.future] ??= [];
 
     isLookingAhead = upcomingWeek != currentWeek;
 

@@ -779,7 +779,7 @@ packages:
     source: hosted
     version: "3.0.7"
   value_layout_builder:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: value_layout_builder
       sha256: "98202ec1807e94ac72725b7f0d15027afde513c55c69ff3f41bcfccb950831bc"
