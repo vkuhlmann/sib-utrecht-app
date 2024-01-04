@@ -113,6 +113,21 @@ class Event implements CacheableResource {
   // String get eventId => data["event_id"];
   String get eventName => _data["name"];
   String? get eventNameNL => _data["nameNL"];
+
+  String get eventLabel => {
+    "Ice Skating": "Ice skating",
+    "70’s Cantus and Party": "Cantus",
+    "Study session": "Studying",
+    "Talk: fighting piracy in Somalia": "Talk",
+    "Piracy-themed VriMiBo": "VriMiBo",
+    "Half-year GMA": "GMA",
+    "Christmas Card Crafting for the elderly": "X-mas cards",
+    "Cooking classes": "Cooking",
+    "Christmas Village Competition": "Gingerbread houses",
+    "SIB-NL talk: From Invention to Innovation": "SIB-NL talk"
+    // "Battle of the pirates activity": ""
+  }[eventName] ?? eventName;
+
   // ?? _data["name"];
   String get eventSlug => _data["slug"];
 

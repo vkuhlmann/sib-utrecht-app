@@ -132,7 +132,18 @@ class _EventsPageState extends State<EventsPage> {
     // WeekChunked(events, (e) => e.placement?.date).superGroups;
     var loc = AppLocalizations.of(context)!;
 
-    final byMonth = byWeek.chunkBy<Month>((elem) => elem.key.month);
+    final byMonth = byWeek.chunkBy<Month>((elem) => elem.key.month)
+        .map((e) {
+          var weeks = e.value;
+          for (final w in e.key.weeks) {
+            if (!weeks.any((e) => e.key == w)) {
+              weeks.add(MapEntry(w, []));
+            }
+          }
+          weeks = weeks.sortedBy((e) => e.key);
+
+          return MapEntry(e.key, weeks);
+      });
 
     DateTime now = DateTime.now();
     // now = now.add(const Duration(days: 8));
@@ -258,7 +269,8 @@ class _EventsPageState extends State<EventsPage> {
                 // isMajor: k == RelativeWeek.upcomingWeek,
                 isMajor: false,
                 initiallyExpanded: true,
-                children: monthEntry.value
+                children: monthEntry.value,
+                month: monthEntry.key,
                 // weeks: month.weeks.toList(),
                 // divideEvents: k != RelativeWeek.ongoing,
                 ),
@@ -273,6 +285,7 @@ class _EventsPageState extends State<EventsPage> {
               isMajor: false,
               initiallyExpanded: true,
               children: monthEntry.value,
+              month: monthEntry.key,
               weekBuilder: ({required events, required week}) => week ==
                       upcomingWeek
                   ? Padding(

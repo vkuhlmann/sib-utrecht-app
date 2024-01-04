@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/components/event/calendar.dart';
 import 'package:sib_utrecht_app/components/event/event_week.dart';
 import 'package:sib_utrecht_app/components/flutter_sticky_header-0.6.5/lib/flutter_sticky_header.dart';
 import 'package:sib_utrecht_app/week.dart';
@@ -28,6 +29,7 @@ Widget EventMonth({
   required String title,
   required bool initiallyExpanded,
   required bool isMajor,
+  required Month month,
   WeekBuilder? weekBuilder,
   // required bool isMultiWeek,
   // required bool divideEvents,
@@ -44,7 +46,13 @@ Widget EventMonth({
           title: title,
           isMajor: isMajor,
           sliver: SliverToBoxAdapter(
-              child: EventMonthContent(
+              child: Column(children: [
+                const SizedBox(height: 16),
+                Calendar(month: month, events: children),
+                const SizedBox(height: 16),
+                const Divider(thickness: 5),
+                const SizedBox(height: 32),
+                EventMonthContent(
             children: children,
             // title: title,
             initiallyExpanded: initiallyExpanded,
@@ -53,7 +61,7 @@ Widget EventMonth({
             buildWeek: weekBuilder ?? EventWeek.new,
             // weeks: weeks,
             // divideEvents: divideEvents
-          )));
+          )])));
 }
 
 class SolidHeader extends StatelessWidget {

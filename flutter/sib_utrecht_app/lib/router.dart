@@ -247,6 +247,7 @@ GoRouter createRouter() {
                                   eventId: null)),
                         Route(
                             path: '/event/:event_id',
+                            name: "event",
                             builder: (context, state) {
                               // String? eventId;
                               // if (state.pathParameters
