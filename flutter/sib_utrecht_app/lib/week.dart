@@ -15,14 +15,32 @@ class Month implements Comparable<Month> {
 
   Month.fromDate(DateTime dt) : this(dt.year, dt.month);
 
+  DateTime get start => DateTime(year, month, 1);
+
+  Month get nextMonth => Month.fromDate(start.add(const Duration(days: 40)));
+
+  // Should resolve DateTime(2024, 13, 1) to DateTime(2025, 1, 1)
+  // DateTime get end => DateTime(year, month + 1, 1);
+  DateTime get end => nextMonth.start;
+
+
   Week get firstWeek => Week.fromDate(DateTime(year, month, 4));
+
   Iterable<Week> get weeks sync* {
     Week w = firstWeek;
-    Month nextMonth =
-        Month.fromDate(DateTime(year, month, 1).add(const Duration(days: 28)));
 
     Week end = nextMonth.firstWeek;
     while (w < end) {
+      yield w;
+      w += 1;
+    }
+  }
+
+  Iterable<Week> get coveringWeeks sync* {
+    Week w = Week.fromDate(start);
+    Week lastWeek = Week.fromDate(end.subtract(const Duration(hours: 1)));
+
+    while (w <= lastWeek) {
       yield w;
       w += 1;
     }

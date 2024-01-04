@@ -1,5 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:quiver/iterables.dart';
 import 'package:sib_utrecht_app/globals.dart';
 import 'package:sib_utrecht_app/model/event.dart';
@@ -9,52 +13,105 @@ import 'package:sib_utrecht_app/week.dart';
 
 class _CalendarDot extends StatelessWidget {
   final List<AnnotatedEvent> events;
-  final int weekday;
-  final int day;
+  // final int weekday;
+  // final int day;
+  final DateTime date;
+  final DateTime now;
 
   const _CalendarDot(
       {Key? key,
       required this.events,
-      required this.weekday,
-      required this.day})
+      // required this.weekday,
+      // required this.day
+      required this.date,
+      required this.now
+      })
       : super(key: key);
+
+  bool get isToday =>
+    now.toIso8601String().substring(0, 10) ==
+    date.toLocal().toIso8601String().substring(0, 10);
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+
     if (events.isEmpty) {
-      return Center(child: Container(
+      if (date.day == 1) {
+        return Center(child: Container(
+          // width: 8,
+          // height: 8,
+          // decoration: BoxDecoration(
+          //     color: weekday >= 6
+          //         ? Colors.grey[500]
+          //         : Theme.of(context).colorScheme.primary,
+          //     shape: BoxShape.circle),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [Text(date.day.toString(),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+            Text(DateFormat("MMM", locale.toString()).format(date).toLowerCase(),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Theme.of(context).colorScheme.primary,
+            fontSize: 10, fontFeatures: const [FontFeature.enable('smcp')]))
+          ])
+        ));
+      }
+
+      if (isToday) {
+        return Center(child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [Text(date.day.toString(),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+            Text("Today".toLowerCase(),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Theme.of(context).colorScheme.primary,
+            fontSize: 10, fontFeatures: const [FontFeature.enable('smcp')]))
+          ])
+        );
+      }
+
+      return Center(
+          child: Container(
         width: 8,
         height: 8,
         decoration: BoxDecoration(
-            color: weekday >= 6 ? Colors.grey[500] : Theme.of(context).colorScheme.primary,
+            color: date.weekday >= 6
+                ? Colors.grey[500]
+                : Theme.of(context).colorScheme.primary,
             shape: BoxShape.circle),
       ));
     }
 
     final mainEvent = events.first;
-    final isTruncated = mainEvent.eventLabel.length > 13 && 
-    (mainEvent.eventLabel.length > 17 || mainEvent.eventLabel.toLowerCase() == mainEvent.eventName.toLowerCase());
+    final isTruncated = mainEvent.eventLabel.length > 13 &&
+        (mainEvent.eventLabel.length > 17 ||
+            mainEvent.eventLabel.toLowerCase() ==
+                mainEvent.eventName.toLowerCase());
 
     Widget ans = GestureDetector(
-      onTap: () {
-        router.goNamed("event", pathParameters: {"event_id": mainEvent.id});
-      },
-      child:
-    Container(
-      color: Colors.transparent,
-      // color: Colors.black,
-      // width: 50,
-      // height: 50,
-      // decoration: BoxDecoration(
-      //     color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
-      child: Center(child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-        Text(day.toString(), textAlign: TextAlign.center,),
-        Text(mainEvent.eventLabel, textAlign: TextAlign.center, style: TextStyle(fontSize: 8),
-        overflow: TextOverflow.ellipsis, maxLines: 1)
-      ])
-    )));
+        onTap: () {
+          router.pushNamed("event", pathParameters: {"event_id": mainEvent.id});
+        },
+        child: Container(
+            color: Colors.transparent,
+            // color: Colors.black,
+            // width: 50,
+            // height: 50,
+            // decoration: BoxDecoration(
+            //     color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
+            child: Center(
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text(
+                date.day.toString(),
+                textAlign: TextAlign.center,
+              ),
+              Text(mainEvent.eventLabel,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 8),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1)
+            ]))));
 
     if (isTruncated) {
       ans = Tooltip(
@@ -75,54 +132,112 @@ class _CalendarDot extends StatelessWidget {
 
 class _CalendarRow extends StatelessWidget {
   final Week week;
+  final Month month;
   final List<AnnotatedEvent> events;
+  final DateTime now;
 
-  const _CalendarRow({Key? key, required this.week, required this.events})
+  const _CalendarRow({Key? key, required this.week, required this.events, required this.month,
+  required this.now})
       : super(key: key);
+
+  bool isToday(DateTime date) {
+    //final now = DateTime.now().toLocal();
+    return now.toIso8601String().substring(0, 10) ==
+        date.toLocal().toIso8601String().substring(0, 10);
+  }
 
   @override
   Widget build(BuildContext context) {
     final days = events
-        .chunkBy<num>((event) => (event.placement?.date ?? event.start).weekday - 1,
+        .chunkBy<num>(
+            (event) => (event.placement?.date ?? event.start).weekday - 1,
             initialKeys: count().take(7).toList())
-        .map((e) => MapEntry((e.key + 0.2).floor() + 1, e.value));
+        .map((e) => MapEntry((e.key + 0.2).floor() + 1, e.value))
+        .map((e) => MapEntry(week.start.add(Duration(days: e.key - 1, hours: 2)), e.value));
 
-    return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: days
-            .map((day) => //Expanded(child: 
-                  SizedBox(width: 50, height: 50, child: 
-                  // Center(child: 
-                  _CalendarDot(events: day.value, weekday: day.key,
-                    day: (week.start.add(Duration(days: day.key - 1, hours: 2))).day,
-                  ))
-                  // Column(
-                  //   children: [
-                  //     Text(day.day.toString()),
-                  //     ...events
-                  //         .where((event) => event.start.day == day.day)
-                  //         .map((event) => Text(event.title))
-                  //   ],
-                  // ),
-                )
-            .toList());
+    return 
+    Row(children: [
+      SizedBox(
+          width: 20,
+          height: 20,
+          child: Container(
+              decoration: BoxDecoration(
+                  // color: Theme.of(context).colorScheme.primary,
+                  border: Border.all(
+                width: 1.5,
+                color: //Theme.of(context).textTheme.bodyMedium?.color ??
+                    Theme.of(context).colorScheme.tertiaryContainer,
+              )),
+              child: Center(
+                  child: Text(
+                week.weekNum.toString(),
+                style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.tertiary,),
+                textAlign: TextAlign.center,
+              )))),
+      Expanded(
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        for (final day in days)
+          SizedBox(
+              width: 50,
+              height: 50,
+              child:
+              Opacity(
+                opacity: Month.fromDate(day.key) == month ? 1 : 0.3,
+                child:
+                  // Center(child:
+                  Container(
+                    decoration: isToday(day.key) ? const BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      //color: Color(0xFFE0E0E0),
+                      border: Border.fromBorderSide(BorderSide(
+                        //color: Color(0xFFE0E0E0),
+                        color: Color.fromARGB(118, 225, 45, 32),
+                        width: 2,
+                      )),
+                    ) : null,
+                    child:
+                  _CalendarDot(
+                now: now,
+                events: day.value,
+                date: day.key
+                // weekday: day.key,
+                // day:
+                    // (,
+              )))),
+        // Column(
+        //   children: [
+        //     Text(day.day.toString()),
+        //     ...events
+        //         .where((event) => event.start.day == day.day)
+        //         .map((event) => Text(event.title))
+        //   ],
+        // ),
+      ]))
+    ]);
   }
 }
 
 class Calendar extends StatelessWidget {
   final Month month;
-  final List<MapEntry<Week, List<AnnotatedEvent>>> events;
+  // final List<MapEntry<Week, List<AnnotatedEvent>>> events;
+  final Map<Week, List<AnnotatedEvent>> events;
+  final DateTime now;
 
-  const Calendar({Key? key, required this.month, required this.events})
+  const Calendar({Key? key, required this.month, required this.events,
+  required this.now})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(      children: [
+    return Column(
+      children: [
         // Text(month.name),
         // ...month.weeks.map((week) => Week(week: week, events: events))
-        for (final entry in events)
-          _CalendarRow(week: entry.key, events: entry.value)
+        for (final week in month.coveringWeeks)
+          // if (entry.key.end.isAfter(month.start) && entry.key.start.isBefore(month.end))
+            _CalendarRow(month: month, week: week, events: events[week] ?? [],
+            now: now),
       ],
     );
   }

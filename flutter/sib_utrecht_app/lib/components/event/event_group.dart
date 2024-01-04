@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/event/calendar.dart';
 import 'package:sib_utrecht_app/components/event/event_week.dart';
 import 'package:sib_utrecht_app/components/flutter_sticky_header-0.6.5/lib/flutter_sticky_header.dart';
+import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/week.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
@@ -25,11 +26,13 @@ Widget EventGroup(
 
 Widget EventMonth({
   Key? key,
-  required List<MapEntry<Week, List<AnnotatedEvent>>> children,
+  // required List<MapEntry<Week, List<AnnotatedEvent>>> children,
+  required Map<Week, List<AnnotatedEvent>> children,
   required String title,
   required bool initiallyExpanded,
   required bool isMajor,
   required Month month,
+  required DateTime now,
   WeekBuilder? weekBuilder,
   // required bool isMultiWeek,
   // required bool divideEvents,
@@ -48,7 +51,10 @@ Widget EventMonth({
           sliver: SliverToBoxAdapter(
               child: Column(children: [
                 const SizedBox(height: 16),
-                Calendar(month: month, events: children),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Calendar(now: now,
+                    key: ValueKey(month), month: month, events: children)),
                 const SizedBox(height: 16),
                 const Divider(thickness: 5),
                 const SizedBox(height: 32),
@@ -58,6 +64,7 @@ Widget EventMonth({
             initiallyExpanded: initiallyExpanded,
             isMajor: isMajor,
             isMultiWeek: true,
+            month: month,
             buildWeek: weekBuilder ?? EventWeek.new,
             // weeks: weeks,
             // divideEvents: divideEvents
@@ -144,6 +151,7 @@ class EventMonthContent extends StatelessWidget {
   final bool isMultiWeek;
   // final bool divideEvents;
   // final List<Week> weeks;
+  final Month month;
 
   final WeekBuilder buildWeek;
 
@@ -153,6 +161,7 @@ class EventMonthContent extends StatelessWidget {
       required this.initiallyExpanded,
       required this.isMajor,
       required this.isMultiWeek,
+      required this.month,
       this.buildWeek = EventWeek.new
       // required this.divideEvents,
       // required this.weeks
@@ -168,7 +177,9 @@ class EventMonthContent extends StatelessWidget {
   //       event: event);
   // }
 
-  final List<MapEntry<Week, List<AnnotatedEvent>>> children;
+  // final List<MapEntry<Week, List<AnnotatedEvent>>> children;
+  final Map<Week, List<AnnotatedEvent>> children;
+
   // final DateTime? start;
   // final DateTime? end;
   // final bool demark
@@ -184,10 +195,13 @@ class EventMonthContent extends StatelessWidget {
     // var division = grouped.entries.sorted((a, b) => a.key.compareTo(b.key));
     // final division = children;
 
-    for (var entry in children) {
+    // log.fine("month weeks for $month: ${month.weeks.toList()}");
+
+    for (final week in month.weeks) {
       if (isMultiWeek) {
         yield const SizedBox(height: 20);
       }
+      final entry = children[week] ?? [];
 
       // String? weekTitle;
       // if (isMultiWeek) {
@@ -196,8 +210,8 @@ class EventMonthContent extends StatelessWidget {
       // }
 
       yield KeyedSubtree(
-          key: ValueKey(entry.key),
-          child: buildWeek(week: entry.key, events: entry.value));
+          key: ValueKey(week),
+          child: buildWeek(week: week, events: entry));
 
       // yield EventWeekCore(
       //     key: ValueKey(entry.key), week: entry.key, events: entry.value);
@@ -212,13 +226,13 @@ class EventMonthContent extends StatelessWidget {
       //   yield buildItem(v);
       // }
 
-      if (entry.key != children.last.key || true) {
-        yield const SizedBox(height: 40);
-        yield const Divider(
-          thickness: 2,
-        );
-        yield const SizedBox(height: 20);
-      }
+      // if (true || week != month.weeks.last) {
+      yield const SizedBox(height: 40);
+      yield const Divider(
+        thickness: 2,
+      );
+      yield const SizedBox(height: 20);
+      // }
     }
   }
 

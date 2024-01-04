@@ -114,6 +114,7 @@ class _EventsPageState extends State<EventsPage> {
             initialKeys: Week.range(minWeek, maxWeek).toList())
         .map((e) => MapEntry(e.key, e.value.map((e) => e.e).toList()))
         .toList();
+    final byWeekMap = Map.fromEntries(byWeek);
 
     // for (final w in Week.range(minWeek, maxWeek)) {
     //   byWeek[]
@@ -144,6 +145,8 @@ class _EventsPageState extends State<EventsPage> {
 
           return MapEntry(e.key, weeks);
       });
+
+    // final byMonthMap = Map.fromEntries(byMonth);
 
     DateTime now = DateTime.now();
     // now = now.add(const Duration(days: 8));
@@ -261,6 +264,8 @@ class _EventsPageState extends State<EventsPage> {
           //         sliver: SliverToBoxAdapter(child: Text("Test"),)
           //     ))),
 
+          const SliverToBoxAdapter(child: SizedBox(height: 64)),
+
           for (final monthEntry
               in byMonth.where((entry) => entry.key < upcomingMonth))
             EventMonth(
@@ -269,8 +274,9 @@ class _EventsPageState extends State<EventsPage> {
                 // isMajor: k == RelativeWeek.upcomingWeek,
                 isMajor: false,
                 initiallyExpanded: true,
-                children: monthEntry.value,
+                children: byWeekMap,
                 month: monthEntry.key,
+                now: now
                 // weeks: month.weeks.toList(),
                 // divideEvents: k != RelativeWeek.ongoing,
                 ),
@@ -284,8 +290,10 @@ class _EventsPageState extends State<EventsPage> {
               title: monthEntry.key.toDisplayString(context),
               isMajor: false,
               initiallyExpanded: true,
-              children: monthEntry.value,
+              // children: monthEntry.value,
+              children: byWeekMap,
               month: monthEntry.key,
+              now: now,
               weekBuilder: ({required events, required week}) => week ==
                       upcomingWeek
                   ? Padding(
