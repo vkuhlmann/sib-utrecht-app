@@ -3,11 +3,16 @@ import 'dart:convert';
 import 'dart:ui';
 import 'dart:core';
 
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:sib_utrecht_app/constants.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/cacheable_resource.dart';
 import 'package:sib_utrecht_app/model/fragments_bundle.dart';
 import 'package:sib_utrecht_app/model/unpacker/anchored_unpacker.dart';
+
+final RegExp extractHeaderLine = RegExp(
+    '^\\s*(<strong>)?(?<header>([^|<]+?\\s+\\|\\s+){2,10}[^|<]+?)\\s*(\\r?\\n?\\s*</strong>|(\\r?\\n){2,10}\\s*)');
 
 class EventBody implements CacheableResource {
   @override
@@ -19,9 +24,7 @@ class EventBody implements CacheableResource {
   EventBody({required this.id, required this.data});
 
   factory EventBody.fromJson(Map data) {
-    return EventBody(
-        id: data["id"],
-        data: data);
+    return EventBody(id: data["id"], data: data);
   }
 
   String? processThumbnailUrl(String? url) {
@@ -89,7 +92,61 @@ class EventBody implements CacheableResource {
 
     return (description.isEmpty ? null : description, thumbnail);
   }
-  
+
+  Future<DateTime?> tryExtractStart(String dateComponent, String timeComponent) async {
+    const List<String> locales = ["en_US", "en_GB", "nl_NL"];
+    const List<String> dateFormats = ["MMMMEEEEd"];
+
+    for (final loc in locales) {
+      await initializeDateFormatting(loc, null);
+    }
+    RegExp exp = RegExp(r"^(?<main>.*?)(th|st|nd|rd)?\s*$");
+    dateComponent = exp.firstMatch(dateComponent)!.namedGroup("main")!;
+
+    for (final loc in locales) {
+      for (final form in dateFormats) {
+        try{
+          DateTime dt = DateFormat(form, loc).parseLoose(dateComponent);
+          return dt;
+
+        } on FormatException catch (_) {
+          continue;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // "<strong>Ice Skating | Vechtsebanen (Mississippidreef 151) | Tuesday January 9th | 20:00 | Max \u20ac5,50\r\n<\/strong>\r\n\r\nIt\u2019s
+  // a new year and start the year we\u2019re
+  Map extractFieldsFromDescription(String desc) {
+    // RegExp('^\\s*(<strong>)?(?<title>[^|<]+?)\\s+\\|\\s+');
+
+    final match = extractHeaderLine.firstMatch(desc);
+    if (match == null) {
+      return {};
+    }
+
+    final header = match.namedGroup("header")!;
+    final fields = header.split("|").map((s) => s.trim()).toList();
+
+    // final String? date = fields.elementAtOrNull(2);
+    // final String? time = fields.elementAtOrNull(3);
+    final date = fields[2];
+    final time = fields[3];
+
+    // final DateTime? start = DateTime.tryParse("$date $time");
+    final startDateFormat = DateFormat("MMMMEEEEd");
+    DateTime d = startDateFormat.parse(date);
+
+    return {
+      "event_name": fields[0],
+      "location": fields[1],
+      "date": fields[2],
+    };
+  }
+
   @override
   Map toJson() => data;
 }
@@ -113,6 +170,53 @@ class Event implements CacheableResource {
   // String get eventId => data["event_id"];
   String get eventName => _data["name"];
   String? get eventNameNL => _data["nameNL"];
+
+  String get eventLabel =>
+      {
+        "Ice Skating": "Ice skating",
+        "70’s Cantus and Party": "Cantus",
+        "Study session": "Studying",
+        "Talk: fighting piracy in Somalia": "Talk",
+        "Piracy-themed VriMiBo": "VriMiBo",
+        "Half-year GMA": "GMA",
+        "Christmas Card Crafting for the elderly": "X-mas cards",
+        "Cooking classes": "Cooking",
+        "Christmas Village Competition": "Gingerbread houses",
+        "SIB-NL talk: From Invention to Innovation": "SIB-NL talk",
+        "Fall trip to Brussels": "Fall trip",
+        "Guard Duty Constitutional Drinks (CoBo)": "CoBo",
+        "HapHop Member Consultation Moment": "MCM",
+        "Boomer Society: NPO Radio 2 Top 2000 Pubquiz": "Pubquiz",
+        "Mezrab's comedy night": "Comedy night",
+        "Verkiezingsdebat": "Verkiez.debat",
+        "SIB NL Dinner": "SIB-NL",
+        "Pooling & inauguration": "Inauguration",
+        "Study Session": "Studying",
+        "Talk on Peace negotiations": "Talk",
+        "Oktober fest themed drinks": "Drinks",
+        "Meet the Sibbers drink": "Drinks",
+        "Canoening at night": "Canoening",
+        "Decorate your (student)room!": "Creative night",
+        "September camp": "Camp!",
+        "Talk on KNMI": "Talk",
+        "Talk on Cold War Espionage": "Talk",
+        "Day-trip to The Hague": "Day-trip",
+        "Inauguration GMA": "Inaug GMA",
+        "End of year Pizza": "Pizza",
+        "End of Year Party": "Party",
+        "Back to the Ages Party": "Party",
+        "Acapella Society Karaoke": "Karaoke",
+        "IC Cantus: De Zatte Zingende Zeerovers": "Cantus",
+        "Be your own hero - laser tag": "Laser tag",
+        "HEIMWEEK | Give a rose": "Valentine",
+        "HEIMWEEK | Candle Pot Painting": "Candle pot painting",
+        "HEIMWEEK | Summer VriMiBo": "VriMiBo",
+        "Wine tasting with the Tussentijd": "Wine tasting",
+        "Utrecht Tour by (ex-)homeless person": "Tour",
+        // "Battle of the pirates activity": ""
+      }[eventName] ??
+      eventName;
+
   // ?? _data["name"];
   String get eventSlug => _data["slug"];
 
@@ -136,9 +240,8 @@ class Event implements CacheableResource {
   String? get signupUrl => _data["signup"]?["url"];
 
   Event({required Map data, required this.body})
-      : 
-      _data = data,
-      start = DateTime.parse('${data["start"]}Z').toLocal(),
+      : _data = data,
+        start = DateTime.parse('${data["start"]}Z').toLocal(),
         end = data["end"] != null
             ? DateTime.parse('${data["end"]}Z').toLocal()
             : null,
@@ -206,7 +309,6 @@ class Event implements CacheableResource {
     if (data["start"] == null) {
       throw Exception("Event start is null for event ${data["event_id"]}");
     }
-
 
     return Event(data: data, body: body);
   }

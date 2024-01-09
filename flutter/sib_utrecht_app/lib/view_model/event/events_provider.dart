@@ -50,16 +50,18 @@ import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 //   }
 
 Future<void> setMeParticipation(
-    {required APIConnector api,
+    {required Future<APIConnector> api,
     required Event event,
     required bool value,
     required ActionFeedback feedback}) async {
   String eventId = event.id;
   String eventName = event.eventName;
 
+  final apiVal = await api;
+
   if (value) {
     try {
-      await Bookings(api).addMeBooking(eventId: eventId);
+      await Bookings(apiVal).addMeBooking(eventId: eventId);
     } catch (e) {
       feedback.sendError("Failed to register for $eventName: \n$e");
       return;
@@ -71,7 +73,7 @@ Future<void> setMeParticipation(
 
   if (!value) {
     try {
-      await Bookings(api).removeMeBooking(eventId: eventId);
+      await Bookings(apiVal).removeMeBooking(eventId: eventId);
     } catch (e) {
       feedback.sendError("Failed to cancel registration for $eventName: $e");
       return;

@@ -5,8 +5,17 @@ import '../../view_model/event/annotated_event.dart';
 
 class SignupIndicator extends StatefulWidget {
   final AnnotatedEvent event;
+  final bool isFixedWidth;
 
-  const SignupIndicator({Key? key, required this.event}) : super(key: key);
+  const SignupIndicator({Key? key, required this.event, required this.isFixedWidth}) : super(key: key);
+
+  static SignupIndicator? Maybe(AnnotatedEvent event, {bool isFixedWidth = false}) {
+    if (event.signupType == "none") {
+      return null;
+    }
+
+    return SignupIndicator(event: event, isFixedWidth: isFixedWidth);
+  }
 
   @override
   State<SignupIndicator> createState() => _SignupIndicatorState();
@@ -15,24 +24,28 @@ class SignupIndicator extends StatefulWidget {
 class _SignupIndicatorState extends State<SignupIndicator> {
   @override
   Widget build(BuildContext context) {
-    var inner = buildInner(context);
+    var inner = buildInner(widget.event);
     if (inner == null) {
-      return const SizedBox();
+      if (!widget.isFixedWidth) {
+        return const SizedBox();
+      }
+
+      inner = const SizedBox();
     }
 
     return SizedBox(
-        width: 40, height: 40, child: Center(child: buildInner(context)));
+        width: 38, height: 38, child: Center(child: buildInner(widget.event)));
   }
 
-  Widget? buildInner(BuildContext context) {
-    var signupType = widget.event.signupType;
+  static Widget? buildInner(AnnotatedEvent event) {
+    var signupType = event.signupType;
 
     if (signupType == "none") {
       return null;
     }
 
     if (signupType == "api") {
-      var participation = widget.event.participation;
+      var participation = event.participation;
       if (participation == null) {
         return const Icon(Icons.error);
       }
@@ -57,13 +70,16 @@ class _SignupIndicatorState extends State<SignupIndicator> {
       );
     }
 
-    final url = widget.event.signupUrl;
+    final url = event.signupUrl;
     if (signupType == "url" && url != null) {
       // if (widget.isContinuation) {
       //   return const SizedBox();
       // }
 
-      return IconButton(
+      return
+        Builder(
+          builder: (context) =>
+       IconButton(
           onPressed: () {
             launchUrl(Uri.parse(url)).catchError((e) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -71,7 +87,7 @@ class _SignupIndicatorState extends State<SignupIndicator> {
               return false;
             });
           },
-          icon: const Icon(Icons.open_in_browser));
+          icon: const Icon(Icons.open_in_browser)));
     }
 
     return const Icon(Icons.error);

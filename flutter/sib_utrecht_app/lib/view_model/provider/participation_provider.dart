@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
+import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
@@ -33,32 +34,30 @@ class EventParticipationProvider {
           required Widget Function(
                   BuildContext context, List<AnnotatedEvent> events)
               builder}) =>
-      Builder(
-          builder: (context) => ApiConnectorProvider(
-              builder: (context, connector) => BookingsProvider(
-                  builder: (context, bookings, _) => builder(
-                      context,
-                      query
-                          .map((e) => AnnotatedEvent(
-                              event: e,
-                              participation: EventParticipation.fromEvent(
-                                e,
-                                isParticipating:
-                                    bookings.bookings.containsKey(e.id),
-                                setParticipating: (value) => setMeParticipation(
-                                    api: connector,
-                                    event: e,
-                                    value: value,
-                                    feedback: ActionFeedback(
-                                      sendConfirm: (m) =>
-                                          ActionFeedback.sendConfirmToast(
-                                              context, m),
-                                      sendError: (m) =>
-                                          ActionFeedback.showErrorDialog(
-                                              context, m),
-                                    )),
-                              )))
-                          .toList()))));
+      // Builder(
+      //     builder: (context) => ApiConnectorProvider(
+      //         builder: (context, connector) =>
+      BookingsProvider(
+          builder: (context, bookings, _) => builder(
+              context,
+              query
+                  .map((e) => AnnotatedEvent(
+                      event: e,
+                      participation: EventParticipation.fromEvent(
+                        e,
+                        isParticipating: bookings.bookings.containsKey(e.id),
+                        setParticipating: (value) => setMeParticipation(
+                            api: APIAccess.of(context).connector,
+                            event: e,
+                            value: value,
+                            feedback: ActionFeedback(
+                              sendConfirm: (m) =>
+                                  ActionFeedback.sendConfirmToast(context, m),
+                              sendError: (m) =>
+                                  ActionFeedback.showErrorDialog(context, m),
+                            )),
+                      )))
+                  .toList()));
 
   static Widget Single(
           {required Event query,

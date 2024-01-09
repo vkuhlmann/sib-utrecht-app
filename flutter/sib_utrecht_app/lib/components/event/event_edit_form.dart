@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:sib_utrecht_app/components/actions/alerts_panel.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/fragments_bundle.dart';
 import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
@@ -173,8 +170,6 @@ class _EventEditFormState extends State<EventEditForm> {
         const SizedBox(
           height: 32,
         ),
-
-        
       ]);
 
   Event getUpdatedEvent() {

@@ -207,8 +207,8 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     var c = cached;
     // bool needsRefresh = c?.invalidated == true
     //     || c?.timestamp?.isBefore(DateTime.now().subtract(autoRefreshThreshold)) != false;
-    log.info(
-        "[Cache] Cached timestamp is ${c?.timestamp} (needs refresh: ${c?.isObsolete(expireTime: autoRefreshThreshold)})");
+    // log.info(
+    //     "[Cache] Cached timestamp is ${c?.timestamp} (needs refresh: ${c?.isObsolete(expireTime: autoRefreshThreshold)})");
 
     bool needsRefresh =
         c == null || (allowAutoRefresh && c.isObsolete(expireTime: autoRefreshThreshold));

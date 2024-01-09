@@ -198,11 +198,11 @@ GoRouter createRouter() {
                 // navigatorKey: _sectionNavigatorKey,
                 initialLocation: '/',
                 routes: <RouteBase>[
-                  GoRoute(
+                  Route(
                       path: '/',
                       builder: (context, state) => const HomePage(),
                       routes: [
-                        GoRoute(
+                        Route(
                           path: 'events',
                           builder: (context, state) => const EventsPage(),
                         ),
@@ -247,6 +247,7 @@ GoRouter createRouter() {
                                   eventId: null)),
                         Route(
                             path: '/event/:event_id',
+                            name: "event",
                             builder: (context, state) {
                               // String? eventId;
                               // if (state.pathParameters

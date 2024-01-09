@@ -54,10 +54,10 @@ class EventHeader extends StatelessWidget {
                 child: ListTile(
                     title: Text(event
                         .getLocalEventName(Localizations.localeOf(context)))))),
-        SignupIndicator(event: event),
+        SignupIndicator(event: event, isFixedWidth: false,),
         IconButton(
             onPressed: () {
-              router.goNamed("event_edit",
+              router.pushNamed("event_edit",
                   pathParameters: {"event_id": event.id});
             },
             icon: const Icon(Icons.edit)),

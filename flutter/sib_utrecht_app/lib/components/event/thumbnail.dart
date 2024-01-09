@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/model/event.dart';
-import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
-import 'package:sib_utrecht_app/view_model/event/event_provider_notifier.dart';
 
-import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/router.dart';
 
 class EventThumbnail extends StatelessWidget {

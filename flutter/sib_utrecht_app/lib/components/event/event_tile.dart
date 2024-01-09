@@ -96,7 +96,7 @@ class _EventTileState extends State<EventTile> {
                       ])
                       )),
               if (placement?.isContinuation != true)
-                SignupIndicator(event: widget.event),
+                SignupIndicator(event: widget.event, isFixedWidth: false,),
             ])));
   }
 }
