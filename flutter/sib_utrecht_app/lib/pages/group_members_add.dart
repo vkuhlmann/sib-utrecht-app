@@ -1,18 +1,12 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/action_subscriber.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
 import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
-import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/globals.dart';
 import 'package:sib_utrecht_app/model/api/groups.dart';
-import 'package:sib_utrecht_app/model/api/users.dart';
-import 'package:sib_utrecht_app/model/api_connector.dart';
-import 'package:sib_utrecht_app/model/members.dart';
-import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/view_model/provider/group_members_provider.dart';
+import 'package:sib_utrecht_app/view_model/provider/user_provider.dart';
 import 'package:sib_utrecht_app/view_model/provider/wp_users_provider.dart';
 
 class GroupMembersAddPage extends StatefulWidget {
@@ -69,7 +63,6 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
     // final pool = ResourcePoolAccess.maybeOf(context);
     // if (pool != null) {
     // }
-
   }
 
   Future<void> removeMember(User user, Locale loc) async {
@@ -113,7 +106,12 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
                           ? const Color.fromARGB(255, 133, 211, 248)
                           : Colors.blue.withAlpha(100);
 
-                  return WPUsersProvider(builder: (context, users, _) {
+                  return WPUsersProvider(builder: (context, userIds, _)
+                  => UserProvider.Multiplexed(
+                    query: userIds,
+                    builder: (context, usersResults) {
+                      final users = usersResults.map((e) => e.value).toList();
+
                     return CenteredPageScroll(slivers: [
                       // Column(children: [
                       //   Expanded(
@@ -147,7 +145,6 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
                           final user = users[index];
                           final bool isMember = user.entityName != null &&
                               memberNames.contains(user.entityName);
-
 
                           log.fine("User ${user.id} is member: $isMember");
 
@@ -200,7 +197,7 @@ class _GroupMembersAddPageState extends State<GroupMembersAddPage> {
                         },
                       )
                     ]);
-                  });
+                  }));
                 }));
     //       ),
     //   actions: [

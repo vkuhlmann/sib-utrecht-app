@@ -1,17 +1,10 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:sib_utrecht_app/model/api/utils.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
-import 'package:sib_utrecht_app/model/api_connector_cache.dart';
-import 'package:sib_utrecht_app/model/api_connector_cache_monitor.dart';
+import 'package:sib_utrecht_app/model/cacheable_list.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
-import 'package:sib_utrecht_app/model/unpacker/anchored_unpacker.dart';
-import 'package:sib_utrecht_app/model/unpacker/collecting_unpacker.dart';
-import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
-import 'package:sib_utrecht_app/model/unpacker/unpacker.dart';
 import 'package:sib_utrecht_app/model/user.dart';
-import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class Users {
   final APIConnector apiConnector;
@@ -122,13 +115,18 @@ class Users {
   //     .toList();
   // }
 
-  RetrievalRoute<List<User>> listWP() => retrieve(
+  RetrievalRoute<List<String>> listWP() => retrieve(
       // conn: apiConnector,
-      fromCached: null,
+      fromCached: (p) => p.get<CacheableList<User>>("wp-users"),
       url: "/wp-users",
-      parse: (res, unpacker) => (res["data"]["wp-users"] as Iterable)
-          .map((e) => unpacker.parse<User>(e))
-          .toList());
+      parse: (res, unpacker) => 
+      unpacker.parse<CacheableList<User>>({
+        "id": "wp-users",
+        "data": res["data"]["wp-users"],
+      }));
+      // (res["data"]["wp-users"] as Iterable)
+      //     .map((e) => unpacker.parse<User>(e))
+      //     .toList());
 
   // Future<List<User>> listWP() async {
   //   var raw = await apiConnector.get("/wp-users");
@@ -159,6 +157,8 @@ class Users {
     }
 
     var raw = await apiConnector.post("/users?wp_id=$wpId");
+
+    pool?.invalidateId<CacheableList<User>>("wp-users");
     return raw["data"]["entity_name"] as String;
   }
 
