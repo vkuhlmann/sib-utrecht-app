@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/centered_page.dart';
-import 'package:sib_utrecht_app/components/centered_page_scroll.dart';
 
 import '../globals.dart';
 

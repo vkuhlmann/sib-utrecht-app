@@ -4,7 +4,6 @@ import 'package:sib_utrecht_app/components/centered_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../globals.dart';
-import '../components/actions/sib_appbar.dart';
 
 class InfoPage extends StatefulWidget {
   const InfoPage({Key? key}) : super(key: key);

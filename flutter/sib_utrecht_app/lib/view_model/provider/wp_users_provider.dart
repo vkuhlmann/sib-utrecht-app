@@ -10,7 +10,7 @@ import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/single_provider.dart';
 
 Widget WPUsersProvider(
-        {required Widget Function(BuildContext, List<User>, FetchResult<void>) builder}) =>
+        {required Widget Function(BuildContext, List<String>, FetchResult<void>) builder}) =>
     SingleProvider(
         query: null,
         builder: builder,
