@@ -92,7 +92,7 @@ class _InfoPageState extends State<InfoPage> {
                                   showAboutDialog(
                                       context: context,
                                       applicationName: "SIB-Utrecht",
-                                      applicationVersion: "0.2.0");
+                                      applicationVersion: "0.2.1");
                                 },
                                 child: ListTile(title: Text(
                                     // "Over app"
