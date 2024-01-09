@@ -92,16 +92,22 @@ class UsersPageContents extends StatelessWidget {
 
                   Color? highlightColor = color?.withAlpha(255);
                   if (highlightColor != null) {
-                   highlightColor = HSLColor.fromColor(highlightColor)
-                      .withLightness(brightness == Brightness.light ? 0.7 : 0.4)
-                      .toColor();
+                    highlightColor = HSLColor.fromColor(highlightColor)
+                        .withLightness(brightness == Brightness.light
+                            ? 0.7
+                            : (state == "alumnus" ? 0.3 : 0.4))
+                        .toColor();
                   }
 
-                  return Card(
+                  return 
+                  Padding(padding: const EdgeInsets.symmetric(vertical: 4), child:
+                  Card(
                       key: ValueKey(user.id),
                       clipBehavior: Clip.antiAlias,
                       color: color,
                       child: ListTile(
+                        contentPadding:
+                            const EdgeInsets.only(left: 16, bottom: 16, top: 12, right: 16),
                         title: Text(user.longName),
                         subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,37 +212,49 @@ class UsersPageContents extends StatelessWidget {
                                   //     onPressed: () {}, child: Text("Alumnus")),
                                 ],
                               ),
-                              const SizedBox(height: 8)
+                              // const SizedBox(height: 8)
                             ]),
-                        trailing: entityName == null
-                            ? IconButton(
-                                onPressed: () async {
-                                  final conn =
-                                      await APIAccess.of(context).connector;
+                        onTap: () async {
+                          final conn = await APIAccess.of(context).connector;
 
-                                  late String value;
-                                  try {
-                                    value = await Users(conn)
-                                        .getOrCreateUser(wpId: user.wpId);
-                                  } catch (error) {
-                                    messenger.showSnackBar(SnackBar(
-                                        content: Text("Error: $error")));
-                                    return;
-                                  }
+                          String id = user.id;
+                          if (id.startsWith("wp-user-")) {
+                            id = await Users(conn)
+                                .getOrCreateUser(wpId: user.wpId);
+                          }
 
-                                  router.pushNamed("user_page",
-                                      pathParameters: {"entity_name": value});
-                                },
-                                icon: const Icon(Icons.add))
-                            : IconButton(
-                                onPressed: () {
-                                  GoRouter.of(context).pushNamed("user_page",
-                                      pathParameters: {
-                                        "entity_name": entityName
-                                      });
-                                },
-                                icon: const Icon(Icons.arrow_forward_ios)),
-                      ));
+                          router.pushNamed("user_page",
+                              pathParameters: {"entity_name": id});
+                        },
+                        // trailing: entityName == null
+                        //     ? IconButton(
+                        //         onPressed: () async {
+                        //           final conn =
+                        //               await APIAccess.of(context).connector;
+
+                        //           late String value;
+                        //           try {
+                        //             value = await Users(conn)
+                        //                 .getOrCreateUser(wpId: user.wpId);
+                        //           } catch (error) {
+                        //             messenger.showSnackBar(SnackBar(
+                        //                 content: Text("Error: $error")));
+                        //             return;
+                        //           }
+
+                        //           router.pushNamed("user_page",
+                        //               pathParameters: {"entity_name": value});
+                        //         },
+                        //         icon: const Icon(Icons.add))
+                        //     : IconButton(
+                        //         onPressed: () {
+                        //           GoRouter.of(context).pushNamed("user_page",
+                        //               pathParameters: {
+                        //                 "entity_name": entityName
+                        //               });
+                        //         },
+                        //         icon: const Icon(Icons.arrow_forward_ios)),
+                      )));
                 } //).toList()
                 ))
       ],
@@ -398,7 +416,7 @@ class _UsersPageState extends State<UsersPage> {
                                           .map((e) => e.value)
                                           .toList()
                                           .sortedBy(
-                                              (element) => element.longName),
+                                              (element) => element.longName.toLowerCase()),
                                       pendingChanges: _pendingChanges,
                                       setRole: setRole,
                                       members: members.memberships
