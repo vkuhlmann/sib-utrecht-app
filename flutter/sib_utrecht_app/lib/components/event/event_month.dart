@@ -5,6 +5,7 @@ import 'package:sib_utrecht_app/components/flutter_sticky_header-0.6.5/lib/flutt
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/week.dart';
 import 'package:sliver_tools/sliver_tools.dart';
+// import 'package:sticky_headers/sticky_headers.dart';
 
 import '../../view_model/event/annotated_event.dart';
 
@@ -16,13 +17,19 @@ Widget EventGroup(
         required Widget sliver,
         required String title,
         required bool isMajor}) =>
-    SliverStickyHeader.builder(
-        builder: (context, state) =>
-            SolidHeader(title: title, isMajor: isMajor),
-        sliver: SliverCrossAxisConstrained(
+    SliverStickyHeader(
+        // builder: (context, state) =>
+        header: SolidHeader(title: title, isMajor: isMajor),
+        // content: 
+        sliver :SliverCrossAxisConstrained(
             maxCrossAxisExtent: 700,
             child: SliverPadding(
-                padding: const EdgeInsets.only(top: 40), sliver: sliver)));
+                padding: const EdgeInsets.only(top: 40), sliver: sliver)))
+        // Center(child: Container(
+        //     constraints: const BoxConstraints(maxWidth: 700),
+        //     child: Padding(padding: const EdgeInsets.only(top: 40), child: child))
+        //         ))
+                ;
 
 Widget EventMonth({
   Key? key,

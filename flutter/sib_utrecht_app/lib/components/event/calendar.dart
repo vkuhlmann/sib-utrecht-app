@@ -1,12 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:quiver/iterables.dart';
 import 'package:sib_utrecht_app/globals.dart';
-import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/utils.dart';
 import 'package:sib_utrecht_app/view_model/event/annotated_event.dart';
 import 'package:sib_utrecht_app/week.dart';
@@ -17,6 +14,7 @@ class _CalendarDot extends StatelessWidget {
   // final int day;
   final DateTime date;
   final DateTime now;
+  final Month month;
 
   const _CalendarDot(
       {Key? key,
@@ -24,7 +22,8 @@ class _CalendarDot extends StatelessWidget {
       // required this.weekday,
       // required this.day
       required this.date,
-      required this.now
+      required this.now,
+      required this.month
       })
       : super(key: key);
 
@@ -35,9 +34,23 @@ class _CalendarDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context);
+    // final Color focusColor = Theme.of(context).colorScheme.primary;
+    // final Color backgroundColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
+    // final Color weekendColor = Colors.grey[500] ?? Colors.grey;
+
+    final Color focusColor = 
+    // Theme.of(context).colorScheme.primaryContainer;
+    Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
+    // final Color backgroundColor = Theme.of(context).colorScheme.secondary.withAlpha(170);
+    final Color backgroundColor = focusColor.withAlpha(200);
+    final Color weekendColor = backgroundColor;
+    //Theme.of(context).colorScheme.secondary.withAlpha(170);
+    //Colors.grey[500] ?? Colors.grey;
+    final bool isWeekend = date.weekday >= 6;
+    final bool isThisMonth = date.month == month.month;
 
     if (events.isEmpty) {
-      if (date.day == 1) {
+      if (date.day == 1 && isThisMonth) {
         return Center(child: Container(
           // width: 8,
           // height: 8,
@@ -49,10 +62,10 @@ class _CalendarDot extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [Text(date.day.toString(),
-            style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+            style: TextStyle(color: backgroundColor)),
             Text(DateFormat("MMM", locale.toString()).format(date).toLowerCase(),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Theme.of(context).colorScheme.primary,
+            style: TextStyle(color: backgroundColor,
             fontSize: 10, fontFeatures: const [FontFeature.enable('smcp')]))
           ])
         ));
@@ -62,23 +75,44 @@ class _CalendarDot extends StatelessWidget {
         return Center(child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [Text(date.day.toString(),
-            style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+            style: TextStyle(color: backgroundColor)),
             Text("Today".toLowerCase(),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Theme.of(context).colorScheme.primary,
+            style: TextStyle(color: backgroundColor,
             fontSize: 10, fontFeatures: const [FontFeature.enable('smcp')]))
           ])
         );
       }
+      
+      if (!isThisMonth) {
+        return const SizedBox();
+      }
+
+
+      if (isWeekend) {
+        return Center(
+          child: 
+          Container(
+        width: 6,
+        height: 6,
+        decoration: BoxDecoration(
+            // color:weekendColor.withAlpha(70),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: weekendColor.withAlpha(70),
+            ),
+            ),
+      ));
+      }
 
       return Center(
           child: Container(
-        width: 8,
-        height: 8,
+        width: isWeekend ? 3 : 5,
+        height: isWeekend ? 3 : 5,
         decoration: BoxDecoration(
-            color: date.weekday >= 6
-                ? Colors.grey[500]
-                : Theme.of(context).colorScheme.primary,
+            color: (isWeekend
+                ? weekendColor
+                : backgroundColor).withAlpha(70),
             shape: BoxShape.circle),
       ));
     }
@@ -105,10 +139,16 @@ class _CalendarDot extends StatelessWidget {
               Text(
                 date.day.toString(),
                 textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: focusColor,
+                    fontWeight: FontWeight.bold),
               ),
               Text(mainEvent.eventLabel,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 8),
+                  style: TextStyle(fontSize: 8,
+                  color: focusColor,
+                  // fontWeight: FontWeight.bold
+                  ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1)
             ]))));
@@ -183,7 +223,7 @@ class _CalendarRow extends StatelessWidget {
               height: 50,
               child:
               Opacity(
-                opacity: Month.fromDate(day.key) == month ? 1 : 0.3,
+                opacity: Month.fromDate(day.key) == month ? 1 : 0.6,
                 child:
                   // Center(child:
                   Container(
@@ -200,7 +240,8 @@ class _CalendarRow extends StatelessWidget {
                   _CalendarDot(
                 now: now,
                 events: day.value,
-                date: day.key
+                date: day.key,
+                month: month
                 // weekday: day.key,
                 // day:
                     // (,

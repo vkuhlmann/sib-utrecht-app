@@ -57,6 +57,9 @@ dependencies:
   vector_math: ^2.1.4
   quiver: ^3.2.1
   value_layout_builder: ^0.3.1
+  sticky_headers: ^0.3.0+2
+  # flutter_gen: ^5.4.0
+
 
   flutter_localizations:
     sdk: flutter

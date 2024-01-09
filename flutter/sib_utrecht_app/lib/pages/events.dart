@@ -16,7 +16,7 @@ import 'package:sib_utrecht_app/utils.dart';
 
 import '../globals.dart';
 import '../view_model/event/annotated_event.dart';
-import '../components/event/event_group.dart';
+import '../components/event/event_month.dart';
 import '../components/actions/alerts_panel.dart';
 
 // Dialog code based on https://api.flutter.dev/flutter/material/Dialog-class.html
@@ -351,7 +351,15 @@ class _EventsPageState extends State<EventsPage> {
                   sliver: SliverList.list(children: [
                     for (var event in ongoing)
                       EventTile2(key: ValueKey(event.id), event: event)
-                  ]))),
+                  ]))
+              // child: Padding(
+              //     key: const ValueKey("ongoing"),
+              //     padding: const EdgeInsets.only(left: 8),
+              //     child: Column(children: [
+              //       for (var event in ongoing)
+              //         EventTile2(key: ValueKey(event.id), event: event)
+              //     ]))
+                  ),
 
           // SliverList.list(
           //   children: [
