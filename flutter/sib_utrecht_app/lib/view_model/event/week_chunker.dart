@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/utils.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/week.dart';
@@ -73,9 +76,15 @@ class WeekChunked<T> {
     return date.toIso8601String().substring(0, 7);
   }
 
-  static ({Week currentWeek, Week upcomingWeek})
-  getUpcomingWeek(Iterable<DateTime?> items, {required DateTime now}) {
-  Week currentWeek = Week.fromDate(now);
+  static ({Week currentWeek, Week upcomingWeek}) getUpcomingWeek(
+      Iterable<DateTime?> itemsIter,
+      {required DateTime now}) {
+    Week currentWeek = Week.fromDate(now);
+
+    List<DateTime?> items = itemsIter.toList();
+
+    // log.fine(
+    //     "DateTimes are ${jsonEncode(items.map<String?>((e) => e?.toIso8601String()).toList())}");
 
     DateTime? lastInCurrentWeek = items
         .whereNotNull()
@@ -85,7 +94,7 @@ class WeekChunked<T> {
     DateTime upcomingAnchor = [
       now.add(const Duration(days: 5)),
       lastInCurrentWeek?.add(const Duration(hours: 2))
-    ].whereNotNull().max;
+    ].whereNotNull().min;
 
     Week upcomingWeek = Week.fromDate(upcomingAnchor);
 
@@ -96,12 +105,11 @@ class WeekChunked<T> {
     DateTime now = DateTime.now();
     // now = now.add(const Duration(days: 8));
 
-    final anchor = getUpcomingWeek(
-      items.map((e) => getDate(e)), now: now);
+    final anchor = getUpcomingWeek(items.map((e) => getDate(e)), now: now);
 
     final currentWeek = anchor.currentWeek;
     final upcomingWeek = anchor.upcomingWeek;
-    
+
     Week pastWeek = upcomingWeek.previous;
     Week nextWeek = upcomingWeek.next;
 

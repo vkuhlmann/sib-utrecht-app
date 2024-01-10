@@ -177,7 +177,8 @@ class HomePageContents extends StatelessWidget {
     var nextWeek = superGroups[RelativeWeek.nextWeek] ?? [];
 
     final anchor = WeekChunked.getUpcomingWeek(
-      upcomingWeek.single.elements.map((e) => e.placement?.date),
+      upcomingWeek.singleOrNull?.elements.map((e) => e.placement?.date)
+      ?? [],
       now: DateTime.now());
     final bool lookAhead = anchor.upcomingWeek != anchor.currentWeek;
     var loc = AppLocalizations.of(context)!;
