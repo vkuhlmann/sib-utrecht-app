@@ -55,7 +55,7 @@ class EventBody implements CacheableResource {
     String description =
         ((data["post_content"] ?? data["description"] ?? "") as String)
             .replaceAll("\r\n\r\n", "<br/><br/>");
-    Map? thumbnail = data["thumbnail"];
+    Map? thumbnail = data["thumbnail"] ?? data["image"];
 
     // if (thumbnail != null &&
     //     thumbnail["url"] != null &&
