@@ -77,8 +77,8 @@ class _EventEditFormState extends State<EventEditForm> {
 
     var endDate = value.end;
 
-    _nameController.text = value.eventName;
-    _nameNLController.text = value.eventNameNL ?? "";
+    _nameController.text = value.longName;
+    _nameNLController.text = value.longNameNL ?? "";
     _locationController.text = value.location ?? "";
     _startController.text = _dateFormat.format(value.start.toLocal());
     _endController.text = "";

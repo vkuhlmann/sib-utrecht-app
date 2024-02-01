@@ -72,7 +72,7 @@ Event:
         },
         "participate": {
             "signup": {
-                "type": "url",
+                "method": "url",
                 "url": "https://forms.gle/bnzubocmcC91yY4R6",
                 "end": "2023-08-01 00:00:00",
                 "available": true

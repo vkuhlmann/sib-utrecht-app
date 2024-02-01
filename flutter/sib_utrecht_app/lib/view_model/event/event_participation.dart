@@ -31,7 +31,7 @@ class EventParticipation {
       isParticipating: isParticipating,
       setParticipating: setParticipating,
       isDirty: isDirty,
-      isActive: e.isActive,
+      isActive: e.participate.signup.available ?? false,
     );
   }
 }

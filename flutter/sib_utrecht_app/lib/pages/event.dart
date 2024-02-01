@@ -45,15 +45,14 @@ class EventHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var eventEnd = event.end;
+    var eventEnd = event.date.end;
 
     return Column(children: [
       Row(children: [
         Expanded(
             child: Card(
                 child: ListTile(
-                    title: Text(event
-                        .getLocalEventName(Localizations.localeOf(context)))))),
+                    title: Text(event.name.getLocalLong(Localizations.localeOf(context)))))),
         SignupIndicator(event: event, isFixedWidth: false,),
         IconButton(
             onPressed: () {
@@ -83,10 +82,10 @@ class EventHeader extends StatelessWidget {
                     width: 260,
                     child: Text(DateFormat.yMMMMEEEEd(
                             Localizations.localeOf(context).toString())
-                        .format(event.start))),
+                        .format(event.date.start))),
                 // const SizedBox(width: 20),
                 Text(DateFormat.Hm(Localizations.localeOf(context).toString())
-                    .format(event.start))
+                    .format(event.date.start))
               ]),
             ]),
             if (eventEnd != null)
@@ -248,7 +247,7 @@ class EventPageContents extends StatelessWidget {
                             // }
 
                             if (participants.isEmpty &&
-                                !event.doesExpectParticipants()) {
+                                !event.participate.signup.doesExpectParticipants()) {
                               return const SizedBox();
                             }
 

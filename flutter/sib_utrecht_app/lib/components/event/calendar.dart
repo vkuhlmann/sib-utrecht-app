@@ -121,7 +121,7 @@ class _CalendarDot extends StatelessWidget {
     final isTruncated = mainEvent.eventLabel.length > 13 &&
         (mainEvent.eventLabel.length > 17 ||
             mainEvent.eventLabel.toLowerCase() ==
-                mainEvent.eventName.toLowerCase());
+                mainEvent.longName.toLowerCase());
 
     Widget ans = GestureDetector(
         onTap: () {
