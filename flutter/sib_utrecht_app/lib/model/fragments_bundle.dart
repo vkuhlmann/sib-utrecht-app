@@ -6,10 +6,17 @@ class FragmentsBundle {
 
   FragmentsBundle(this.fragments);
 
-  factory FragmentsBundle.fromComplete(Map json) {
+  factory FragmentsBundle.fromMap(Map json) {
     return FragmentsBundle(json
         .map((key, value) => MapEntry(key, Fragment(key: key, value: value))));
   }
+
+  FragmentsBundle.copy(FragmentsBundle bundle)
+      : fragments = Map.fromEntries(bundle.fragments.entries.map((e) => 
+      MapEntry(e.key, Fragment.copy(e.value))));
+
+  // ({FragmentsBundle bundle, Set<String> rejected}) withUpdates(Map updates) {
+  // }
 
   Map toPayload() {
     return fragments.map((key, value) => MapEntry(key, value.value));
@@ -59,7 +66,7 @@ class FragmentsBundle {
       return null;
     }
 
-    dynamic val = fragment.frag;
+    dynamic val = fragment.frag.value;
     List<String> parts = fragment.subpath.split(".");
     if (parts.length == 1 && parts[0] == "") {
       parts = [];
@@ -75,5 +82,9 @@ class FragmentsBundle {
 
       val = val[part];
     }
+
+    return val;
   }
+
+  
 }

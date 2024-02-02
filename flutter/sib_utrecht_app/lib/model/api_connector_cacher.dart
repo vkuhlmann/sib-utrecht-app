@@ -1,4 +1,3 @@
-
 import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cache.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
@@ -14,10 +13,11 @@ class CacherApiConnector extends APIConnector {
 
   // CacherApiConnector.fromHTTP(HTTPApiConnector this.base)
   // : pool = CacheApiConnector(channelName: base.channelName);
-  
+
   @override
-  Future<Map> delete(url, {Map? body}) => base.delete(url, body: body);
-  
+  Future<Map> delete(url, {body, version}) =>
+      base.delete(url, version: version, body: body);
+
   // @override
   // Future<FetchResult<Map>> get(String url) async {
   //   var ans = await base.get(url);
@@ -26,12 +26,14 @@ class CacherApiConnector extends APIConnector {
   // }
 
   @override
-  Future<FetchResult<Map>> get(String url) => base.get(url);
-  
-  @override
-  Future<Map> post(url, {Map? body}) => base.post(url, body: body);
-  
-  @override
-  Future<Map> put(url, {Map? body}) => base.put(url, body: body);
-}
+  Future<FetchResult<Map>> get(String url, {required version})
+  => base.get(url, version: version);
 
+  @override
+  Future<Map> post(url, {Map? body, version}) =>
+      base.post(url, body: body, version: version);
+
+  @override
+  Future<Map> put(url, {Map? body, version}) =>
+      base.put(url, body: body, version: version);
+}

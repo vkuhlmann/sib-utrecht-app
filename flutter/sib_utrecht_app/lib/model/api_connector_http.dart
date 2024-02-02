@@ -33,12 +33,12 @@ class HTTPApiConnector extends APIConnector {
     }
   }
 
-  Uri getUri(String url) {
+  Uri getUri(String url, ApiVersion? version) {
     if (url.startsWith("/")) {
       url = url.substring(1);
     }
 
-    return Uri.parse("$apiAddress/$url");
+    return Uri.parse("$apiAddress/${(version ?? ApiVersion.v1).name}/$url");
   }
 
   Map _handleResponse(http.Response response) {
@@ -102,14 +102,14 @@ class HTTPApiConnector extends APIConnector {
   // }
 
   @override
-  Future<FetchResult<Map>> get(String url) async {
+  Future<FetchResult<Map>> get(String url, {required version}) async {
     log.info("Doing GET on $url");
 
     final Stopwatch stopwatch = Stopwatch()..start();
 
     http.Response response;
     try {
-      response = await client.get(getUri(url), headers: headers);
+      response = await client.get(getUri(url, version), headers: headers);
     } on http.ClientException catch (e) {
       if (e.message == "XMLHttpRequest error.") {
         throw Exception("Cannot connect to server.");
@@ -129,12 +129,12 @@ class HTTPApiConnector extends APIConnector {
   }
 
   @override
-  Future<Map> post(url, {Map? body}) async {
+  Future<Map> post(url, {version, Map? body}) async {
     log.info("Doing POST on $url");
     http.Response response;
     if (body != null) {
       response = await client.post(
-        getUri(url),
+        getUri(url, version),
         headers: {
           ...headers,
           "Content-Type": "application/json",
@@ -142,19 +142,19 @@ class HTTPApiConnector extends APIConnector {
         body: jsonEncode(body),
       );
     } else {
-      response = await client.post(getUri(url), headers: headers);
+      response = await client.post(getUri(url, version), headers: headers);
     }
 
     return _handleResponse(response);
   }
 
   @override
-  Future<Map> put(url, {Map? body}) async {
+  Future<Map> put(url, {version, Map? body}) async {
     log.info("Doing PUT on $url");
     http.Response response;
     if (body != null) {
       response = await client.put(
-        getUri(url),
+        getUri(url, version),
         headers: {
           ...headers,
           "Content-Type": "application/json",
@@ -162,14 +162,14 @@ class HTTPApiConnector extends APIConnector {
         body: jsonEncode(body),
       );
     } else {
-      response = await client.put(getUri(url), headers: headers);
+      response = await client.put(getUri(url, version), headers: headers);
     }
 
     return _handleResponse(response);
   }
 
   @override
-  Future<Map> delete(url, {Map? body}) async {
+  Future<Map> delete(url, {Map? body, version}) async {
     log.info("Doing DELETE on $url");
     // final response =
     //     await client.delete(getUri(url), headers: headers);
@@ -177,7 +177,7 @@ class HTTPApiConnector extends APIConnector {
     http.Response response;
     if (body != null) {
       response = await client.delete(
-        getUri(url),
+        getUri(url, version),
         headers: {
           ...headers,
           "Content-Type": "application/json",
@@ -185,7 +185,7 @@ class HTTPApiConnector extends APIConnector {
         body: jsonEncode(body),
       );
     } else {
-      response = await client.delete(getUri(url), headers: headers);
+      response = await client.delete(getUri(url, version), headers: headers);
     }
 
     return _handleResponse(response);

@@ -33,27 +33,34 @@ class _EventTileState extends State<EventTile> {
       dayMonth = dayMonth.replaceFirst(RegExp("\\.\$"), "");
     }
 
+    final ev = widget.event;
+
     String infoLine = "";
+
+    final meetup = ev.participate.meetup;
+    final meetupTime = meetup.time;
+
+    // final meetupLocation = meetup.location;
     
-    bool showTime = widget.event.start.toIso8601String().substring(0, 10)
+    bool showTime = meetup.time?.toIso8601String().substring(0, 10)
       == placement?.date.toIso8601String().substring(0, 10)
-      && widget.event.start.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0)
-      != widget.event.start;
+      && meetup.time?.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0)
+      != meetup.time;
 
     
-    bool showLocation = widget.event.location != null
-      && showTime;
+    bool showLocation = meetup.location != null;
+      // && showTime;
       // && (widget.event.placement?.isContinuation != true)
 
     if (showLocation) {
-      infoLine += "@ ${widget.event.location ?? 'Unknown'}";
+      infoLine += "@ ${meetup.location ?? 'Unknown'}";
     }
 
-    if (showTime) {
+    if (showTime && meetupTime != null) {
       if (infoLine.isNotEmpty) {
         infoLine += ", ";
       }
-      infoLine += _timeFormat.format(widget.event.start);
+      infoLine += _timeFormat.format(meetupTime);
     }
 
     return InkWell(
@@ -88,7 +95,7 @@ class _EventTileState extends State<EventTile> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                        Text(widget.event.getLocalEventName(Localizations.localeOf(context))),
+                        Text(ev.name.getLocalLong(Localizations.localeOf(context))),
                         if (infoLine.isNotEmpty)
                           Text(infoLine, style: TextStyle(color:
                           Theme.of(context).brightness == Brightness.light ? Colors.grey[600] : Colors.grey[400],

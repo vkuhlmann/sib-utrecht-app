@@ -14,17 +14,20 @@ import 'package:sib_utrecht_app/model/fetch_result.dart';
 class RetrievalRoute<T> {
   FetchResult<T>? Function(ResourcePool)? fromCached;
   String url;
+  ApiVersion version;
   // Future<FetchResult<T>> Function(APIConnector) fresh;
   T Function(Map, AnchoredUnpacker) parse;
 
-  RetrievalRoute({this.fromCached, required this.url, required this.parse});
+  RetrievalRoute({this.fromCached, required this.url, required this.parse,
+  required this.version
+  });
 
   Future<FetchResult<T>> getFresh(APIConnector conn) async {
     if (url.isEmpty) {
         throw Exception("Empty url");
       }
 
-      final res = await conn.get(url);
+      final res = await conn.get(url, version: version);
       final unpacker = CollectingUnpacker(
           anchor: res, pool: getCollectingPoolForConnector(conn));
 
@@ -56,7 +59,10 @@ class RetrievalRoute<T> {
 RetrievalRoute<T> retrieve<T>(
   {required FetchResult<T>? Function(ResourcePool)? fromCached,
   required String url,
-  required T Function(Map, AnchoredUnpacker) parse}) => RetrievalRoute(
+  required T Function(Map, AnchoredUnpacker) parse,
+  ApiVersion version = ApiVersion.v1
+  }) => RetrievalRoute(
+    version: version,
     fromCached: fromCached,
     url: url,
     parse: parse

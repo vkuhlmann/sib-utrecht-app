@@ -55,8 +55,10 @@ Event:
     "data": {
         "id": "wp-4001",
         "name": {
-            "nl": "Septemberkamp",
-            "en": "September camp"
+            "long": {
+                "nl": "Septemberkamp",
+                "en": "September camp"
+            }
         },
         "date": {
             "start": "2023-09-21 22:00:00",
@@ -68,7 +70,9 @@ Event:
             "description": {
                 "html": "<strong>Come join us on</strong>"
             },
-            "image": "http://sib-utrecht.nl/wp-content/uploads/2023/11/peperkoek.jpg"
+            "image": {
+                "url": "http://sib-utrecht.nl/wp-content/uploads/2023/11/peperkoek.jpg"
+            }
         },
         "participate": {
             "signup": {

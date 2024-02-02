@@ -62,7 +62,8 @@ class Events {
                 .withValue(event.value.withBody(body.value));
           },
           // url: "",
-          url: "/events/$eventId?include_image=true",
+          url: "/events/$eventId",
+          version: ApiVersion.v2,
           parse: (res, unpacker) =>
               unpacker.parse<Event>(res["data"]["event"]));
 
@@ -83,14 +84,16 @@ class Events {
   }
 
   Future<void> updateEvent(String eventId, FragmentsBundle data) async {
-    await apiConnector.put("/events/$eventId", body: data.toPayload());
+    await apiConnector.put("/events/$eventId", body: data.toPayload(),
+    version: ApiVersion.v2
+    );
 
     pool?.invalidateId<EventBody>(eventId);
     pool?.invalidateId<Event>(eventId);
   }
 
   Future<Event> startEdit(String eventId) async {
-    final res = await apiConnector.post("/events/$eventId/edit");
+    final res = await apiConnector.post("/events/$eventId/edit", version: ApiVersion.v2);
 
     return Event.fromJson((res["data"]["event"] as Map), DirectUnpacker());
   }
@@ -188,6 +191,7 @@ class Events {
       // conn: apiConnector,
       fromCached: (p) => p.get<CacheableList<Event>>("events"),
       url: "/events",
+      version: ApiVersion.v2,
       parse: (res, unpacker) =>
       unpacker.parse<CacheableList<Event>>({
         "id": "events",

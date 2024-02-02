@@ -118,10 +118,10 @@ class _CalendarDot extends StatelessWidget {
     }
 
     final mainEvent = events.first;
-    final isTruncated = mainEvent.eventLabel.length > 13 &&
-        (mainEvent.eventLabel.length > 17 ||
-            mainEvent.eventLabel.toLowerCase() ==
-                mainEvent.longName.toLowerCase());
+    final isTruncated = mainEvent.name.label.length > 13 &&
+        (mainEvent.name.label.length > 17 ||
+            mainEvent.name.label.toLowerCase() ==
+                mainEvent.name.long.toLowerCase());
 
     Widget ans = GestureDetector(
         onTap: () {
@@ -143,7 +143,7 @@ class _CalendarDot extends StatelessWidget {
                     color: focusColor,
                     fontWeight: FontWeight.bold),
               ),
-              Text(mainEvent.eventLabel,
+              Text(mainEvent.name.label,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 8,
                   color: focusColor,
@@ -155,7 +155,7 @@ class _CalendarDot extends StatelessWidget {
 
     if (isTruncated) {
       ans = Tooltip(
-        message: mainEvent.getLocalEventName(Localizations.localeOf(context)),
+        message: mainEvent.name.getLocalLong(Localizations.localeOf(context)),
         triggerMode: TooltipTriggerMode.longPress,
         waitDuration: const Duration(milliseconds: 500),
         child: ans,
@@ -190,7 +190,7 @@ class _CalendarRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final days = events
         .chunkBy<num>(
-            (event) => (event.placement?.date ?? event.start).weekday - 1,
+            (event) => (event.placement?.date ?? event.date.start).weekday - 1,
             initialKeys: count().take(7).toList())
         .map((e) => MapEntry((e.key + 0.2).floor() + 1, e.value))
         .map((e) => MapEntry(week.start.add(Duration(days: e.key - 1, hours: 2)), e.value));

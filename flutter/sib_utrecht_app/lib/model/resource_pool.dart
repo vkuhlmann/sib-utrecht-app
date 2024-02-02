@@ -17,69 +17,15 @@ import 'package:sib_utrecht_app/model/user.dart';
 import 'package:sib_utrecht_app/model/fetch_result.dart';
 
 class Resource<T extends CacheableResource> {
-  // final void Function(Map<String, FetchResult<T>>) save;
-  // final dynamic Function(T) serialize;
-  // final String Function
-  // final T Function(Map json, ResourcePoolBase? pool)
-
   final Box box;
   final String name;
-  // final Map<String, FetchResult<T>> data;
   final Map<String, DateTime> invalidationTimestamps = {};
 
   Resource(
       {
-      // required this.data,
-      // required this.save,
       required this.name,
       required this.box
-      // required this.serialize
       });
-
-  // factory Resource.load(
-  //   Box box,
-  //   String entryName,
-  //   // dynamic Function(T) serialize, T Function(dynamic) deserialize
-  // ) {
-  //   // Map<String, FetchResult<T>> data = {};
-  //   // dynamic rawData;
-  //   // try {
-  //   //   rawData = box.get(entryName);
-  //   // } catch (e) {
-  //   //   log.warning("Failed to load $entryName from cache: $e");
-  //   //   box.delete(entryName);
-  //   // }
-
-  //   // log.fine("Raw data: $rawData");
-
-  //   // data = ((rawData ?? {}) as Map).map(
-  //   //   (key, value) {
-  //   //     final a = FetchResult.fromJson<Map>(value, (v) => v as Map);
-  //   //     return MapEntry(
-  //   //         key,
-  //   //         a.mapValue((p0) => CacheableResource.fromJson<T>(
-  //   //             p0, CollectingUnpacker(anchor: a, pool: null))));
-  //   //   },
-  //   // );
-
-  //   var v = Resource<T>(
-  //       box: box,
-  //       // data: data,
-  //       // data: ((box.get(entryName) ?? {}) as Map).map((key, value) =>
-  //       //     MapEntry(key, FetchResult.fromJson(value, deserialize))),
-  //       // save: (data) async {
-  //       //   await box.put(entryName,
-  //       //       data.map((key, value) => MapEntry(key, value.toJson(serialize))));
-
-  //       //   // log.info("Saved $entryName to cache, ${data.length} entries");
-  //       // },
-  //       name: entryName);
-
-  //   log.info("Entry count in ${box.name}: ${box.length}");
-
-  //   // log.info("Loaded $entryName from cache, ${v.data.length} entries");
-  //   return v;
-  // }
 
   String getKey(String id) => "$name-$id";
 
@@ -203,45 +149,29 @@ class Resource<T extends CacheableResource> {
     _setValue(id, val.asInvalidated());
 
     return true;
-    // notifyListeners();
   }
 }
 
 class ResourcePool extends ChangeNotifier {
+  static const String version = "2024-02-02";
+
   Box box;
   String channelName;
 
-  // final Resource<User> _users; // = Resource();
-  // final Resource<Group> _groups; // = Resource();
-  // final Resource<Event> _events; // = Resource();
-  // final Resource<EventBody> _eventBodies;
-  // final Resource<Members> _members;
-
-  // final Resource<>
-
   ResourcePool(
       {
-      // required Resource<User> users,
-      // required Resource<Group> groups,
-      // required Resource<Event> events,
-      // required Resource<EventBody> eventBodies,
-      // required Resource<Members> members,
       required this.box,
-      required this.channelName});
+      required this.channelName}) {
+      checkVersion();
+    }
 
-  // static ResourcePool _load(String? channelName, Box box) {
-  //   // Hive.init(null);
-  //   // final box = await Hive.openBox("cache");
-
-  //   channelName ??= "default";
-
-  //   return ResourcePool(
-  //       users: Resource.load(box, "$channelName-users"),
-  //       groups: Resource.load(box, "$channelName-groups"),
-  //       events: Resource.load(box, "$channelName-events"),
-  //       eventBodies: Resource.load(box, "$channelName-eventBodies"),
-  //       members: Resource.load(box, "$channelName-members"));
-  // }
+  void checkVersion() {
+    final boxVersion = box.get("version");
+    if (boxVersion != version) {
+      box.clear();
+    }
+    box.put("version", version);
+  }
 
   static Future<ResourcePool> load(String? channelName) async {
     try {
@@ -284,32 +214,4 @@ class ResourcePool extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  // final Map<String, FetchResult<User>> users = {};
-  // final Map<String, FetchResult<Group>> groups = {};
-  // final Map<String, FetchResult<Event>> events = {};
-
-  // final ChangeNotifier usersChange = ChangeNotifier();
-  // final ChangeNotifier groupsChange = ChangeNotifier();
-  // final ChangeNotifier eventsChange = ChangeNotifier();
-
-  // void collectUser(FetchResult<User> data) {
-  //   final id = data.value.id;
-  //   if (id == null) {
-  //     return;
-  //   }
-
-  //   users[id] = data;
-  //   usersChange.notifyListeners();
-  // }
-
-  // void collectGroup(FetchResult<Group> data) {
-  //   groups[data.query] = data;
-  //   groupsChange.notifyListeners();
-  // }
-
-  // void collectEvent(FetchResult<Event> data) {
-  //   events[data.query] = data;
-  //   eventsChange.notifyListeners();
-  // }
 }

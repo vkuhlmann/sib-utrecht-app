@@ -40,51 +40,53 @@ class ThisWeekCard extends StatelessWidget {
           color: Colors.transparent,
           shadowColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
-          child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-              child: events.isEmpty
-                  ? Align(
+          child: events.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Align(
                       alignment: Alignment.centerLeft,
                       child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Text("No events",
-                              style: Theme.of(context).textTheme.bodyLarge)))
-                  : EventWeekCore(
-                      week: week,
-                      events: events,
-                      showWeekNumber: false,
-                    )
-              //  [
-              //   // Padding(
-              //   //     padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-              //   //     child:
-              //   //     Row(mainAxisSize: MainAxisSize.min, children: [
-              //   //       Icon(
-              //   //         Icons.arrow_right_rounded,
-              //   //         color: Colors.grey[400]
-              //   //         // color: Colors.orange[600]
-              //   //       ),
-              //   //       Text("Today: $todayFormatted",
-              //   //           style: Theme.of(context)
-              //   //               .textTheme
-              //   //               .bodyMedium
-              //   //               ?.copyWith(
-              //   //                 color: Colors.grey[400],
-              //   //                   // color: Colors.orange[200]
-              //   //                   ))
-              //   //     ])),
+                              style: Theme.of(context).textTheme.bodyLarge))))
+              : Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                  child: EventWeekCore(
+                    week: week,
+                    events: events,
+                    showWeekNumber: false,
+                  )
+                  //  [
+                  //   // Padding(
+                  //   //     padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                  //   //     child:
+                  //   //     Row(mainAxisSize: MainAxisSize.min, children: [
+                  //   //       Icon(
+                  //   //         Icons.arrow_right_rounded,
+                  //   //         color: Colors.grey[400]
+                  //   //         // color: Colors.orange[600]
+                  //   //       ),
+                  //   //       Text("Today: $todayFormatted",
+                  //   //           style: Theme.of(context)
+                  //   //               .textTheme
+                  //   //               .bodyMedium
+                  //   //               ?.copyWith(
+                  //   //                 color: Colors.grey[400],
+                  //   //                   // color: Colors.orange[200]
+                  //   //                   ))
+                  //   //     ])),
 
-              //   // ...group.elements
-              //   //     .map((event) => EventTile2(
-              //   //         key: ValueKey((
-              //   //           "eventsItem",
-              //   //           event.id,
-              //   //           event.placement?.date
-              //   //         )),
-              //   //         event: event))
-              //   //     .toList()
-              // ]
-              )),
+                  //   // ...group.elements
+                  //   //     .map((event) => EventTile2(
+                  //   //         key: ValueKey((
+                  //   //           "eventsItem",
+                  //   //           event.id,
+                  //   //           event.placement?.date
+                  //   //         )),
+                  //   //         event: event))
+                  //   //     .toList()
+                  // ]
+                  )),
       Padding(
           padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -98,7 +100,6 @@ class ThisWeekCard extends StatelessWidget {
                       color: Theme.of(context).brightness == Brightness.light
                           ? Colors.grey[600]
                           : Colors.grey[400],
-                      // color: Colors.orange[200]
                     ))
           ])),
     ]);
@@ -134,8 +135,6 @@ class EventWeekCore extends StatelessWidget {
   final Week week;
   final String? weekTitle;
   final List<AnnotatedEvent> events;
-  // final ;
-  // final bool showWeekName;
 
   EventWeekCore(
       {Key? key,
@@ -183,7 +182,7 @@ class EventWeekCore extends StatelessWidget {
 
         for (final day in events
             .groupListsBy((element) =>
-                (element.placement?.date ?? element.start)
+                (element.placement?.date ?? element.date.start)
                     .toIso8601String()
                     .substring(0, 10))
             .entries

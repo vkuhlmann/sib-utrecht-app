@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:ui';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
@@ -19,13 +16,13 @@ class EventBody implements CacheableResource {
   @override
   final String id;
 
-  final Map data;
+  final FragmentsBundle data;
   // final String? description;
 
   EventBody({required this.id, required this.data});
 
   factory EventBody.fromJson(Map data) {
-    return EventBody(id: data["id"], data: data);
+    return EventBody(id: data["id"], data: FragmentsBundle.fromMap(data));
   }
 
   String? processThumbnailUrl(String? url) {
@@ -52,11 +49,16 @@ class EventBody implements CacheableResource {
     return url;
   }
 
-  (String?, Map?) extractDescriptionAndThumbnail() {
+  (String?, String?) extractDescriptionAndThumbnail() {
     String description =
-        ((data["post_content"] ?? data["description"] ?? "") as String)
+        (data.get<String>(["description.html", "description"]) ?? "")
             .replaceAll("\r\n\r\n", "<br/><br/>");
-    Map? thumbnail = data["thumbnail"] ?? data["image"];
+    // Map? thumbnail = data["thumbnail"] ?? data["image"];
+
+    String? imageUrl = data.get<String>([
+      "description.image.url",
+      "description.image",
+    ]);
 
     // if (thumbnail != null &&
     //     thumbnail["url"] != null &&
@@ -64,12 +66,12 @@ class EventBody implements CacheableResource {
     //   thumbnail["url"] = "$wordpressUrl/${thumbnail["url"]}";
     // }
 
-    if (thumbnail == null && description.contains("<img")) {
+    if (imageUrl == null && description.contains("<img")) {
       final img = RegExp("<img[^>]+src=\"(?<url>[^\"]+)\"[^>]*>")
           .firstMatch(description);
 
       if (img != null) {
-        thumbnail = {"url": img.namedGroup("url")};
+        imageUrl = img.namedGroup("url");
         // description = description.replaceAll(img.group(0)!, "");
         description = description.replaceFirst(img.group(0)!, "");
       }
@@ -82,8 +84,8 @@ class EventBody implements CacheableResource {
     //       .replaceFirst("http://sib-utrecht.nl/", "https://sib-utrecht.nl/");
     // }
 
-    if (thumbnail != null && thumbnail["url"] != null) {
-      thumbnail["url"] = processThumbnailUrl(thumbnail["url"]);
+    if (imageUrl != null) {
+      imageUrl = processThumbnailUrl(imageUrl);
     }
 
     description = description.replaceAll(
@@ -91,7 +93,7 @@ class EventBody implements CacheableResource {
             multiLine: false),
         "");
 
-    return (description.isEmpty ? null : description, thumbnail);
+    return (description.isEmpty ? null : description, imageUrl);
   }
 
   Future<DateTime?> tryExtractStart(
@@ -149,7 +151,7 @@ class EventBody implements CacheableResource {
   }
 
   @override
-  Map toJson() => data;
+  Map toJson() => data.toPayload();
 }
 
 const Map<String, String> fallbackLabels = {
@@ -222,7 +224,6 @@ class EventName {
 
   String get label => labelOrNull ?? short;
 
-
   String getLocalLong(Locale loc) {
     if (loc.languageCode == "nl") {
       return longNL;
@@ -260,12 +261,16 @@ class EventParticipateMeetup {
 class EventParticipateSignup {
   final FragmentsBundle _data;
 
-  String? get method => _data.get<String>(["participate.signup.method"]);
+  String? get method =>
+      _data.get<String>(["participate.signup.method", "participate.signup"]);
   String? get url => _data.get<String>(["participate.signup.url"]);
   DateTime? get end =>
       EventDate.parseDate(_data.get<String>(["participate.signup.end"]));
   bool? get available => _data.get<bool>(["participate.signup.available"]);
 
+  Map? toJson() {
+    return _data.get<Map>(["participate.signup"]);
+  }
 
   bool doesExpectParticipants() => method == "api";
 
@@ -276,8 +281,8 @@ class EventParticipate {
   final FragmentsBundle _data;
 
   EventParticipateMeetup get meetup => EventParticipateMeetup(
-        location: _data
-            .get<String>(["participate.meetup.location, participate.location"]),
+        location:
+            _data.get<String>(["participate.meetup.location", "location"]),
         time: EventDate.parseDate(_data.get<String>(
           ["participate.meetup.time", "date.start"],
         )),
@@ -301,8 +306,6 @@ class Event implements CacheableResource {
   EventName get name => EventName(_data);
   EventParticipate get participate => EventParticipate(_data);
   final EventDate date;
-
-
 
   // String get bodyId => "$id-body";
   static String getEventIdFromData(FragmentsBundle data) =>
@@ -335,20 +338,21 @@ class Event implements CacheableResource {
       : _data = data,
         date = EventDate(data);
 
-        // start = DateTime.parse('${data["start"]}Z').toLocal(),
-        // end = data["end"] != null
-        //     ? DateTime.parse('${data["end"]}Z').toLocal()
-        //     : null,
-        // location = data["location"];
+  // start = DateTime.parse('${data["start"]}Z').toLocal(),
+  // end = data["end"] != null
+  //     ? DateTime.parse('${data["end"]}Z').toLocal()
+  //     : null,
+  // location = data["location"];
 
   Event.copy(Event other)
-      : _data = jsonDecode(jsonEncode(other._data)),
+      :
+        // _data = jsonDecode(jsonEncode(other._data)),
+        _data = FragmentsBundle.copy(other._data),
         date = other.date,
         // start = other.start,
         // end = other.end,
         // location = other.location,
         body = other.body;
-
 
   Event withBody(EventBody body) {
     return Event(data: _data, body: body);
@@ -364,7 +368,7 @@ class Event implements CacheableResource {
 
     // data["description"] ??= data["post_content"];
 
-    final data = FragmentsBundle.fromComplete(dataMap);
+    final data = FragmentsBundle.fromMap(dataMap);
 
     final id = getEventIdFromData(data);
 

@@ -58,7 +58,7 @@ class _APIDebugPageState extends State<APIDebugPage> {
       response = connector!.then((c) {
         switch (method) {
           case "GET":
-            return c.getSimple(url);
+            return c.getSimple(url, version: ApiVersion.v2);
           case "POST":
             return c.post(url, body: body);
           case "PUT":

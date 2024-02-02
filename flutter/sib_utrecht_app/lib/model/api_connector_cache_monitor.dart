@@ -41,11 +41,12 @@ class CacheApiConnectorMonitor extends APIConnector {
   }
 
   @override
-  Future<Map> delete(url, {Map? body}) => base.delete(url, body: body);
+  Future<Map> delete(url, {Map? body, version}) =>
+      base.delete(url, version: version, body: body);
 
   @override
-  Future<FetchResult<Map>> get(String url) async {
-    var res = await base.get(url);
+  Future<FetchResult<Map>> get(String url, {required version}) async {
+    var res = await base.get(url, version: version);
     _impactTimestamp(res.timestamp, res.invalidated);
     log.info(
         "CacheApiConnectorMonitor: timestamp for $url is ${res.timestamp}");
@@ -53,10 +54,12 @@ class CacheApiConnectorMonitor extends APIConnector {
   }
 
   @override
-  Future<Map> post(url, {Map? body}) => base.post(url, body: body);
+  Future<Map> post(url, {Map? body, version}) =>
+      base.post(url, version: version, body: body);
 
   @override
-  Future<Map> put(url, {Map? body}) => base.put(url, body: body);
+  Future<Map> put(url, {Map? body, version}) =>
+      base.put(url, version: version, body: body);
 
   FetchResult<T>? attemptPoolRetrieve<T>(
       FetchResult<T>? Function(ResourcePool pool) obtain) {
