@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -86,6 +87,12 @@ class _NewLoginPageState extends State<NewLoginPage> {
     // log.info("isSuccess: $isSuccess");
 
     _apiUrlController.text = widget.params["api_url"] ?? defaultApiUrl;
+
+    if (_apiUrlController.text.endsWith("/v1")) {
+      _apiUrlController.text = _apiUrlController.text.substring(
+          0, _apiUrlController.text.length - 3);
+    }
+
 
     if (isSuccess) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -349,7 +356,8 @@ class _NewLoginPageState extends State<NewLoginPage> {
 
               Future<void> testConnection() async {
                 // throw Exception("Test aborting");
-                var result = await st.connector.getSimple("/auth");
+                var result = await st.connector
+                    .getSimple("/auth", version: ApiVersion.v1);
                 var roles = result["data"]?["roles"];
                 if (roles == null) {
                   throw Exception("Could not retrieve available roles");

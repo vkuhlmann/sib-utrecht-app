@@ -24,7 +24,8 @@ Iterable<AnnotatedEvent> placeEvent(
 
   // var participation = eventsProvider.getMeParticipation(event, feedback: feedback);
 
-  if (event.end != null && event.end!.difference(event.start).inDays > 10) {
+  if (event.date.end != null &&
+      event.date.end!.difference(event.date.start).inDays > 10) {
     yield AnnotatedEvent(
         event: event, participation: participation, placement: null);
     return;
@@ -33,9 +34,9 @@ Iterable<AnnotatedEvent> placeEvent(
   // var startDay = e.start.subtract(const Duration(hours: 3));
   // startDay = DateTime(startDay.year, startDay.month, startDay.day, 3, 0, 0);
 
-  var startDay = event.start;
+  var startDay = event.date.start;
   startDay = DateTime(startDay.year, startDay.month, startDay.day, 3, 0, 0);
-  var endDay = event.end ?? event.start;
+  var endDay = event.date.end ?? event.date.start;
   if (!startDay.isBefore(endDay)) {
     endDay = startDay.add(const Duration(hours: 1));
   }
@@ -44,7 +45,8 @@ Iterable<AnnotatedEvent> placeEvent(
       i.isBefore(endDay);
       i = i.add(const Duration(days: 1))) {
     var placement = EventPlacement(
-        date: i == startDay ? event.start : i, isContinuation: i != startDay);
+        date: i == startDay ? event.date.start : i,
+        isContinuation: i != startDay);
     yield AnnotatedEvent(
         event: event, participation: participation, placement: placement);
   }
@@ -61,7 +63,8 @@ List<AnnotatedEvent> toCalendarList(List<AnnotatedEvent> events) {
       // ),
       // feedback))
       .flattened
-      .sortedBy((AnnotatedEvent e) => e.placement?.date ?? e.end ?? e.start)
+      .sortedBy(
+          (AnnotatedEvent e) => e.placement?.date ?? e.date.end ?? e.date.start)
       .toList();
 }
 
@@ -82,15 +85,13 @@ class CalendarListProvider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => EventsIdsProvider(
-      builder: (context, eventIds, _) => 
-      EventProvider.Multiplexed(
-        query: eventIds,
-        requireBody: false,
-        builder: (context, events) =>
-      EventParticipationProvider.Multiplexed(
-          query: events.map((e) => e.value).toList(),
-          builder: (context, annotatedEvents) =>
-              builder(context, toCalendarList(annotatedEvents)))));
+      builder: (context, eventIds, _) => EventProvider.Multiplexed(
+          query: eventIds,
+          requireBody: false,
+          builder: (context, events) => EventParticipationProvider.Multiplexed(
+              query: events.map((e) => e.value).toList(),
+              builder: (context, annotatedEvents) =>
+                  builder(context, toCalendarList(annotatedEvents)))));
 }
 
 // class EventsCalendarList with ChangeNotifier {

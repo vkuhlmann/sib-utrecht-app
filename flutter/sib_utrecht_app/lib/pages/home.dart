@@ -95,7 +95,7 @@ class HomePageContents extends StatelessWidget {
                                   .format(e.placement!.date);
 
                               return Text(
-                                "$formattedDate: ${e.getLocalEventName(Localizations.localeOf(context))}",
+                                "$formattedDate: ${e.name.getLocalLong(Localizations.localeOf(context))}",
                               );
                             }).toList()),
                         const SizedBox(height: 16),
@@ -120,7 +120,7 @@ class HomePageContents extends StatelessWidget {
                                           .format(e.placement!.date);
 
                                       return Text(
-                                        "$formattedDate: ${e.getLocalEventName(Localizations.localeOf(context))}",
+                                        "$formattedDate: ${e.name.getLocalLong(Localizations.localeOf(context))}",
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall

@@ -11,7 +11,7 @@ class EventThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (_, thumbnail) = event.body!.extractDescriptionAndThumbnail();
+    final (_, imageUrl) = event.body!.extractDescriptionAndThumbnail();
 
     return Card(
         // child: WillPopScope(
@@ -26,7 +26,7 @@ class EventThumbnail extends StatelessWidget {
             subtitle: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
                 child: Builder(builder: (context) {
-                  if (thumbnail == null) {
+                  if (imageUrl == null) {
                     return Text(AppLocalizations.of(context)!.eventNoImage);
                   }
                   try {
@@ -39,21 +39,21 @@ class EventThumbnail extends StatelessWidget {
                                     "event_id": event.id.toString()
                                   },
                                   queryParameters: {
-                                    "url": thumbnail["url"]
+                                    "url": imageUrl
                                   });
                             },
                             child: Container(
                                 constraints: const BoxConstraints(
                                     maxWidth: 400, maxHeight: 500),
-                                child: Image.network(thumbnail["url"]))));
+                                child: Image.network(imageUrl))));
 
                     // return InteractiveViewer(clipBehavior: Clip.none, child: Image.network("https://sib-utrecht.nl/wp-content/uploads/2022/10/IMG_2588-1536x1024.jpg"));
                   } catch (e) {
-                    try {
-                      return Text("Error: ${thumbnail["error"]}");
-                    } catch (_) {
-                      return const Text("Error");
-                    }
+                    // try {
+                    //   return Text("Error: ${thumbnail["error"]}");
+                    // } catch (_) {
+                    return Text("Error: $e");
+                    // }
                   }
                 }))));
   }
