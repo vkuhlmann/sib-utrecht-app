@@ -239,7 +239,7 @@ class EventDate {
       return null;
     }
 
-    return DateTime.parse(date);
+    return DateTime.parse(date).toLocal();
   }
 
   EventDate(FragmentsBundle data)
@@ -306,6 +306,8 @@ class Event implements CacheableResource {
   EventName get name => EventName(_data);
   EventParticipate get participate => EventParticipate(_data);
   final EventDate date;
+
+  String? get wpPermalink => _data.get<String>(["wp-permalink"]);
 
   // String get bodyId => "$id-body";
   static String getEventIdFromData(FragmentsBundle data) =>

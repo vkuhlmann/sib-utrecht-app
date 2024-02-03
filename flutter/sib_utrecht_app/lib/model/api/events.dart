@@ -68,7 +68,9 @@ class Events {
               unpacker.parse<Event>(res["data"]["event"]));
 
   Future<int> createEvent(FragmentsBundle data) async {
-    final res = await apiConnector.post("/events", body: data.toPayload());
+    final res = await apiConnector.post("/events", body: data.toPayload(),
+    version: ApiVersion.v2
+    );
 
     pool?.invalidateId<CacheableList<Event>>("events");
 
@@ -90,6 +92,7 @@ class Events {
 
     pool?.invalidateId<EventBody>(eventId);
     pool?.invalidateId<Event>(eventId);
+    pool?.invalidateId<CacheableList<Event>>("events");
   }
 
   Future<Event> startEdit(String eventId) async {

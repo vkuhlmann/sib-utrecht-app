@@ -28,7 +28,7 @@ class _EventEditFormState extends State<EventEditForm> {
   final TextEditingController _signupLinkController = TextEditingController();
 
   final DateFormat _dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
-  final DateFormat _apiDateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+  // final DateFormat _apiDateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
 
   bool acceptBeta = true;
 
@@ -277,6 +277,7 @@ class _EventEditFormState extends State<EventEditForm> {
     } catch (e) {
       throw Exception("Invalid date format, expected yyyy-MM-dd HH:mm:ss.");
     }
-    return _apiDateFormat.format(date.toUtc());
+    return date.toUtc().toIso8601String();
+    // return _apiDateFormat.format(date.toUtc());
   }
 }

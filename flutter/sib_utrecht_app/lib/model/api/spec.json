@@ -52,6 +52,18 @@ Event:
     "id": "4001",
 },
 {
+    "data" : {
+        "participate": {
+            "signup": {
+                "method": "api",
+                "spaces": 30,
+                "end": "2024-03-01 00:00:00",
+                "available": true
+            }
+        }
+    }
+}
+{
     "data": {
         "id": "wp-4001",
         "name": {

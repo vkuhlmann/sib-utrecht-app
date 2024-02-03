@@ -103,6 +103,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
   List<CachedProvider<U>>? loadingData;
 
   Listenable? activeListener;
+  DateTime? lastUpdateInitiation;
+  bool needsUpdate = false;
 
   // ResourcePool? pool;
   Future<CacherApiConnector>? apiConnector;
@@ -111,7 +113,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
   void dispose() {
     var oldList = activeListener;
     if (oldList != null) {
-      oldList.removeListener(updateData);
+      oldList.removeListener(onPoolUpdate);
     }
     activeListener = null;
 
@@ -137,7 +139,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
     var oldList = activeListener;
     if (oldList != null) {
-      oldList.removeListener(updateData);
+      oldList.removeListener(onPoolUpdate);
     }
     activeListener = null;
 
@@ -166,11 +168,15 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
     if (pool != null) {
       final listener = pool;
-      listener.addListener(updateData);
+      listener.addListener(onPoolUpdate);
       activeListener = listener;
     }
 
     updateAllowAutoRefresh();
+
+    if (needsUpdate) {
+      updateData();
+    }
 
     // var conn = APIAccess.of(context).connector;
     // apiConnector = conn;
@@ -199,6 +205,16 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
     }
   }
 
+  void onPoolUpdate() {
+    needsUpdate = true;
+    var prevStability = LoadStability.maybeOf(context);
+    if (prevStability != null) {
+      return;
+    }
+
+    updateData();
+  }
+
   void updateData() {
     log.info("[Provider] updateData");
 
@@ -210,6 +226,15 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
     for (var element in data) {
       element.reload();
     }
+
+    if (!mounted) {
+      return;
+    }
+      
+    setState(() {
+      lastUpdateInitiation = DateTime.now();
+      needsUpdate = false;
+    });
   }
 
   void updateAllowAutoRefresh() {
@@ -408,6 +433,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
                 return LoadStability.combine(
                     prev: prevStability,
                     isThisLoading: isLoading,
+                    lastUpdateInitiation: lastUpdateInitiation,
                     anchors: snapshot.data ?? [],
                     child: widget.builder(
                         context, cachedVals.whereNotNull().toList()));
