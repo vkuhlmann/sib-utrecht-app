@@ -267,6 +267,7 @@ class EventParticipateSignup {
   DateTime? get end =>
       EventDate.parseDate(_data.get<String>(["participate.signup.end"]));
   bool? get available => _data.get<bool>(["participate.signup.available"]);
+  int? get spaces => _data.get<int>(["participate.signup.spaces"]);
 
   Map? toJson() {
     return _data.get<Map>(["participate.signup"]);
@@ -308,6 +309,7 @@ class Event implements CacheableResource {
   final EventDate date;
 
   String? get wpPermalink => _data.get<String>(["wp-permalink"]);
+  String? get controller => _data.get<String>(["\$.controller"]);
 
   // String get bodyId => "$id-body";
   static String getEventIdFromData(FragmentsBundle data) =>
