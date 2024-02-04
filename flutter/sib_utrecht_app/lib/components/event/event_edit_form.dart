@@ -35,6 +35,7 @@ class _EventEditFormState extends State<EventEditForm> {
 
   bool wordpressControlled = true;
   bool enableSignup = true;
+  int spaces = 1;
   bool get isNew => widget.originalEvent == null;
 
   Map<String, dynamic> getUpdates() {
@@ -42,7 +43,9 @@ class _EventEditFormState extends State<EventEditForm> {
 
     // final eventId = origEvent?.id;
 
-    dynamic signup = origEvent?.participate.signup.toJson() ?? "none";
+    dynamic signup = origEvent?.participate.signup.toJson() ??
+        origEvent?.participate.signup.method ??
+        "none";
     if (!wordpressControlled) {
       var newSignupLink = _signupLinkController.text.trim();
 
@@ -69,20 +72,28 @@ class _EventEditFormState extends State<EventEditForm> {
           signup = <String, dynamic>{"method": "api"};
         }
 
-        if (_spacesController.text.isEmpty) {
-          signup["spaces"] = 0;
-        } else {
-          try {
-            signup["spaces"] = int.parse(_spacesController.text);
-          } on FormatException catch (_) {
-            throw Exception("Spaces must be a number");
-          }
+        // if (_spacesController.text.isEmpty) {
+        //   signup["spaces"] = 0;
+        // } else {
+        late int spacesVal;
+        try {
+          spacesVal = int.parse(_spacesController.text);
+        } on FormatException catch (_) {
+          throw Exception("Spaces must be a number");
         }
+
+        setState(() {
+          spaces = spacesVal;
+        });
+        signup["spaces"] = spacesVal;
+
+        // int.parse(_spacesController.text);
+        // }
 
         // signup["spaces"] =
         // int.tryParse(_spacesController.text)
         //int.tryParse(_spacesController.text) ?? 0;
-        signup["registerDeadline"] =
+        signup["end"] =
             dateInputToCanonical(_registerDeadlineController.text.trim());
       }
     }
@@ -157,6 +168,7 @@ class _EventEditFormState extends State<EventEditForm> {
     Event? event = widget.originalEvent;
     setState(() {
       wordpressControlled = (event?.controller ?? "wordpress") == "wordpress";
+      enableSignup = (event?.participate.signup.method ?? "none") != "none";
     });
 
     if (event == null) {
@@ -176,7 +188,13 @@ class _EventEditFormState extends State<EventEditForm> {
     _descriptionController.text =
         event.body?.extractDescriptionAndThumbnail().$1 ?? "";
     _signupLinkController.text = event.participate.signup.url ?? "";
-    _spacesController.text = event.participate.signup.spaces?.toString() ?? "";
+
+    int? spacesVal = event.participate.signup.spaces;
+    setState(() {
+      spaces = spacesVal ?? 1;
+    });
+
+    _spacesController.text = spacesVal?.toString() ?? "";
     _registerDeadlineController.text = "";
 
     if (signupEnd != null) {
@@ -342,15 +360,47 @@ class _EventEditFormState extends State<EventEditForm> {
                       )),
                     if (wordpressControlled)
                       Column(children: [
+                        if ((widget.originalEvent?.participate.signup
+                                    .ticketCount ??
+                                1) >
+                            1)
+                          const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                "Warning: multiple 'tickets' were attached to this event. "
+                                "Limited support is available in the app, "
+                                "ask Vincent about the exact behaviour or use the "
+                                "WordPress interface instead.",
+                                style: TextStyle(color: Colors.red),
+                              )),
+
+                        if (widget.originalEvent?.participate.signup.method !=
+                                "none" &&
+                            (spaces == 0 || !enableSignup))
+                          const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                "Warning: disabling signing up will remove all "
+                                "participants, consider changing the register "
+                                "deadline instead if you want to disallow new "
+                                "signups.",
+                                style: TextStyle(color: Colors.red),
+                              )),
+                        const SizedBox(height: 16),
+
                         // const SizedBox(height: 16),
                         ListTile(
-                          title: const Text("Allow signing up"),
+                          title: const Text("Enable signing up"),
                           trailing: Switch(
                               value: enableSignup,
                               onChanged: (val) {
                                 setState(() {
                                   enableSignup = val;
+                                  if (val && _spacesController.text.isEmpty) {
+                                    _spacesController.text = "40";
+                                  }
                                 });
+                                onFieldChanged(0);
                               }),
                         ),
                         ListTile(

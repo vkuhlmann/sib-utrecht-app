@@ -87,7 +87,7 @@ class _EventEditPageState extends State<EventEditPage> {
 
   @override
   void didChangeDependencies() {
-    final connector = APIAccess.of(context).state.then((a) => a.connector);
+    final connector = APIAccess.of(context).connector;
     if (this.connector != connector) {
       log.fine(
           "[EventEditPage] API connector changed from ${this.connector} to $connector");
@@ -168,8 +168,11 @@ class _EventEditPageState extends State<EventEditPage> {
       int newEventId = await Events(await conn).createEvent(data);
 
       // int newEventId = response["data"]["event_id"];
-      router.goNamed("event_edit",
-          pathParameters: {"event_id": newEventId.toString()});
+      // router.goNamed("event_edit",
+      //     pathParameters: {"event_id": newEventId.toString()});
+
+      router.goNamed("event",
+                  pathParameters: {"event_id": newEventId.toString()});
 
       return;
     }
@@ -177,6 +180,9 @@ class _EventEditPageState extends State<EventEditPage> {
     // var response =
     //     await conn.then((c) => c.put("/events/$eventId", body: data));
     await Events(await conn).updateEvent(eventId, data);
+
+    router.goNamed("event",
+                  pathParameters: {"event_id": eventId.toString()});
   }
 
   // void onFieldChanged(_) {
@@ -232,6 +238,7 @@ class _EventEditPageState extends State<EventEditPage> {
                         setPayload: setPayload),
                     SliverToBoxAdapter(
                         child: Column(children: [
+                          const SizedBox(height: 32),
                       if (eventId != null)
                         ElevatedButton(
                             onPressed: () {
@@ -288,8 +295,11 @@ class _EventEditPageState extends State<EventEditPage> {
                       const SizedBox(
                         height: 16,
                       ),
-                      FilledButton(
-                          onPressed: () {
+                      ValueListenableBuilder(valueListenable: payload, builder:
+                      (context, snapshot, _) => FilledButton(
+                          onPressed: 
+                          !snapshot.hasData ? null :
+                          () {
                             setState(() {
                               _submission = submit();
                             });
@@ -298,6 +308,7 @@ class _EventEditPageState extends State<EventEditPage> {
                             isNew ?
                             AppLocalizations.of(context)!.create :
                             AppLocalizations.of(context)!.save)),
+                      ),
                       const SizedBox(height: 32),
                       ValueListenableBuilder(
                         valueListenable: payload,
@@ -317,7 +328,8 @@ class _EventEditPageState extends State<EventEditPage> {
 
                           return const SizedBox();
                         },
-                      )
+                      ),
+                      const SizedBox(height: 48)
                     ]))
                   ]);
                 }),

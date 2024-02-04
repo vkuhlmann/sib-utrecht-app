@@ -35,7 +35,7 @@ class _APIDebugPageState extends State<APIDebugPage> {
 
   @override
   void didChangeDependencies() {
-    final apiConnector = APIAccess.of(context).state.then((a) => a.connector);
+    final apiConnector = APIAccess.of(context).connector;
     if (connector != apiConnector) {
       log.fine(
           "[APIDebugPage] API connector changed from $connector to $apiConnector");

@@ -268,6 +268,7 @@ class EventParticipateSignup {
       EventDate.parseDate(_data.get<String>(["participate.signup.end"]));
   bool? get available => _data.get<bool>(["participate.signup.available"]);
   int? get spaces => _data.get<int>(["participate.signup.spaces"]);
+  int? get ticketCount => _data.get<int>(["participate.signup.ticket_count"]);
 
   Map? toJson() {
     return _data.get<Map>(["participate.signup"]);

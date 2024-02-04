@@ -137,6 +137,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    log.fine("[Provider] didChangeDependencies for $widget with query ${widget.query}");
+
     var oldList = activeListener;
     if (oldList != null) {
       oldList.removeListener(onPoolUpdate);
@@ -174,6 +176,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
     updateAllowAutoRefresh();
 
+    log.fine("[Provider] needsUpdate: $needsUpdate");
+
     if (needsUpdate) {
       updateData();
     }
@@ -206,6 +210,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
   }
 
   void onPoolUpdate() {
+    log.info("[Provider] onPoolUpdate for $widget with query ${widget.query}");
+
     needsUpdate = true;
     var prevStability = LoadStability.maybeOf(context);
     if (prevStability != null) {
@@ -216,7 +222,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
   }
 
   void updateData() {
-    log.info("[Provider] updateData");
+    log.info("[Provider] updateData for $widget with query ${widget.query}");
 
     var loadingData = this.loadingData;
     for (CachedProvider<U> element in loadingData ?? []) {
@@ -251,17 +257,17 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
   bool getAllowAutoRefresh() {
     final state = LoadStability.maybeOf(context);
     if (state == null) {
-      log.info("[Provider] LoadStability not found, allowing auto refresh");
+      // log.info("[Provider] LoadStability not found, allowing auto refresh");
       return true;
     }
 
     if (state.isLoading) {
-      log.info(
-          "[Provider] LoadStability is loading, not allowing auto refresh");
+      // log.info(
+      //     "[Provider] LoadStability is loading, not allowing auto refresh");
       return false;
     }
 
-    log.info("[Provider] LoadStability is not loading, allowing auto refresh");
+    // log.info("[Provider] LoadStability is not loading, allowing auto refresh");
     return true;
   }
 
@@ -269,6 +275,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
     if (!mounted) {
       return [];
     }
+
+    log.info("[Provider] initData for $widget with query ${widget.query}");
 
     var pool = APIAccess.of(context).pool;
     var conn = APIAccess.of(context).connector;
@@ -414,10 +422,10 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
               future: Future.wait(data.map((e) => e.loading)),
               builder: (context, snapshot) {
                 var cachedVals = data.map((e) => e.cached).toList();
-                log.info("[Provider] cachedVals.length: ${cachedVals.length}");
+                // log.info("[Provider] cachedVals.length: ${cachedVals.length}");
 
                 if (cachedVals.contains(null)) {
-                  log.info("[Provider] cached contains null");
+                  // log.info("[Provider] cached contains null");
 
                   return buildInProgress(context, snapshot);
                 }
@@ -425,6 +433,8 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
                 if (snapshot.hasError) {
                   return buildError(context, snapshot.error);
                 }
+
+                log.info("[Provider] building child for $widget with query ${widget.query}");
 
                 final isLoading =
                     snapshot.connectionState == ConnectionState.active ||

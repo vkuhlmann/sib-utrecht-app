@@ -90,9 +90,12 @@ class Events {
     version: ApiVersion.v2
     );
 
+    log.info("Updated event $eventId, pool is $pool");
+    log.info("Connector is $apiConnector");
+
     pool?.invalidateId<EventBody>(eventId);
     pool?.invalidateId<Event>(eventId);
-    pool?.invalidateId<CacheableList<Event>>("events");
+    // pool?.invalidateId<CacheableList<Event>>("events");
   }
 
   Future<Event> startEdit(String eventId) async {
