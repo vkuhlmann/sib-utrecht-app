@@ -1,8 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart' as flutter_html;
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:sib_utrecht_app/components/api_access.dart';
+import 'package:sib_utrecht_app/model/api_connector_http.dart';
+import 'package:sib_utrecht_app/model/description_fuzzy_extract.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/fragments_bundle.dart';
 import 'package:sib_utrecht_app/view_model/async_patch.dart';
@@ -20,18 +26,21 @@ class EventEditForm extends StatefulWidget {
   State<EventEditForm> createState() => _EventEditFormState();
 }
 
-class _EventEditFormState extends State<EventEditForm> {
+class _EventEditFormState extends State<EventEditForm>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _nameController = TextEditingController();
   // final TextEditingController _nameNLController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _startController = TextEditingController();
   final TextEditingController _endController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _descriptionHtmlController = TextEditingController();
+  final TextEditingController _descriptionMarkdownController = TextEditingController();
   final TextEditingController _signupLinkController = TextEditingController();
 
   final TextEditingController _spacesController = TextEditingController();
   final TextEditingController _registerDeadlineController =
       TextEditingController();
+  late TabController _tabController;
 
   final DateFormat _dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
   // final DateFormat _apiDateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
@@ -40,6 +49,9 @@ class _EventEditFormState extends State<EventEditForm> {
   bool enableSignup = true;
   int spaces = 1;
   bool get isNew => widget.originalEvent == null;
+  String? descriptionHtml;
+  int descriptionTab = 1;
+  late ImagePicker picker;
 
   Future<Map> descriptionFields = Future.value({});
 
@@ -123,7 +135,7 @@ class _EventEditFormState extends State<EventEditForm> {
       "date.start": startDate,
       "date.end": endDate,
       "body.description": {
-        "html": _descriptionController.text,
+        "html": descriptionHtml,
       },
       "participate.signup": signup,
       if (isNew) "wordpress": wordpressControlled
@@ -142,7 +154,29 @@ class _EventEditFormState extends State<EventEditForm> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this, initialIndex: descriptionTab);
+    _tabController.addListener(() {
+      setState(() {
+        descriptionTab = _tabController.index;
+      });
+    });
+    picker = ImagePicker();
     setFields();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _locationController.dispose();
+    _startController.dispose();
+    _endController.dispose();
+    _descriptionHtmlController.dispose();
+    _descriptionMarkdownController.dispose();
+    _signupLinkController.dispose();
+    _spacesController.dispose();
+    _registerDeadlineController.dispose();
+    _tabController.dispose();
+    super.dispose();
   }
 
   AsyncSnapshot<FragmentsBundle> getPayloadSnapshot() {
@@ -157,8 +191,12 @@ class _EventEditFormState extends State<EventEditForm> {
 
   void onFieldChanged(_) {
     // setState(() {
-    widget.setPayload(getPayloadSnapshot());
+    onFieldsUpdated();
     // });
+  }
+
+  void onFieldsUpdated() {
+    widget.setPayload(getPayloadSnapshot());
   }
 
   @override
@@ -177,6 +215,11 @@ class _EventEditFormState extends State<EventEditForm> {
     });
 
     if (event == null) {
+      if (wordpressControlled) {
+        enableSignup = true;
+        _spacesController.text = "40";
+      }
+
       return;
     }
 
@@ -190,8 +233,13 @@ class _EventEditFormState extends State<EventEditForm> {
     if (endDate != null) {
       _endController.text = _dateFormat.format(endDate);
     }
-    _descriptionController.text =
-        event.body?.extractDescriptionAndThumbnail().$1 ?? "";
+    final descriptionHtml = event.body?.extractDescriptionAndThumbnail().$1;
+    setState(() {
+      this.descriptionHtml = descriptionHtml;
+    });
+    _descriptionHtmlController.text = descriptionHtml ?? "";
+    _descriptionMarkdownController.text = "";
+    //  event.body?.description?.markdown ?? "";
     _signupLinkController.text = event.participate.signup.url ?? "";
 
     int? spacesVal = event.participate.signup.spaces;
@@ -205,6 +253,91 @@ class _EventEditFormState extends State<EventEditForm> {
     if (signupEnd != null) {
       _registerDeadlineController.text = _dateFormat.format(signupEnd);
     }
+  }
+
+  void doExtractFromDescription(String desc) {
+    final anchor = DateTime.now();
+
+    final descriptionFields =
+        DescriptionFuzzyExtract.extractFieldsFromDescription(desc,
+            anchor: anchor);
+
+    setState(() {
+      this.descriptionFields = descriptionFields;
+    });
+
+    descriptionFields.then((value) {
+      if (!mounted) {
+        return;
+      }
+
+      String? nameLong = value["name.long"];
+
+      if (nameLong != null &&
+          nameLong.isNotEmpty &&
+          _nameController.text.isEmpty) {
+        _nameController.text = nameLong;
+      }
+
+      String? location = value["location"];
+      if (location != null &&
+          location.isNotEmpty &&
+          _locationController.text.isEmpty) {
+        _locationController.text = location;
+      }
+
+      DateTime? startDate = value["date.start"];
+      if (startDate != null && _startController.text.isEmpty) {
+        _startController.text = _dateFormat.format(startDate);
+      }
+
+      DateTime? endDate = value["date.end"];
+      if (endDate != null && _endController.text.isEmpty) {
+        _endController.text = _dateFormat.format(endDate);
+      }
+
+      // if (value["participate.price.max"] != null) {
+      //   _maxPriceController.text = value["participate.price.max"].toString();
+      // }
+
+      String? startTime = value["date.start_time"];
+      if (startTime != null && _startController.text.isEmpty) {
+        _startController.text = "${anchor.year}-??-?? $startTime:00";
+      }
+
+      String? endTime = value["date.end_time"];
+      if (endTime != null && _endController.text.isEmpty) {
+        _endController.text = "${anchor.year}-??-?? $endTime:00";
+      }
+
+      onFieldsUpdated();
+
+      // "name.long": title,
+      // if (location != null) "location": location,
+      // if (start != null) "date.start": start,
+      // if (end != null) "date.end": end,
+      // if (startTime != null && start == null)
+      //   "date.start_time": formatTimeOfDay(startTime),
+      // if (endTime != null && end == null)
+      //   "date.end_time": formatTimeOfDay(endTime),
+      // if (maxPrice != null) "participate.price.max": maxPrice,
+    });
+
+    // var fields = extractFieldsFromDescription(desc);
+    // setState(() {
+    //   descriptionFields = Future.value(fields);
+    // });
+  }
+
+  Future<void> uploadImage(XFile file) async {
+    final bytes = await file.readAsBytes();
+    if (!mounted) {
+      return;
+    }
+
+    final conn = await APIAccess.of(context).connector;
+    final httpConn = conn.base as HTTPApiConnector;
+
   }
 
   @override
@@ -286,56 +419,131 @@ class _EventEditFormState extends State<EventEditForm> {
                       style: Theme.of(context).textTheme.titleLarge,
                     )))),
             sliver: SliverCrossAxisConstrained(
-                maxCrossAxisExtent: 700,
-                child: SliverToBoxAdapter(
+              maxCrossAxisExtent: 700,
+              child: MultiSliver(children: [
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                // DefaultTabController(
+                //     length: 3,
+                //     child:
+                // Column(children: [
+                  SliverToBoxAdapter(child: TabBar(
+                                controller: _tabController,
+                                tabs: const [
+                            Tab(text: "Preview"),
+                            Tab(text: "WhatsApp Markdown"),
+                            Tab(text: "HTML"),
+                          ])),
+                // NestedScrollView(
+                //     headerSliverBuilder: ((context, innerBoxIsScrolled) => []),
+                //         //   SliverAppBar(
+                //         //       bottom: TabBar(
+                //         //         controller: _tabController,
+                //         //         tabs: const [
+                //         //     Tab(text: "Preview"),
+                //         //     Tab(text: "WhatsApp markdown"),
+                //         //     Tab(text: "HTML"),
+                //         //   ])),
+                //         // ]),
+                //     body: a
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                SliverToBoxAdapter(child:
+                    // TabBarView(
+                    //   controller: _tabController,
+                    //   children: 
+                      [
+                      Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+                          child: flutter_html.HtmlWidget(
+                            // ((event.data["post_content"] ?? "") as String).replaceAll("\r\n\r\n", "<br/><br/>"),
+                            descriptionHtml ?? "",
+                            textStyle: Theme.of(context).textTheme.bodyMedium,
+                          )),
+                       ListTile(
+                          // title: Text(AppLocalizations.of(context)!.eventDescription),
+                          subtitle: TextField(
+                              controller: _descriptionMarkdownController,
+                              onChanged: (val) {
+                                final descriptionHtml = DescriptionFuzzyExtract.markdownToHtml(val);
+                                if (descriptionHtml == null) {
+                                  return;
+                                }
+
+                                _descriptionHtmlController.text = descriptionHtml;
+
+                                onFieldChanged(val);
+                                setState(() {
+                                  this.descriptionHtml = descriptionHtml;
+                                });
+
+                                doExtractFromDescription(val);
+                              },
+                              decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Description (markdown)'),
+                              maxLines: null)),
+                      ListTile(
+                          // title: Text(AppLocalizations.of(context)!.eventDescription),
+                          subtitle: TextField(
+                              controller: _descriptionHtmlController,
+                              onChanged: (val) {
+                                onFieldChanged(val);
+                                setState(() {
+                                  descriptionHtml = val;
+                                });
+
+                                doExtractFromDescription(val);
+                              },
+                              decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Description (html)'),
+                              maxLines: null)),
+                    ][descriptionTab]),
+                // ])
+                SliverToBoxAdapter(
                     child: Column(children: [
-                  const SizedBox(height: 16),
-                  ListTile(
-                      // title: Text(AppLocalizations.of(context)!.eventDescription),
-                      subtitle: TextField(
-                          controller: _descriptionController,
-                          onChanged: (val) {
-                            onFieldChanged(val);
-
-                            setState(() {
-                              descriptionFields = EventBody.extractFieldsFromDescription(val);
-                            });
-                          },
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Description'),
-                          maxLines: null)),
                   const SizedBox(height: 48),
-                  Card(child: 
-                  FutureBuilderPatched(future: descriptionFields,
-                  builder : (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    }
+                  Card(
+                      child: FutureBuilderPatched(
+                          future: descriptionFields,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) {
+                              return Text('Error: ${snapshot.error}');
+                            }
 
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator();
-                    }
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const CircularProgressIndicator();
+                            }
 
-                    final data = snapshot.data;
-                    if (data == null) {
-                      return const SizedBox();
-                    }
+                            final data = snapshot.data;
+                            if (data == null) {
+                              return const SizedBox();
+                            }
 
-                    return Text(
-                      JsonEncoder.withIndent("  ",
-                      (e) {
-                        if (e is DateTime) {
-                          return e.toIso8601String();
-                        }
-                        return e.toJson();
-                      }).convert(data));
-                  }
+                            return Text(JsonEncoder.withIndent("  ", (e) {
+                              if (e is DateTime) {
+                                return e.toIso8601String();
+                              }
+                              return e.toJson();
+                            }).convert(data));
+                          })),
+                  const SizedBox(height: 48),
+                  FilledButton(onPressed: () async {
                     
-                  )
-                  ),
-                  const SizedBox(height: 48)
-                ])))),
+                    XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                    if (image != null) {
+                      // image.mimeType
+                      // image.name;
+
+                      final bytes = await image.readAsBytes();
+                      final base64 = base64Encode(bytes);
+                      print(base64.substring(0, 60));
+                    }
+                  }, child: Text("Load image")),
+                  const SizedBox(height: 48),
+                ]))
+              ]),
+            )),
         SliverStickyHeader(
             header: Container(
                 color: Theme.of(context).colorScheme.secondaryContainer,
@@ -414,7 +622,8 @@ class _EventEditFormState extends State<EventEditForm> {
                                 style: TextStyle(color: Colors.red),
                               )),
 
-                        if (widget.originalEvent?.participate.signup.method !=
+                        if (widget.originalEvent != null &&
+                            widget.originalEvent?.participate.signup.method !=
                                 "none" &&
                             (spaces == 0 || !enableSignup))
                           const Padding(
@@ -440,7 +649,7 @@ class _EventEditFormState extends State<EventEditForm> {
                                     _spacesController.text = "40";
                                   }
                                 });
-                                onFieldChanged(0);
+                                onFieldsUpdated();
                               }),
                         ),
                         ListTile(

@@ -8,6 +8,7 @@ import 'globals.dart';
 import 'model/login_manager.dart';
 import 'model/login_state.dart';
 import 'components/api_access.dart';
+import 'package:image_clipboard/image_clipboard.dart';
 
 import 'main.dart';
 
@@ -292,12 +293,20 @@ class _MyAppState extends State<MyApp> {
   late ThemeData lightTheme;
   late ThemeData darkTheme;
   Color appbarColor = sibColor;
+  final imageClipboard = ImageClipboard();
 
   @override
   void initState() {
     super.initState();
 
     updateTheme();
+
+    imageClipboard.addWebPasteListener(
+      ((imageFile, blobUrl) {
+        log.info("Got image from clipboard. Blob: $blobUrl");
+        log.info("Got image from clipboard. File: $imageFile");
+      }
+    ));
   }
 
   void setDutch(bool? val) {

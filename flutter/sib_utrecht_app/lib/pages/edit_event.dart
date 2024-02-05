@@ -314,7 +314,7 @@ class _EventEditPageState extends State<EventEditPage> {
                         valueListenable: payload,
                         builder: (context, snapshot, _) {
                           if (snapshot.hasError) {
-                            return Text(snapshot.error.toString());
+                            return Text(snapshot.error.toString().replaceFirst("Exception: ", "Error: "));
                           }
 
                           if (snapshot.connectionState ==
