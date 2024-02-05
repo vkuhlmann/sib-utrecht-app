@@ -19,6 +19,12 @@ class DescriptionFuzzyExtract {
     text = text.replaceAllMapped(RegExp(r"_(.*?)_"), (match) => 
       "<i>${match.group(1)}</i>"
     );
+    text = text.replaceAllMapped(
+      RegExp(r"([^a-zA-Z0-9_-])(https?://[^\s]+?)(\.?\)?\.?\s)"),
+      (match) => 
+        "${match.group(1)}<a href=\"${match.group(2)!}\">${match.group(2)}</a>${match.group(3)}"
+      );
+
     return text;
   }
 

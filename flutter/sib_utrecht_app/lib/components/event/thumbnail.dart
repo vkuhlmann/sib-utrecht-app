@@ -11,7 +11,20 @@ class EventThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (_, imageUrl) = event.body!.extractDescriptionAndThumbnail();
+    final (_, imageUrl, _) = event.body!.extractDescriptionAndThumbnail();
+
+    return ThumbnailImageView(imageUrl);
+  }
+}
+
+class ThumbnailImageView extends StatelessWidget {
+  final String? imageUrl;
+
+  const ThumbnailImageView(this.imageUrl, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = this.imageUrl;
 
     return Card(
         // child: WillPopScope(
@@ -36,7 +49,7 @@ class EventThumbnail extends StatelessWidget {
                             onTap: () {
                               router.pushNamed("event_image_dialog",
                                   pathParameters: {
-                                    "event_id": event.id.toString()
+                                    "event_id": "0"
                                   },
                                   queryParameters: {
                                     "url": imageUrl

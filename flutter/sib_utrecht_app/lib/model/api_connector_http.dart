@@ -41,8 +41,8 @@ class HTTPApiConnector extends APIConnector {
     return Uri.parse("$apiAddress/${(version ?? ApiVersion.v1).name}/$url");
   }
 
-  Map _handleResponse(http.Response response) {
-    if (response.statusCode != 200) {
+  Map handleResponse(http.Response response) {
+    if (response.statusCode != 200 && response.statusCode != 201) {
       dynamic message;
       try {
         message = (jsonDecode(response.body) as Map)["message"];
@@ -67,6 +67,12 @@ class HTTPApiConnector extends APIConnector {
           responseBody: response.body);
     }
     if (response.body.startsWith('<br />')) {
+      throw APIError("Unhandled error on server, please contact Vincent",
+          connector: this,
+          statusCode: response.statusCode,
+          responseBody: response.body);
+    }
+    if (response.body.startsWith('<style type="text/css"> .wp-die-message')) {
       throw APIError("Unhandled error on server, please contact Vincent",
           connector: this,
           statusCode: response.statusCode,
@@ -119,7 +125,7 @@ class HTTPApiConnector extends APIConnector {
     var elapsedTime = stopwatch.elapsedMilliseconds;
     log.fine("Doing GET on $url took $elapsedTime ms");
 
-    var ans = _handleResponse(response);
+    var ans = handleResponse(response);
     // var box = await boxFuture;
     // box.put(url, {
     //   "response": ans,
@@ -145,7 +151,7 @@ class HTTPApiConnector extends APIConnector {
       response = await client.post(getUri(url, version), headers: headers);
     }
 
-    return _handleResponse(response);
+    return handleResponse(response);
   }
 
   @override
@@ -165,7 +171,7 @@ class HTTPApiConnector extends APIConnector {
       response = await client.put(getUri(url, version), headers: headers);
     }
 
-    return _handleResponse(response);
+    return handleResponse(response);
   }
 
   @override
@@ -188,6 +194,6 @@ class HTTPApiConnector extends APIConnector {
       response = await client.delete(getUri(url, version), headers: headers);
     }
 
-    return _handleResponse(response);
+    return handleResponse(response);
   }
 }

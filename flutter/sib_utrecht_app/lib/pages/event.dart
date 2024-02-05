@@ -219,7 +219,7 @@ class EventDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (description, _) = event.body!.extractDescriptionAndThumbnail();
+    final (description, _, _) = event.body!.extractDescriptionAndThumbnail();
 
     return Card(
         child: ListTile(

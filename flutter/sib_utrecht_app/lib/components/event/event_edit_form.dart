@@ -3,10 +3,14 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart' as flutter_html;
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart'
+    as flutter_html;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sib_utrecht_app/components/api_access.dart';
+import 'package:sib_utrecht_app/components/event/thumbnail.dart';
+import 'package:sib_utrecht_app/log.dart';
+import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:sib_utrecht_app/model/description_fuzzy_extract.dart';
 import 'package:sib_utrecht_app/model/event.dart';
@@ -33,8 +37,10 @@ class _EventEditFormState extends State<EventEditForm>
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _startController = TextEditingController();
   final TextEditingController _endController = TextEditingController();
-  final TextEditingController _descriptionHtmlController = TextEditingController();
-  final TextEditingController _descriptionMarkdownController = TextEditingController();
+  final TextEditingController _descriptionHtmlController =
+      TextEditingController();
+  final TextEditingController _descriptionMarkdownController =
+      TextEditingController();
   final TextEditingController _signupLinkController = TextEditingController();
 
   final TextEditingController _spacesController = TextEditingController();
@@ -51,6 +57,9 @@ class _EventEditFormState extends State<EventEditForm>
   bool get isNew => widget.originalEvent == null;
   String? descriptionHtml;
   int descriptionTab = 1;
+  String? imageUrl;
+  String? imageClassId;
+
   late ImagePicker picker;
 
   Future<Map> descriptionFields = Future.value({});
@@ -129,13 +138,27 @@ class _EventEditFormState extends State<EventEditForm>
     String? endDate = _endController.text.trim();
     endDate = dateInputToCanonical(endDate);
 
+    String? totalDescription = descriptionHtml;
+
+    if (imageUrl != null) {
+      totalDescription ??= "";
+      totalDescription =
+          // "<img class=\"alignnone $imageClassId\" src=\"$imageUrl\" alt=\"\" "
+          // "style=\"height: 400px;\" />\r\n\r\n$totalDescription";
+          "<img class=\"alignnone $imageClassId\" src=\"$imageUrl\" alt=\"\" "
+          "style=\"max-height:400px;\" />\r\n\r\n$totalDescription";
+
+      // totalDescription =
+      //     "<img src=\"$imageUrl\" alt=\"\" />\n$totalDescription";
+    }
+
     return {
       "name.long": _nameController.text,
       "location": location,
       "date.start": startDate,
       "date.end": endDate,
       "body.description": {
-        "html": descriptionHtml,
+        "html": totalDescription,
       },
       "participate.signup": signup,
       if (isNew) "wordpress": wordpressControlled
@@ -154,7 +177,9 @@ class _EventEditFormState extends State<EventEditForm>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: descriptionTab);
+    descriptionTab = widget.originalEvent == null ? 1 : 2;
+    _tabController =
+        TabController(length: 3, vsync: this, initialIndex: descriptionTab);
     _tabController.addListener(() {
       setState(() {
         descriptionTab = _tabController.index;
@@ -233,9 +258,13 @@ class _EventEditFormState extends State<EventEditForm>
     if (endDate != null) {
       _endController.text = _dateFormat.format(endDate);
     }
-    final descriptionHtml = event.body?.extractDescriptionAndThumbnail().$1;
+    final extracted = event.body?.extractDescriptionAndThumbnail();
+
+    final descriptionHtml = extracted?.$1;
     setState(() {
       this.descriptionHtml = descriptionHtml;
+      imageUrl = extracted?.$2;
+      imageClassId = extracted?.$3;
     });
     _descriptionHtmlController.text = descriptionHtml ?? "";
     _descriptionMarkdownController.text = "";
@@ -335,9 +364,70 @@ class _EventEditFormState extends State<EventEditForm>
       return;
     }
 
+    if (bytes.length > 10 * 1000 * 1000) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Image is too large. Maximum size is 10 MB."),
+      ));
+      return;
+    }
+
+    String contentType = "image/png";
+
+    if (file.name.toLowerCase().endsWith(".jpg") ||
+        file.name.toLowerCase().endsWith(".jpeg")) {
+      contentType = "image/jpeg";
+    }
+
+    contentType = file.mimeType ?? contentType;
+
     final conn = await APIAccess.of(context).connector;
     final httpConn = conn.base as HTTPApiConnector;
 
+    final res1 = await conn.post(
+        "/events/${widget.originalEvent?.id ?? 'wp-0'}/image_upload",
+        version: ApiVersion.v2);
+
+    // const wordpressUrl = "http://192.168.50.200/wordpress";
+
+    final String asciiFilename =
+        "promo_image_${file.name.replaceAll(RegExp(r'[^a-zA-Z0-9._~-]'), '')}";
+    // ascii.decode(utf8.encode(file.name));
+
+    final res2Raw = await httpConn.client.post(
+      // Uri.parse("$wordpressUrl/wp-json/wp/v2/media"),
+      Uri.parse(res1["data"]?["url"]),
+      headers: {
+        if (res1["data"]?["include_auth"] == true)
+          ...httpConn.headers,
+        "Content-Type": contentType,
+        "Accept": "application/json",
+        "Content-Disposition": "attachment; filename=$asciiFilename",
+      },
+      body: bytes,
+    );
+
+    final res2 = httpConn.handleResponse(res2Raw);
+
+    final res3 = await conn.post(
+        "/events/${widget.originalEvent?.id ?? 'wp-0'}/image",
+        version: ApiVersion.v2,
+        body: {
+          "response": res2,
+        });
+
+
+    // String url = res2["source_url"] ??
+    //     res2["media_details"]["sizes"]["full"]["source_url"];
+    String url = res3["data"]["url"];
+
+    setState(() {
+      imageUrl = url;
+      // imageClassId = "wp-image-${res2["id"]}";
+      imageClassId = res3["data"]["image_class_id"];
+    });
+
+    onFieldsUpdated();
+    // log.info(url);
   }
 
   @override
@@ -426,13 +516,12 @@ class _EventEditFormState extends State<EventEditForm>
                 //     length: 3,
                 //     child:
                 // Column(children: [
-                  SliverToBoxAdapter(child: TabBar(
-                                controller: _tabController,
-                                tabs: const [
-                            Tab(text: "Preview"),
-                            Tab(text: "WhatsApp Markdown"),
-                            Tab(text: "HTML"),
-                          ])),
+                SliverToBoxAdapter(
+                    child: TabBar(controller: _tabController, tabs: const [
+                  Tab(text: "Preview"),
+                  Tab(text: "WhatsApp Markdown"),
+                  Tab(text: "HTML"),
+                ])),
                 // NestedScrollView(
                 //     headerSliverBuilder: ((context, innerBoxIsScrolled) => []),
                 //         //   SliverAppBar(
@@ -446,58 +535,60 @@ class _EventEditFormState extends State<EventEditForm>
                 //         // ]),
                 //     body: a
                 const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                SliverToBoxAdapter(child:
-                    // TabBarView(
-                    //   controller: _tabController,
-                    //   children: 
-                      [
-                      Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
-                          child: flutter_html.HtmlWidget(
-                            // ((event.data["post_content"] ?? "") as String).replaceAll("\r\n\r\n", "<br/><br/>"),
-                            descriptionHtml ?? "",
-                            textStyle: Theme.of(context).textTheme.bodyMedium,
-                          )),
-                       ListTile(
-                          // title: Text(AppLocalizations.of(context)!.eventDescription),
-                          subtitle: TextField(
-                              controller: _descriptionMarkdownController,
-                              onChanged: (val) {
-                                final descriptionHtml = DescriptionFuzzyExtract.markdownToHtml(val);
-                                if (descriptionHtml == null) {
-                                  return;
-                                }
+                SliverToBoxAdapter(
+                    child:
+                        // TabBarView(
+                        //   controller: _tabController,
+                        //   children:
+                        [
+                  Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+                      child: flutter_html.HtmlWidget(
+                        // ((event.data["post_content"] ?? "") as String).replaceAll("\r\n\r\n", "<br/><br/>"),
+                        descriptionHtml ?? "",
+                        textStyle: Theme.of(context).textTheme.bodyMedium,
+                      )),
+                  ListTile(
+                      // title: Text(AppLocalizations.of(context)!.eventDescription),
+                      subtitle: TextField(
+                          controller: _descriptionMarkdownController,
+                          onChanged: (val) {
+                            final descriptionHtml =
+                                DescriptionFuzzyExtract.markdownToHtml(val);
+                            if (descriptionHtml == null) {
+                              return;
+                            }
 
-                                _descriptionHtmlController.text = descriptionHtml;
+                            _descriptionHtmlController.text = descriptionHtml;
 
-                                onFieldChanged(val);
-                                setState(() {
-                                  this.descriptionHtml = descriptionHtml;
-                                });
+                            onFieldChanged(val);
+                            setState(() {
+                              this.descriptionHtml = descriptionHtml;
+                            });
 
-                                doExtractFromDescription(val);
-                              },
-                              decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: 'Description (markdown)'),
-                              maxLines: null)),
-                      ListTile(
-                          // title: Text(AppLocalizations.of(context)!.eventDescription),
-                          subtitle: TextField(
-                              controller: _descriptionHtmlController,
-                              onChanged: (val) {
-                                onFieldChanged(val);
-                                setState(() {
-                                  descriptionHtml = val;
-                                });
+                            doExtractFromDescription(val);
+                          },
+                          decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Description (markdown)'),
+                          maxLines: null)),
+                  ListTile(
+                      // title: Text(AppLocalizations.of(context)!.eventDescription),
+                      subtitle: TextField(
+                          controller: _descriptionHtmlController,
+                          onChanged: (val) {
+                            onFieldChanged(val);
+                            setState(() {
+                              descriptionHtml = val;
+                            });
 
-                                doExtractFromDescription(val);
-                              },
-                              decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: 'Description (html)'),
-                              maxLines: null)),
-                    ][descriptionTab]),
+                            doExtractFromDescription(val);
+                          },
+                          decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Description (html)'),
+                          maxLines: null)),
+                ][descriptionTab]),
                 // ])
                 SliverToBoxAdapter(
                     child: Column(children: [
@@ -528,18 +619,24 @@ class _EventEditFormState extends State<EventEditForm>
                             }).convert(data));
                           })),
                   const SizedBox(height: 48),
-                  FilledButton(onPressed: () async {
-                    
-                    XFile? image = await picker.pickImage(source: ImageSource.gallery);
-                    if (image != null) {
-                      // image.mimeType
-                      // image.name;
+                  ThumbnailImageView(imageUrl),
+                  const SizedBox(height: 48),
+                  FilledButton(
+                      onPressed: () async {
+                        XFile? image =
+                            await picker.pickImage(source: ImageSource.gallery);
+                        if (image != null) {
+                          // image.mimeType
+                          // image.name;
 
-                      final bytes = await image.readAsBytes();
-                      final base64 = base64Encode(bytes);
-                      print(base64.substring(0, 60));
-                    }
-                  }, child: Text("Load image")),
+                          await uploadImage(image);
+
+                          // final bytes = await image.readAsBytes();
+                          // final base64 = base64Encode(bytes);
+                          // print(base64.substring(0, 60));
+                        }
+                      },
+                      child: const Text("Change image")),
                   const SizedBox(height: 48),
                 ]))
               ]),

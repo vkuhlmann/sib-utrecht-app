@@ -44,7 +44,7 @@ class EventBody implements CacheableResource {
     return url;
   }
 
-  (String?, String?) extractDescriptionAndThumbnail() {
+  (String?, String?, String?) extractDescriptionAndThumbnail() {
     String description =
         (data.get<String>(["description.html", "description"]) ?? "")
             .replaceAll("\r\n\r\n", "<br/><br/>");
@@ -55,6 +55,8 @@ class EventBody implements CacheableResource {
       "description.image",
     ]);
 
+    String? imageClass;
+
     // if (thumbnail != null &&
     //     thumbnail["url"] != null &&
     //     !(thumbnail["url"] as String).startsWith("http")) {
@@ -62,13 +64,14 @@ class EventBody implements CacheableResource {
     // }
 
     if (imageUrl == null && description.contains("<img")) {
-      final img = RegExp("<img[^>]+src=\"(?<url>[^\"]+)\"[^>]*>")
+      final img = RegExp("<img[^>]+(?<imageClass>wp-image-\\d+[^>]+)?src=\"(?<url>[^\"]+)\"[^>]*>")
           .firstMatch(description);
 
       if (img != null) {
         imageUrl = img.namedGroup("url");
         // description = description.replaceAll(img.group(0)!, "");
         description = description.replaceFirst(img.group(0)!, "");
+        imageClass = img.namedGroup("imageClass");
       }
     }
 
@@ -88,7 +91,7 @@ class EventBody implements CacheableResource {
             multiLine: false),
         "");
 
-    return (description.isEmpty ? null : description, imageUrl);
+    return (description.isEmpty ? null : description, imageUrl, imageClass);
   }
 
 
