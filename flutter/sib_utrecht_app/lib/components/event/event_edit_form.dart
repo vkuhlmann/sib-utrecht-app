@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:intl/intl.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 import 'package:sib_utrecht_app/model/fragments_bundle.dart';
+import 'package:sib_utrecht_app/view_model/async_patch.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
 class EventEditForm extends StatefulWidget {
@@ -37,6 +40,8 @@ class _EventEditFormState extends State<EventEditForm> {
   bool enableSignup = true;
   int spaces = 1;
   bool get isNew => widget.originalEvent == null;
+
+  Future<Map> descriptionFields = Future.value({});
 
   Map<String, dynamic> getUpdates() {
     var origEvent = widget.originalEvent;
@@ -289,11 +294,46 @@ class _EventEditFormState extends State<EventEditForm> {
                       // title: Text(AppLocalizations.of(context)!.eventDescription),
                       subtitle: TextField(
                           controller: _descriptionController,
-                          onChanged: onFieldChanged,
+                          onChanged: (val) {
+                            onFieldChanged(val);
+
+                            setState(() {
+                              descriptionFields = EventBody.extractFieldsFromDescription(val);
+                            });
+                          },
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: 'Description'),
                           maxLines: null)),
+                  const SizedBox(height: 48),
+                  Card(child: 
+                  FutureBuilderPatched(future: descriptionFields,
+                  builder : (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    }
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
+
+                    final data = snapshot.data;
+                    if (data == null) {
+                      return const SizedBox();
+                    }
+
+                    return Text(
+                      JsonEncoder.withIndent("  ",
+                      (e) {
+                        if (e is DateTime) {
+                          return e.toIso8601String();
+                        }
+                        return e.toJson();
+                      }).convert(data));
+                  }
+                    
+                  )
+                  ),
                   const SizedBox(height: 48)
                 ])))),
         SliverStickyHeader(
