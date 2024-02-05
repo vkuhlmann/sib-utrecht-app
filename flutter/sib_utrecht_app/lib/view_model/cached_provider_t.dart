@@ -69,9 +69,9 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
   }
 
   void setAllowAutoRefresh(bool val) {
-    if (allowAutoRefresh == val) {
-      return;
-    }
+    // if (allowAutoRefresh == val) {
+    //   return;
+    // }
 
     allowAutoRefresh = val;
     if (allowAutoRefresh) {
@@ -212,6 +212,7 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
 
     bool needsRefresh =
         c == null || (allowAutoRefresh && c.isObsolete(expireTime: autoRefreshThreshold));
+    log.info("[Cache] Needs refresh: $needsRefresh, obsolete: ${c?.isObsolete(expireTime: autoRefreshThreshold)} ($this)");
     if (needsRefresh) {
       return _loadFresh();
     }
@@ -225,6 +226,8 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
   }
 
   FutureOr<FetchResult<T>> reload({bool forceRefresh = false}) {
+    log.info("[Cache] Reloading $this (forceRefresh: $forceRefresh)...");
+
     var l = _doLoading(forceRefresh: forceRefresh);
     _loading = Future.value(l);
 

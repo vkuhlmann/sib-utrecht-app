@@ -1,14 +1,8 @@
-import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:sib_utrecht_app/components/actions/feedback.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
-import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/api/bookings.dart';
 import 'package:sib_utrecht_app/model/event.dart';
-import 'package:sib_utrecht_app/model/api/events.dart';
-import 'package:sib_utrecht_app/view_model/cached_provider.dart';
-import 'package:sib_utrecht_app/view_model/event/event_participation.dart';
 
 // class EventsProvider with ChangeNotifier {
 //   final CachedProvider<List<Event>> _eventsProvider =
@@ -55,7 +49,7 @@ Future<void> setMeParticipation(
     required bool value,
     required ActionFeedback feedback}) async {
   String eventId = event.id;
-  String eventName = event.eventName;
+  String eventName = event.name.long;
 
   final apiVal = await api;
 

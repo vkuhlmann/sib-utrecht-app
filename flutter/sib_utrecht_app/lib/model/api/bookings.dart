@@ -55,7 +55,7 @@ class Bookings {
             "bookings": (res["data"]["bookings"] as Iterable<dynamic>)
                 .where((v) => v["booking"]["status"] == "approved")
                 .map((e) =>
-                    {"event_id": e["event"]["event_id"], "comment": null})
+                    {"event_id": "wp-${e['event']['event_id']}", "comment": null})
                 .toList()
           }));
 

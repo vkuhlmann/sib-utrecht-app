@@ -34,21 +34,21 @@ class _EventTile2State extends State<EventTile2> {
     String primaryInfoLine = dayMonth ?? "";
     String secondaryInfoLine = "";
 
-    bool showTime = widget.event.start.toIso8601String().substring(0, 10) ==
-            placement?.date.toIso8601String().substring(0, 10) &&
-        widget.event.start.copyWith(
-                hour: 0,
-                minute: 0,
-                second: 0,
-                millisecond: 0,
-                microsecond: 0) !=
-            widget.event.start;
+      final ev = widget.event;
+    final meetup = ev.participate.meetup;
+    final meetupTime = meetup.time;
 
-    bool showLocation = widget.event.location != null && showTime;
+
+    bool showTime = meetup.time?.toIso8601String().substring(0, 10)
+      == placement?.date.toIso8601String().substring(0, 10)
+      && meetup.time?.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0)
+      != meetup.time;
+
+    bool showLocation = meetup.location != null;
     // && (widget.event.placement?.isContinuation != true)
 
     if (showLocation) {
-      String locationFull = widget.event.location ?? 'Unknown';
+      String locationFull = meetup.location ?? 'Unknown';
       RegExpMatch match = RegExp(r"^(?<name>.*?)( \((?<address>.*)\))?$")
           .firstMatch(locationFull)!;
 
@@ -58,15 +58,11 @@ class _EventTile2State extends State<EventTile2> {
       secondaryInfoLine += "@ $locationName";
     }
 
-    if (showTime) {
-      // if (secondaryInfoLine.isNotEmpty) {
-      //   secondaryInfoLine += ", ";
-      // }
-      // secondaryInfoLine += _timeFormat.format(widget.event.start);
+    if (showTime && meetupTime != null) {
       if (primaryInfoLine.isNotEmpty) {
         primaryInfoLine += ", ";
       }
-      primaryInfoLine += _timeFormat.format(widget.event.start);
+      primaryInfoLine += _timeFormat.format(meetupTime);
     }
 
     // final format = DateFormat.EEEE(Localizations.localeOf(context).toString());
@@ -75,7 +71,7 @@ class _EventTile2State extends State<EventTile2> {
     //   weekDay = format.format(placement.date);
     // }
 
-    final bool isActive = widget.event.isActive;
+    final bool isActive = ev.participate.signup.available ?? false;
 
     return
         // Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -118,7 +114,7 @@ class _EventTile2State extends State<EventTile2> {
                     //       )),
                     Expanded(
                         child: Text(
-                            widget.event.getLocalEventName(
+                            widget.event.name.getLocalLong(
                                 Localizations.localeOf(context)),
                             textAlign: TextAlign.left,
                             style: Theme.of(context).textTheme.titleMedium)),

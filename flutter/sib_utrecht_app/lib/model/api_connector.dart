@@ -2,12 +2,18 @@ import 'dart:async';
 
 import 'package:sib_utrecht_app/model/fetch_result.dart';
 
-abstract class APIConnector {
-  Future<Map> getSimple(String url) =>
-      get(url).then((res) => res.value);
-  Future<Map> post(url, {Map? body});
-  Future<Map> put(url, {Map? body});
-  Future<Map> delete(url, {Map? body});
+enum ApiVersion {
+  // static const String v1 = "v1";
+  // static const String v2 = "v2";
+  v1, v2
+}
 
-  Future<FetchResult<Map>> get(String url);
+abstract class APIConnector {
+  Future<Map> getSimple(String url, {required ApiVersion version}) =>
+      get(url, version: version).then((res) => res.value);
+  Future<Map> post(String url, {ApiVersion? version, Map? body});
+  Future<Map> put(String url, {ApiVersion? version, Map? body});
+  Future<Map> delete(String url, {ApiVersion? version, Map? body});
+
+  Future<FetchResult<Map>> get(String url, {required ApiVersion version});
 }

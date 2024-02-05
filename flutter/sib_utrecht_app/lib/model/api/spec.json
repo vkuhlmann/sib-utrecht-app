@@ -1,0 +1,170 @@
+Event:
+
+{
+    "event_start": "2024-01-09 19:00:00",
+    "event_end": "2024-01-09 20:30:00",
+    "event_all_day": "0",
+    "event_id": 108,
+    "post_id": 6480,
+    "event_slug": "ice-skating-6",
+    "event_owner": 208,
+    "event_name": "Ice Skating",
+    "post_content": "<strong>Ice Skating | Vechtsebanen (Mississippidreef 151) | Tuesday January 9th | 20:00 | Max \u20ac5,50\r\n<\/strong>\r\n\r\nIt\u2019s a new year and start the year we\u2019re going Ice Skating! \ud83d\udc99 Come show us your figure skating skills \u26f8, race around the track as fast as you can, or try learning to skate and we will hold your hand along the way. \ud83e\udef1\ud83c\udffc\u200d\ud83e\udef2\ud83c\udffe\r\nCome join this very Dutch tradition and enjoy the start of the new year!",
+    "event_rsvp": 1,
+    "event_attributes": {
+        "rank_math_internal_links_processed": "1",
+        "rank_math_seo_score": "13",
+        "rank_math_contentai_score": "a:4:{s:9:\"wordCount\";s:3:\"100\";s:9:\"linkCount\";s:1:\"0\";s:12:\"headingCount\";s:3:\"100\";s:10:\"mediaCount\";s:5:\"62.22\";}"
+    },
+    "post_author": "208",
+    "post_date": "2023-12-14 12:00:57",
+    "post_date_gmt": "2023-12-14 11:00:57",
+    "post_title": "Ice Skating",
+    "comment_status": "open",
+    "post_name": "ice-skating-6",
+    "post_modified": "2023-12-13 14:56:11",
+    "post_modified_gmt": "2023-12-13 13:56:11",
+    "guid": "https:\/\/sib-utrecht.nl\/?post_type=event&#038;p=6480",
+    "comment_count": "1",
+    "tickets": []
+},
+{
+    "accept_beta": true,
+    "event_all_day": "1",
+    "signup": {
+        "url": "https:\/\/forms.gle\/bnzubocmcC91yY4R6"
+    },
+    "event_id": 4001,
+    "name": "September camp",
+    "nameNL": "Septemberkamp",
+    "slug": null,
+    "status": "published",
+    "visibility_group_id": null,
+    "start": "2023-09-21 22:00:00",
+    "end": "2023-09-24 21:59:59",
+    "min_price": null,
+    "max_price": null,
+    "organizer_group_id": null,
+    "location": null,
+    "created": "2023-09-13 17:12:21",
+    "modified": "2023-09-13 17:12:21",
+    "publish_date": "2023-09-13 17:12:21",
+    "id": "4001",
+},
+{
+    "data" : {
+        "participate": {
+            "signup": {
+                "method": "api",
+                "spaces": 30,
+                "end": "2024-03-01 00:00:00",
+                "available": true
+            }
+        }
+    }
+}
+{
+    "data": {
+        "id": "wp-4001",
+        "name": {
+            "long": {
+                "nl": "Septemberkamp",
+                "en": "September camp"
+            }
+        },
+        "date": {
+            "start": "2023-09-21 22:00:00",
+            "end": "2023-09-24 21:59:59",
+        },
+        "location": "Utrecht",
+        "organizer": "@committee-kampcie",
+        "body": {
+            "description": {
+                "html": "<strong>Come join us on</strong>"
+            },
+            "image": {
+                "url": "http://sib-utrecht.nl/wp-content/uploads/2023/11/peperkoek.jpg"
+            }
+        },
+        "participate": {
+            "signup": {
+                "method": "url",
+                "url": "https://forms.gle/bnzubocmcC91yY4R6",
+                "end": "2023-08-01 00:00:00",
+                "available": true
+            },
+            "meetup": {
+                "location": "Utrecht Centraal",
+                "time": "2023-09-21 21:00:00"
+            },
+            "price": {
+                "min": null,
+                "max": null
+            }
+        }
+    },
+    "created": "2023-09-13 17:12:21",
+    "modified": "2023-09-13 17:12:21",
+    // "publish_date": "2023-09-13 17:12:21",
+    "permissions": {
+        "read": {
+            "id": "public",
+            "name": "public",
+            "date": "public",
+            "location": "memberlike",
+            "organizer": "member",
+            "promo": "memberlike"
+        },
+        "write": {
+            "*": [
+                "admin"
+            ],
+            // "$.special.me.bookingid": "memberlike",
+            "$.special.participants.me": {
+                "member": "memberlike",
+                "value": {
+                    "enum": [true, false]
+                }
+            },
+            "$.permissions": "admin",
+            "$.permissions.write['$.special.me.bookingid']": [
+                {
+                    "member": {
+                        "group": "$.data.organizer",
+                        "role": "president"
+                    },
+                    "value": [
+                        "member",
+                        "memberlike"
+                    ]
+                }
+            ],
+            "$.permissions.read['date.start']": [
+                "admin",
+                {
+                    "member": "$.data.organizer",
+                    "value": [
+                        "member",
+                        "memberlike",
+                        "public"
+                    ]
+                }
+            ],
+            "$.permissions.read.participate": {
+                "any": [
+                    "admin",
+                    {
+                        "all": {
+                            "member": "$.data.organizer",
+                            "value": [
+                                "member",
+                                "memberlike",
+                                "public"
+                            ]
+                        }
+                    }
+                ]
+            },
+        }
+    }
+}

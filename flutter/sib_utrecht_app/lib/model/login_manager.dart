@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sib_utrecht_app/model/api_connector.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/api_connector_http.dart';
 import 'package:uuid/uuid.dart';
@@ -50,9 +51,15 @@ class LoginManager extends ChangeNotifier {
 
     log.info("Returning LoginState logged in with $activeProfileName");
 
+    String apiAddress = activeProfile["api"]?["url"] ?? defaultApiUrl;
+
+    if (apiAddress.endsWith("/v1")) {
+      apiAddress = apiAddress.substring(0, apiAddress.length - 3);
+    }
+
     return LoginState(
         connector: HTTPApiConnector(
-            apiAddress: activeProfile["api"]?["url"] ?? defaultApiUrl,
+            apiAddress: apiAddress,
             user: activeProfile["user"],
             apiSecret: activeProfile["apiSecret"]),
         profiles: profiles
@@ -148,7 +155,7 @@ class LoginManager extends ChangeNotifier {
     if (fillIdentity) {
       var conn = HTTPApiConnector(
           apiAddress: apiAddress, user: user, apiSecret: apiSecret);
-      var res = await conn.getSimple("/auth");
+      var res = await conn.getSimple("/auth", version: ApiVersion.v1);
       var identity = res["data"]?["identity"];
       profile["identity"] = identity;
       if (identity == null) {

@@ -10,7 +10,7 @@ class SignupIndicator extends StatefulWidget {
   const SignupIndicator({Key? key, required this.event, required this.isFixedWidth}) : super(key: key);
 
   static SignupIndicator? Maybe(AnnotatedEvent event, {bool isFixedWidth = false}) {
-    if (event.signupType == "none") {
+    if ((event.participate.signup.method ?? "none") == "none") {
       return null;
     }
 
@@ -38,7 +38,7 @@ class _SignupIndicatorState extends State<SignupIndicator> {
   }
 
   static Widget? buildInner(AnnotatedEvent event) {
-    var signupType = event.signupType;
+    var signupType = event.participate.signup.method ?? "none";
 
     if (signupType == "none") {
       return null;
@@ -70,7 +70,7 @@ class _SignupIndicatorState extends State<SignupIndicator> {
       );
     }
 
-    final url = event.signupUrl;
+    final url = event.participate.signup.url;
     if (signupType == "url" && url != null) {
       // if (widget.isContinuation) {
       //   return const SizedBox();

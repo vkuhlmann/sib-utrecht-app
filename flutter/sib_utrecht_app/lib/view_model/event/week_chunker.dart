@@ -89,6 +89,7 @@ class WeekChunked<T> {
     DateTime? lastInCurrentWeek = items
         .whereNotNull()
         .where((v) => Week.fromDate(v) == currentWeek)
+        .where((v) => v.isAfter(now.subtract(const Duration(days: 1))))
         .maxOrNull;
 
     DateTime upcomingAnchor = [

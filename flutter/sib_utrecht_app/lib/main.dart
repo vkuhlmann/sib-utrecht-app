@@ -33,6 +33,29 @@ void main() {
     yield LicenseEntryWithLineBreaks(['dual_screen'], license4);
   });
 
+  // BEGIN Source: https://stackoverflow.com/questions/64552637/how-can-i-solve-flutter-problem-in-release-mode
+  // answer by https://stackoverflow.com/users/9512756/nikhil-vadoliya
+  // Modified
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    bool inDebug = false;
+    assert(() { inDebug = true; return true; }());
+    // In debug mode, use the normal error widget which shows
+    // the error message:
+    if (inDebug) {
+      return ErrorWidget(details.exception);
+    }
+    // In release builds, show a yellow-on-blue message instead:
+    return Container(
+      alignment: Alignment.center,
+      child: Text(
+       'Error: ${details.exception}',
+        style: const TextStyle(color: Colors.yellow),
+        textDirection: TextDirection.ltr,
+      ),
+    );
+  };
+  // END Source
+
   var a = const MyApp();
   app = a;
   runApp(a);

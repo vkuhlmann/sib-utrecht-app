@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -45,16 +46,20 @@ class EventHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var eventEnd = event.end;
+    var eventEnd = event.date.end;
+    final wpPermalink = event.wpPermalink;
 
     return Column(children: [
       Row(children: [
         Expanded(
             child: Card(
                 child: ListTile(
-                    title: Text(event
-                        .getLocalEventName(Localizations.localeOf(context)))))),
-        SignupIndicator(event: event, isFixedWidth: false,),
+                    title: Text(event.name
+                        .getLocalLong(Localizations.localeOf(context)))))),
+        SignupIndicator(
+          event: event,
+          isFixedWidth: false,
+        ),
         IconButton(
             onPressed: () {
               router.pushNamed("event_edit",
@@ -73,6 +78,10 @@ class EventHeader extends StatelessWidget {
               title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+            // Text(event.date.start.toIso8601String()),
+            // Text(event.date.start.toString()),
+            // Text(event.toFragments().get<String>(["date.start", "date"])
+            // ?? "null"),
             Wrap(children: [
               SizedBox(
                   width: 80,
@@ -83,10 +92,10 @@ class EventHeader extends StatelessWidget {
                     width: 260,
                     child: Text(DateFormat.yMMMMEEEEd(
                             Localizations.localeOf(context).toString())
-                        .format(event.start))),
+                        .format(event.date.start))),
                 // const SizedBox(width: 20),
                 Text(DateFormat.Hm(Localizations.localeOf(context).toString())
-                    .format(event.start))
+                    .format(event.date.start))
               ]),
             ]),
             if (eventEnd != null)
@@ -105,7 +114,34 @@ class EventHeader extends StatelessWidget {
                   Text(DateFormat.Hm(Localizations.localeOf(context).toString())
                       .format(eventEnd))
                 ])
-              ])
+              ]),
+            if (wpPermalink != null && wpPermalink.isNotEmpty)
+              Padding(padding: const EdgeInsets.only(top: 16), child:
+              Card(
+                color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.2),
+                child: 
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(width: 16),
+                  Flexible(
+                      child: Text(
+                    wpPermalink,
+                    overflow: TextOverflow.ellipsis,
+                  )),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4.0),
+                    child: IconButton(
+                        icon: const Icon(Icons.content_copy, size: 16),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: wpPermalink));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text("Link copied to clipboard")));
+                        }),
+                  )
+                ],
+              )))
           ]))),
       if (event.participation?.isActive == true &&
           event.participation?.isParticipating == false)
@@ -183,7 +219,7 @@ class EventDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (description, _) = event.body!.extractDescriptionAndThumbnail();
+    final (description, _, _) = event.body!.extractDescriptionAndThumbnail();
 
     return Card(
         child: ListTile(
@@ -248,7 +284,8 @@ class EventPageContents extends StatelessWidget {
                             // }
 
                             if (participants.isEmpty &&
-                                !event.doesExpectParticipants()) {
+                                !event.participate.signup
+                                    .doesExpectParticipants()) {
                               return const SizedBox();
                             }
 

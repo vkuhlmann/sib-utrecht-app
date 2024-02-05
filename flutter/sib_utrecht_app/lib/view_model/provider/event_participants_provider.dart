@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:quiver/iterables.dart';
 import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/fetch_result.dart';
 import 'package:sib_utrecht_app/view_model/annotated_user.dart';
@@ -19,7 +20,13 @@ Widget EventParticipantsProvider(
                 query: eventBookings.bookings.values
                     .map((e) => e.entityId)
                     .toList(),
-                builder: (context, users) => builder(
+                builder: (context, users) =>
+                  (users.length != eventBookings.bookings.values.length
+                  || 
+                  eventBookings.bookings.values.whereIndexed((index, element) => element.entityId != users[index].value.id)
+                  .isNotEmpty
+              ) ? const SizedBox() :
+                 builder(
                     context,
                     eventBookings.bookings.values
                         .mapIndexed((index, e) => AnnotatedUser(

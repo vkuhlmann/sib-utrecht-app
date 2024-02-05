@@ -10,6 +10,7 @@ import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/model/api/events.dart';
 import 'package:sib_utrecht_app/model/fragments_bundle.dart';
 import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
+import 'package:sliver_tools/sliver_tools.dart';
 
 import '../utils.dart';
 import '../globals.dart';
@@ -86,7 +87,7 @@ class _EventEditPageState extends State<EventEditPage> {
 
   @override
   void didChangeDependencies() {
-    final connector = APIAccess.of(context).state.then((a) => a.connector);
+    final connector = APIAccess.of(context).connector;
     if (this.connector != connector) {
       log.fine(
           "[EventEditPage] API connector changed from ${this.connector} to $connector");
@@ -167,8 +168,11 @@ class _EventEditPageState extends State<EventEditPage> {
       int newEventId = await Events(await conn).createEvent(data);
 
       // int newEventId = response["data"]["event_id"];
-      router.goNamed("event_edit",
-          pathParameters: {"event_id": newEventId.toString()});
+      // router.goNamed("event_edit",
+      //     pathParameters: {"event_id": newEventId.toString()});
+
+      router.goNamed("event",
+                  pathParameters: {"event_id": newEventId.toString()});
 
       return;
     }
@@ -176,6 +180,9 @@ class _EventEditPageState extends State<EventEditPage> {
     // var response =
     //     await conn.then((c) => c.put("/events/$eventId", body: data));
     await Events(await conn).updateEvent(eventId, data);
+
+    router.goNamed("event",
+                  pathParameters: {"event_id": eventId.toString()});
   }
 
   // void onFieldChanged(_) {
@@ -188,6 +195,7 @@ class _EventEditPageState extends State<EventEditPage> {
   Widget build(BuildContext context) {
     var subm = _submission;
     var deleteAction = _deletion;
+    final isNew = eventId == null;
 
     return WithSIBAppBar(
         actions: const [],
@@ -195,167 +203,165 @@ class _EventEditPageState extends State<EventEditPage> {
           Expanded(
               child: SelectionArea(
                   child: CustomScrollView(slivers: [
-            SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                  const SizedBox(height: 20),
-                  FutureBuilderPatched(
-                      future: startEditResponse,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasError) {
-                          return Padding(
-                              padding: const EdgeInsets.all(32),
-                              child:
-                                  Center(child: formatError(snapshot.error)));
-                        }
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Padding(
-                              padding: EdgeInsets.all(32),
-                              child:
-                                  Center(child: CircularProgressIndicator()));
-                        }
+            // const SliverToBoxAdapter(child: Column(children: [
+            //   SizedBox(height: 20)
+            // ],)),
 
-                        final data = snapshot.data;
-                        // if (data == null) {
-                        //   return const Text("Data missing");
-                        // }
-
-                        // final Event? event = snapshot.data;
-                        // if (event == null) {
-                        //   return const SizedBox();
-                        // }
-
-                        // return Card(
-                        //     child: ListTile(
-                        //         title: Text(event.eventName),
-                        //         subtitle: Text(event.location ?? "")));
-
-                        // ...(() {
-                        // final Event? event = _eventProvider.cached;
-                        // var eventEnd = event.end;
-                        // var location = event.location;
-
-                        return Column(children: [
-                          EventEditForm(
-                            key: ValueKey(eventId),
-                              originalEvent: data, setPayload: setPayload),
-                          if (eventId != null)
-                            ElevatedButton(
-                                onPressed: () {
-                                  // showDialog(
-                                  //     context: context,
-                                  //     builder: (BuildContext ctx) {
-                                  //       return AlertDialog(
-                                  //         title: const Text('Event deletion'),
-                                  //         content: const Text(
-                                  //             'Are you sure you want to delete the event?'),
-                                  //         actions: [
-                                  //           // The "Yes" button
-                                  //           TextButton(
-                                  //               onPressed: () {
-                                  //                 // // Remove the box
-                                  //                 // setState(() {
-                                  //                 //   _isShown = false;
-                                  //                 // });
-
-                                  //                 // Close the dialog
-                                  //                 Navigator.of(context).pop();
-                                  //               },
-                                  //               child: const Text('Delete')),
-                                  //           TextButton(
-                                  //               onPressed: () {
-                                  //                 // Close the dialog
-                                  //                 Navigator.of(context).pop();
-                                  //               },
-                                  //               child: const Text('Cancel'))
-                                  //         ],
-                                  //       );
-                                  //     });
-
-                                  router.pushNamed("event_delete_confirm",
-                                      pathParameters: {
-                                        "event_id": eventId.toString()
-                                      }).then((ans) {
-                                    if (ans != "delete_confirmed") {
-                                      return;
-                                    }
-                                    setState(() {
-                                      var a = deleteEvent();
-                                      _deletion = a;
-                                      a
-                                          .then((v) => Future.delayed(
-                                              const Duration(seconds: 2)))
-                                          .then((value) {
-                                        router.go("/");
-                                      });
-                                    });
-                                  });
-                                },
-                                child:
-                                    Text(AppLocalizations.of(context)!.delete)),
-                          const SizedBox(
-                            height: 16,
-                          ),
-                          FilledButton(
-                              onPressed: () {
-                                setState(() {
-                                  _submission = submit();
-                                });
-                              },
-                              child: Text(AppLocalizations.of(context)!.save)),
-                          const SizedBox(height: 32),
-                          ValueListenableBuilder(
-                            valueListenable: payload,
-                            builder: (context, snapshot, _) {
-                              if (snapshot.hasError) {
-                                return Text(snapshot.error.toString());
-                              }
-
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              }
-
-                              // if (snapshot.hasData) {
-                              //   return Text(snapshot.data.toString());
-                              // }
-
-                              return const SizedBox();
-                            },
-                          )
-                        ]);
-                      }),
-                  FutureBuilderPatched(
-                    future: _submission,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Padding(
+            // SliverPadding(
+            //     padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+            //     sliver:
+            //     SliverList(
+            //         delegate: SliverChildListDelegate([
+            // const SizedBox(height: 20),
+            FutureBuilderPatched(
+                future: startEditResponse,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return SliverToBoxAdapter(
+                        child: Padding(
                             padding: const EdgeInsets.all(32),
-                            child: Center(child: formatError(snapshot.error)));
-                      }
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Padding(
+                            child: Center(child: formatError(snapshot.error))));
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SliverToBoxAdapter(
+                        child: Padding(
                             padding: EdgeInsets.all(32),
-                            child: Center(child: CircularProgressIndicator()));
-                      }
+                            child: Center(child: CircularProgressIndicator())));
+                  }
 
-                      return const SizedBox();
+                  final data = snapshot.data;
 
-                      // var data = snapshot.data;
-                      // if (data == null) {
-                      //   if (snapshot.connectionState == ConnectionState.none) {
-                      //     return const SizedBox();
-                      //   }
-                      //   return const Text("No response");
-                      // }
+                  return MultiSliver(children: [
+                    EventEditForm(
+                        key: ValueKey(eventId),
+                        originalEvent: data,
+                        setPayload: setPayload),
+                    SliverToBoxAdapter(
+                        child: Column(children: [
+                          const SizedBox(height: 32),
+                      if (eventId != null && data?.controller != "wordpress")
+                        ElevatedButton(
+                            onPressed: () {
+                              // showDialog(
+                              //     context: context,
+                              //     builder: (BuildContext ctx) {
+                              //       return AlertDialog(
+                              //         title: const Text('Event deletion'),
+                              //         content: const Text(
+                              //             'Are you sure you want to delete the event?'),
+                              //         actions: [
+                              //           // The "Yes" button
+                              //           TextButton(
+                              //               onPressed: () {
+                              //                 // // Remove the box
+                              //                 // setState(() {
+                              //                 //   _isShown = false;
+                              //                 // });
 
-                      // return Text(
-                      //     const JsonEncoder.withIndent("  ").convert(data));
-                    },
-                  )
-                ]))),
+                              //                 // Close the dialog
+                              //                 Navigator.of(context).pop();
+                              //               },
+                              //               child: const Text('Delete')),
+                              //           TextButton(
+                              //               onPressed: () {
+                              //                 // Close the dialog
+                              //                 Navigator.of(context).pop();
+                              //               },
+                              //               child: const Text('Cancel'))
+                              //         ],
+                              //       );
+                              //     });
+
+                              router.pushNamed("event_delete_confirm",
+                                  pathParameters: {
+                                    "event_id": eventId.toString()
+                                  }).then((ans) {
+                                if (ans != "delete_confirmed") {
+                                  return;
+                                }
+                                setState(() {
+                                  var a = deleteEvent();
+                                  _deletion = a;
+                                  a
+                                      .then((v) => Future.delayed(
+                                          const Duration(seconds: 2)))
+                                      .then((value) {
+                                    router.go("/");
+                                  });
+                                });
+                              });
+                            },
+                            child: Text(AppLocalizations.of(context)!.delete)),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      ValueListenableBuilder(valueListenable: payload, builder:
+                      (context, snapshot, _) => FilledButton(
+                          onPressed: 
+                          !snapshot.hasData ? null :
+                          () {
+                            setState(() {
+                              _submission = submit();
+                            });
+                          },
+                          child: Text(
+                            isNew ?
+                            AppLocalizations.of(context)!.create :
+                            AppLocalizations.of(context)!.save)),
+                      ),
+                      const SizedBox(height: 32),
+                      ValueListenableBuilder(
+                        valueListenable: payload,
+                        builder: (context, snapshot, _) {
+                          if (snapshot.hasError) {
+                            return Text(snapshot.error.toString().replaceFirst("Exception: ", "Error: "));
+                          }
+
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          }
+
+                          // if (snapshot.hasData) {
+                          //   return Text(snapshot.data.toString());
+                          // }
+
+                          return const SizedBox();
+                        },
+                      ),
+                      const SizedBox(height: 48)
+                    ]))
+                  ]);
+                }),
+            SliverToBoxAdapter(
+                child: FutureBuilderPatched(
+              future: _submission,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Center(child: formatError(snapshot.error)));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(child: CircularProgressIndicator()));
+                }
+
+                return const SizedBox();
+
+                // var data = snapshot.data;
+                // if (data == null) {
+                //   if (snapshot.connectionState == ConnectionState.none) {
+                //     return const SizedBox();
+                //   }
+                //   return const Text("No response");
+                // }
+
+                // return Text(
+                //     const JsonEncoder.withIndent("  ").convert(data));
+              },
+            ))
           ]))),
           AlertsPanel(controller: _alertsPanelController, loadingFutures: [
             if (subm != null)
