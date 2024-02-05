@@ -239,7 +239,7 @@ class _EventEditPageState extends State<EventEditPage> {
                     SliverToBoxAdapter(
                         child: Column(children: [
                           const SizedBox(height: 32),
-                      if (eventId != null)
+                      if (eventId != null && data?.controller != "wordpress")
                         ElevatedButton(
                             onPressed: () {
                               // showDialog(
