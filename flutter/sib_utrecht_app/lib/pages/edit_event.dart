@@ -37,7 +37,13 @@ class _EventEditPageState extends State<EventEditPage> {
 
   late Future<Event?> startEditResponse;
 
-  String? get eventId => widget.eventId;
+  String? get eventId {
+    if (!mounted) {
+      return null;
+    }
+
+    return widget.eventId;
+  }
 
   // Future<String>? payload;
   Future<void>? _submission;
@@ -196,6 +202,10 @@ class _EventEditPageState extends State<EventEditPage> {
     var subm = _submission;
     var deleteAction = _deletion;
     final isNew = eventId == null;
+    final loc = AppLocalizations.of(context);
+    if (loc == null) {
+      throw StateError("No AppLocalizations available");
+    }
 
     return WithSIBAppBar(
         actions: const [],
@@ -291,7 +301,7 @@ class _EventEditPageState extends State<EventEditPage> {
                                 });
                               });
                             },
-                            child: Text(AppLocalizations.of(context)!.delete)),
+                            child: Text(loc.delete)),
                       const SizedBox(
                         height: 16,
                       ),
@@ -306,8 +316,8 @@ class _EventEditPageState extends State<EventEditPage> {
                           },
                           child: Text(
                             isNew ?
-                            AppLocalizations.of(context)!.create :
-                            AppLocalizations.of(context)!.save)),
+                            loc.create :
+                            loc.save)),
                       ),
                       const SizedBox(height: 32),
                       ValueListenableBuilder(

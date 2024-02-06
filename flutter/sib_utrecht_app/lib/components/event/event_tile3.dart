@@ -101,6 +101,8 @@ class _EventTile3State extends State<EventTile3> {
                           widget.event.name.getLocalLong(
                               Localizations.localeOf(context)),
                           textAlign: TextAlign.left,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                           style: Theme.of(context).textTheme.titleMedium),
                       if (primaryInfoLine.isNotEmpty)
                         Text(primaryInfoLine,
