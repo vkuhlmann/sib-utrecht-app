@@ -360,8 +360,9 @@ class Event implements CacheableResource {
   @override
   Map toJson({bool includeBody = false}) {
     var res = _data.toPayload();
+    final body = this.body;
     if (includeBody && body != null) {
-      res["body"] = body!.toJson();
+      res["body"] = body.toJson();
     }
     return res;
   }

@@ -138,7 +138,7 @@ class _EventEditFormState extends State<EventEditForm>
     String? endDate = _endController.text.trim();
     endDate = dateInputToCanonical(endDate);
 
-    String? totalDescription = descriptionHtml;
+    String? totalDescription = descriptionHtml ?? "";
 
     if (imageUrl != null) {
       totalDescription ??= "";
@@ -157,7 +157,7 @@ class _EventEditFormState extends State<EventEditForm>
       "location": location,
       "date.start": startDate,
       "date.end": endDate,
-      "body.description": {
+      "body.description": totalDescription == null ? null : {
         "html": totalDescription,
       },
       "participate.signup": signup,
@@ -664,7 +664,7 @@ class _EventEditFormState extends State<EventEditForm>
                           value: "store",
                           enabled: isNew || !wordpressControlled),
                       ButtonSegment(
-                          label: const Text("Wordpress"),
+                          label: const Text("WordPress"),
                           value: "wordpress",
                           enabled: isNew || wordpressControlled),
                     ],

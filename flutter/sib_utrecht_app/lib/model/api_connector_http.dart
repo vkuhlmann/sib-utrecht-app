@@ -27,9 +27,10 @@ class HTTPApiConnector extends APIConnector {
     client = http.Client();
     headers = {};
     if (user != null) {
-      basicAuth = 'Basic ${base64.encode(utf8.encode('$user:$apiSecret'))}';
+      final basicAuth = 'Basic ${base64.encode(utf8.encode('$user:$apiSecret'))}';
+      this.basicAuth = basicAuth;
 
-      headers["authorization"] = basicAuth!;
+      headers["authorization"] = basicAuth;
     }
   }
 

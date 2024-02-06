@@ -44,6 +44,7 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
       required this.allowAutoRefresh,
       this.autoRefreshThreshold = const Duration(minutes: 5)}) {
     _silentReset();
+    log.info("Created CachedProvider ($T, $U, $V) with allowAutoRefresh $allowAutoRefresh");
     // _loading = Future.value(reload());
     reload();
   }
@@ -69,12 +70,13 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
   }
 
   void setAllowAutoRefresh(bool val) {
-    // if (allowAutoRefresh == val) {
-    //   return;
-    // }
+    if (allowAutoRefresh == val) {
+      return;
+    }
 
     allowAutoRefresh = val;
     if (allowAutoRefresh) {
+      log.finest("Doing auto-refresh reload for $this");
       reload();
     }
   }
@@ -211,8 +213,9 @@ class CachedProviderT<T, U, V> extends ChangeNotifier {
     //     "[Cache] Cached timestamp is ${c?.timestamp} (needs refresh: ${c?.isObsolete(expireTime: autoRefreshThreshold)})");
 
     bool needsRefresh =
-        c == null || (allowAutoRefresh && c.isObsolete(expireTime: autoRefreshThreshold));
-    log.info("[Cache] Needs refresh: $needsRefresh, obsolete: ${c?.isObsolete(expireTime: autoRefreshThreshold)} ($this)");
+      c == null || (allowAutoRefresh && c.isObsolete(expireTime: autoRefreshThreshold));
+    log.info("[Cache] Needs refresh: $needsRefresh, obsolete: ${c?.isObsolete(expireTime: autoRefreshThreshold)}, "
+    "c: $c, allowAutoRefresh: $allowAutoRefresh ($this)");
     if (needsRefresh) {
       return _loadFresh();
     }

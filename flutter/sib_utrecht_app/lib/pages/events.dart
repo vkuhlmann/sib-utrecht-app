@@ -54,50 +54,11 @@ class _EventsPageState extends State<EventsPage> {
     super.didChangeDependencies();
   }
 
-  // // Map<RelativeWeek, Widget>
-  // List<MapEntry<Month, Widget>> buildEventSlivers(
-  //     BuildContext context, List<AnnotatedEvent> events) {
-
-  //   return byMonth;
-
-  //   // map((k, v) => MapEntry(k, v
-  //   //         .map<Widget>((entry) => EventMonth(
-  //   //               // isMultiWeek: entry.isMultiWeek,
-  //   //               isMultiWeek: true,
-  //   //               key: ValueKey(("EventsGroup", k, entry.key)),
-  //   //               title: k?.toDisplayString(context) ?? loc.eventCategoryOngoing,
-  //   //               // entry.title(context),
-  //   //               // isMajor: k == RelativeWeek.upcomingWeek,
-  //   //               isMajor: false
-  //   //               initiallyExpanded: true,
-  //   //                   // k != RelativeWeek.ongoing && k != RelativeWeek.future,
-  //   //               children: entry.elements,
-  //   //               weeks: month.weeks.toList(),
-  //   //               divideEvents: k != RelativeWeek.ongoing,
-  //   //             ))
-  //   //         .toList()));
-
-  //   // return byMonth.map((k, v) {
-  //   //   if (k == RelativeWeek.past || k == RelativeWeek.lastWeek) {
-  //   //     v = v.reversed.toList();
-  //   //   }
-
-  //   //   return MapEntry(k, MultiSliver(children: v));
-  //   // });
-
-  //   // return superGroups.map((k, v) => MapEntry(
-  //   //     k,
-  //   //     // Builder(
-  //   //     //     builder: (context) => Column(
-  //   //           MultiSliver(
-  //   //             children: .rever)));
-  // }
-
   Widget buildContents(BuildContext context,
       {required List<AnnotatedEvent> events, required Widget bottomPanel}) {
     final ongoing = events.where((element) => element.placement?.date == null);
 
-    var _byWeek1 = events.map((e) {
+    var byWeek1 = events.map((e) {
       final placement = e.placement;
       if (placement == null) {
         return null;
@@ -106,10 +67,10 @@ class _EventsPageState extends State<EventsPage> {
     }).whereNotNull();
 
     final minWeek =
-        _byWeek1.map((e) => e.week).minOrNull ?? Week.fromDate(DateTime.now());
-    final maxWeek = _byWeek1.map((e) => e.week).maxOrNull ?? minWeek;
+        byWeek1.map((e) => e.week).minOrNull ?? Week.fromDate(DateTime.now());
+    final maxWeek = byWeek1.map((e) => e.week).maxOrNull ?? minWeek;
 
-    var byWeek = _byWeek1
+    var byWeek = byWeek1
         .chunkBy((p0) => p0.week,
             initialKeys: Week.range(minWeek, maxWeek).toList())
         .map((e) => MapEntry(e.key, e.value.map((e) => e.e).toList()))

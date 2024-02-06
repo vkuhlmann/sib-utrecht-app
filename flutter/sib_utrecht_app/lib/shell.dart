@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sib_utrecht_app/components/resource_pool_access.dart';
+import 'package:sib_utrecht_app/view_model/load_stability.dart';
 
 import 'globals.dart';
 import 'model/login_manager.dart';
@@ -301,12 +302,10 @@ class _MyAppState extends State<MyApp> {
 
     updateTheme();
 
-    imageClipboard.addWebPasteListener(
-      ((imageFile, blobUrl) {
-        log.info("Got image from clipboard. Blob: $blobUrl");
-        log.info("Got image from clipboard. File: $imageFile");
-      }
-    ));
+    imageClipboard.addWebPasteListener(((imageFile, blobUrl) {
+      log.info("Got image from clipboard. Blob: $blobUrl");
+      log.info("Got image from clipboard. File: $imageFile");
+    }));
   }
 
   void setDutch(bool? val) {
@@ -408,36 +407,44 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     bool? useDarkTheme = isDark;
 
-    return Preferences(
-        // locale: "nl_NL",
-        locale: isDutch == true
-            ? const Locale("nl", "NL")
-            : const Locale("en", "GB"),
-        debugMode: false,
-        child: Builder(
-            builder: (context) => MaterialApp.router(
-                  routerConfig: router,
-                  title: 'SIB-Utrecht (Bèta)',
-                  theme: lightTheme,
-                  darkTheme: darkTheme,
-                  localizationsDelegates: const [
-                    AppLocalizations.delegate,
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate
-                  ],
-                  supportedLocales: const [
-                    Locale('en', 'GB'),
-                    Locale('nl', 'NL'),
-                  ],
-                  debugShowCheckedModeBanner: false,
-                  // locale: Preferences.of(context).locale,
-                  locale: isDutch == true
-                      ? const Locale('nl', 'NL')
-                      : (isDutch == false ? const Locale('en', 'GB') : null),
-                  themeMode: useDarkTheme == null
-                      ? ThemeMode.system
-                      : (useDarkTheme ? ThemeMode.dark : ThemeMode.light),
-                )));
+    return LoadStability.combine(
+        prev: null,
+        isThisLoading: false,
+        lastUpdateInitiation: null,
+        anchors: const [],
+        isRoot: true,
+        child: Preferences(
+            // locale: "nl_NL",
+            locale: isDutch == true
+                ? const Locale("nl", "NL")
+                : const Locale("en", "GB"),
+            debugMode: false,
+            child: Builder(
+                builder: (context) => MaterialApp.router(
+                      routerConfig: router,
+                      title: 'SIB-Utrecht (Bèta)',
+                      theme: lightTheme,
+                      darkTheme: darkTheme,
+                      localizationsDelegates: const [
+                        AppLocalizations.delegate,
+                        GlobalMaterialLocalizations.delegate,
+                        GlobalWidgetsLocalizations.delegate,
+                        GlobalCupertinoLocalizations.delegate
+                      ],
+                      supportedLocales: const [
+                        Locale('en', 'GB'),
+                        Locale('nl', 'NL'),
+                      ],
+                      debugShowCheckedModeBanner: false,
+                      // locale: Preferences.of(context).locale,
+                      locale: isDutch == true
+                          ? const Locale('nl', 'NL')
+                          : (isDutch == false
+                              ? const Locale('en', 'GB')
+                              : null),
+                      themeMode: useDarkTheme == null
+                          ? ThemeMode.system
+                          : (useDarkTheme ? ThemeMode.dark : ThemeMode.light),
+                    ))));
   }
 }
