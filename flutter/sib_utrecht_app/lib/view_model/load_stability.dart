@@ -6,12 +6,13 @@ class LoadStability extends InheritedWidget {
   final bool isLoading;
   final FetchResult<void> anchor;
   final DateTime? lastUpdateInitiation;
-
+  final bool isRoot;
 
   const LoadStability({
     required this.isLoading,
     required this.anchor,
     required this.lastUpdateInitiation,
+    required this.isRoot,
     required Widget child,
     Key? key
   }) : super(child: child, key: key);
@@ -22,6 +23,7 @@ class LoadStability extends InheritedWidget {
     required bool isThisLoading,
     required DateTime? lastUpdateInitiation,
     required List<FetchResult<void>> anchors,
+    required bool isRoot,
     Key? key
   }) {
     return LoadStability(
@@ -29,7 +31,8 @@ class LoadStability extends InheritedWidget {
       anchor: FetchResult.mergeMany([prev?.anchor, ...anchors].whereNotNull()),
       lastUpdateInitiation: lastUpdateInitiation,
       key: key,
-      child: child
+      child: child,
+      isRoot: isRoot,
     );
   }
   

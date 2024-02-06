@@ -29,6 +29,11 @@ String formatErrorMsg(String? error) {
     return "An error occurred";
   }
 
+  if (error.startsWith("ClientException: XMLHttpRequest error.")) {
+    return "Error contacting server, if you have internet, this is a server "
+    "issue. Try again, and if the issue persists, contact Vincent.";
+  }
+
   var m = RegExp(r"^(Exception: )?(<strong>Error:</strong> )?(?<message>.*)$")
       .firstMatch(error);
 

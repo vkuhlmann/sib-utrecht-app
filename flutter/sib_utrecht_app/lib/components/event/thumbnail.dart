@@ -11,7 +11,12 @@ class EventThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (_, imageUrl, _) = event.body!.extractDescriptionAndThumbnail();
+    final eventBody = event.body;
+    if (eventBody == null) {
+      throw Exception("Event body is null, in EventThumbnail");
+    }
+
+    final (_, imageUrl, _) = eventBody.extractDescriptionAndThumbnail();
 
     return ThumbnailImageView(imageUrl);
   }
@@ -25,6 +30,11 @@ class ThumbnailImageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = this.imageUrl;
+    final loc = AppLocalizations.of(context);
+    if (loc == null) {
+      throw Exception("No AppLocalizations found in context");
+    }
+
 
     return Card(
         // child: WillPopScope(
@@ -35,12 +45,12 @@ class ThumbnailImageView extends StatelessWidget {
         //       return false;
         //     },
         child: ListTile(
-            title: Text(AppLocalizations.of(context)!.eventImage),
+            title: Text(loc.eventImage),
             subtitle: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
                 child: Builder(builder: (context) {
                   if (imageUrl == null) {
-                    return Text(AppLocalizations.of(context)!.eventNoImage);
+                    return Text(loc.eventNoImage);
                   }
                   try {
                     return Align(

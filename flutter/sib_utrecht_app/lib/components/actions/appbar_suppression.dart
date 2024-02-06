@@ -16,8 +16,12 @@ class AppbarSuppression extends InheritedWidget {
 
   static AppbarSuppression of(BuildContext context) {
     final AppbarSuppression? result = maybeOf(context);
-    assert(result != null, 'No AppbarSuppression found in context');
-    return result!;
+    if (result == null) {
+      throw Exception('No AppbarSuppression found in context');
+    }
+
+    // assert(result != null, 'No AppbarSuppression found in context');
+    return result;
   }
 
   @override

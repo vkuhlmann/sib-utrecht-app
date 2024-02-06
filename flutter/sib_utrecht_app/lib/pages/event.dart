@@ -219,7 +219,12 @@ class EventDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (description, _, _) = event.body!.extractDescriptionAndThumbnail();
+    final eventBody = event.body;
+    if (eventBody == null) {
+      throw StateError("Event body is null");
+    }
+
+    final (description, _, _) = eventBody.extractDescriptionAndThumbnail();
 
     return Card(
         child: ListTile(

@@ -82,11 +82,9 @@ class MultiplexedProvider<T, U> extends StatefulWidget {
   const MultiplexedProvider(
       {Key? key,
       required this.query,
-      // this.obtainProvider,
       required this.obtain,
       required this.builder,
-      required this.errorTitle,
-      // this.changeListener
+      required this.errorTitle
       })
       : super(key: key);
 
@@ -214,7 +212,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
     needsUpdate = true;
     var prevStability = LoadStability.maybeOf(context);
-    if (prevStability != null) {
+    if (prevStability == null || !prevStability.isRoot || prevStability.isLoading) {
       return;
     }
 
@@ -255,19 +253,23 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
   }
 
   bool getAllowAutoRefresh() {
-    final state = LoadStability.maybeOf(context);
-    if (state == null) {
-      // log.info("[Provider] LoadStability not found, allowing auto refresh");
-      return true;
-    }
-
-    if (state.isLoading) {
-      // log.info(
-      //     "[Provider] LoadStability is loading, not allowing auto refresh");
+    if (!mounted) {
+      log.info("[Provider] LoadStability: autorefresh disallowed: not mounted");
       return false;
     }
 
-    // log.info("[Provider] LoadStability is not loading, allowing auto refresh");
+    final state = LoadStability.maybeOf(context);
+    if (state == null) {
+      log.info("[Provider] LoadStability: autorefresh disallowed: parent not found");
+      return false;
+    }
+
+    if (state.isLoading) {
+      log.info("[Provider] LoadStability: autorefresh disallowed: parent is loading");
+      return false;
+    }
+
+    log.info("[Provider] LoadStability: autorefresh allowed");
     return true;
   }
 
@@ -398,7 +400,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
               DateTime dt = DateTime.now();
 
               for (var element in data) {
-                await element.reload();
+                // await element.reload();
 
                 DateTime? ct;
                 try {
@@ -445,6 +447,7 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
                     isThisLoading: isLoading,
                     lastUpdateInitiation: lastUpdateInitiation,
                     anchors: snapshot.data ?? [],
+                    isRoot: false,
                     child: widget.builder(
                         context, cachedVals.whereNotNull().toList()));
               },

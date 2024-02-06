@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sib_utrecht_app/log.dart';
 
 import 'shell.dart';
 
@@ -44,11 +45,13 @@ void main() {
     if (inDebug) {
       return ErrorWidget(details.exception);
     }
+    log.severe("Encountered error: ${details.exception}\n${details.stack}");
+
     // In release builds, show a yellow-on-blue message instead:
     return Container(
       alignment: Alignment.center,
       child: Text(
-       'Error: ${details.exception}',
+       'Error: ${details.exception}\n${details.stack}',
         style: const TextStyle(color: Colors.yellow),
         textDirection: TextDirection.ltr,
       ),
@@ -73,8 +76,12 @@ class Preferences extends InheritedWidget {
 
   static Preferences of(BuildContext context) {
     final Preferences? result = maybeOf(context);
-    assert(result != null, 'No Preferences found in context');
-    return result!;
+    if (result == null) {
+      throw Exception('No Preferences found in context');
+    }
+
+    // assert(result != null, 'No Preferences found in context');
+    return result;
   }
 
   @override

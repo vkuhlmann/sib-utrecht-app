@@ -24,8 +24,8 @@ Iterable<AnnotatedEvent> placeEvent(
 
   // var participation = eventsProvider.getMeParticipation(event, feedback: feedback);
 
-  if (event.date.end != null &&
-      event.date.end!.difference(event.date.start).inDays > 10) {
+  final endDate = event.date.end;
+  if (endDate != null && endDate.difference(event.date.start).inDays > 10) {
     yield AnnotatedEvent(
         event: event, participation: participation, placement: null);
     return;
@@ -54,7 +54,14 @@ Iterable<AnnotatedEvent> placeEvent(
 
 List<AnnotatedEvent> toCalendarList(List<AnnotatedEvent> events) {
   return events
-      .map((e) => placeEvent(e, e.participation!))
+      .map((e) {
+        final part = e.participation;
+        if (part == null) {
+          throw Exception("EventParticipation is null in toCalendarList");
+        }
+
+        return placeEvent(e, part);
+      })
       // EventParticipation.fromEvent(
       //   e,
       //   isParticipating: participating.contains(e.eventId),

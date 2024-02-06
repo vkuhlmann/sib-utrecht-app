@@ -24,8 +24,12 @@ class APIAccess extends InheritedWidget {
 
   static APIAccess of(BuildContext context) {
     final APIAccess? result = maybeOf(context);
-    assert(result != null, 'No APIAccess found in context');
-    return result!;
+    if (result == null) {
+      throw Exception('No APIAccess found in context');
+    }
+
+    // assert(result != null, 'No APIAccess found in context');
+    return result;
   }
 
   @override
