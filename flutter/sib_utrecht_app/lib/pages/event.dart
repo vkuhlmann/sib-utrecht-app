@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
@@ -62,8 +63,10 @@ class EventHeader extends StatelessWidget {
         ),
         IconButton(
             onPressed: () {
-              router.pushNamed("event_edit",
-                  pathParameters: {"event_id": event.id});
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                router.pushNamed("event_edit",
+                    pathParameters: {"event_id": event.id});
+              });
             },
             icon: const Icon(Icons.edit)),
       ]),
@@ -116,32 +119,37 @@ class EventHeader extends StatelessWidget {
                 ])
               ]),
             if (wpPermalink != null && wpPermalink.isNotEmpty)
-              Padding(padding: const EdgeInsets.only(top: 16), child:
-              Card(
-                color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.2),
-                child: 
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(width: 16),
-                  Flexible(
-                      child: Text(
-                    wpPermalink,
-                    overflow: TextOverflow.ellipsis,
-                  )),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child: IconButton(
-                        icon: const Icon(Icons.content_copy, size: 16),
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: wpPermalink));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("Link copied to clipboard")));
-                        }),
-                  )
-                ],
-              )))
+              Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Card(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondaryContainer
+                          .withOpacity(0.2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(width: 16),
+                          Flexible(
+                              child: Text(
+                            wpPermalink,
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4.0),
+                            child: IconButton(
+                                icon: const Icon(Icons.content_copy, size: 16),
+                                onPressed: () {
+                                  Clipboard.setData(
+                                      ClipboardData(text: wpPermalink));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              "Link copied to clipboard")));
+                                }),
+                          )
+                        ],
+                      )))
           ]))),
       if (event.participation?.isActive == true &&
           event.participation?.isParticipating == false)
