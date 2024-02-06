@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
@@ -149,6 +150,10 @@ class _EventEditPageState extends State<EventEditPage> {
   }
 
   Future<void> submit() async {
+    if (!mounted) {
+      return;
+    }
+
     var conn = connector;
     if (conn == null) {
       return;
@@ -177,9 +182,22 @@ class _EventEditPageState extends State<EventEditPage> {
       // router.goNamed("event_edit",
       //     pathParameters: {"event_id": newEventId.toString()});
 
-      router.goNamed("event",
-                  pathParameters: {"event_id": newEventId.toString()});
+      if (!mounted) {
+        return;
+      }
 
+      SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+        if (!mounted) {
+          return;
+        }
+
+        router.goNamed("event",
+            pathParameters: {"event_id": newEventId.toString()});
+      });
+      return;
+    }
+
+    if (!mounted) {
       return;
     }
 
@@ -187,8 +205,13 @@ class _EventEditPageState extends State<EventEditPage> {
     //     await conn.then((c) => c.put("/events/$eventId", body: data));
     await Events(await conn).updateEvent(eventId, data);
 
-    router.goNamed("event",
-                  pathParameters: {"event_id": eventId.toString()});
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      router.goNamed("event", pathParameters: {"event_id": eventId.toString()});
+    });
   }
 
   // void onFieldChanged(_) {
@@ -248,7 +271,7 @@ class _EventEditPageState extends State<EventEditPage> {
                         setPayload: setPayload),
                     SliverToBoxAdapter(
                         child: Column(children: [
-                          const SizedBox(height: 32),
+                      const SizedBox(height: 32),
                       if (eventId != null && data?.controller != "wordpress")
                         ElevatedButton(
                             onPressed: () {
@@ -305,26 +328,29 @@ class _EventEditPageState extends State<EventEditPage> {
                       const SizedBox(
                         height: 16,
                       ),
-                      ValueListenableBuilder(valueListenable: payload, builder:
-                      (context, snapshot, _) => FilledButton(
-                          onPressed: 
-                          !snapshot.hasData ? null :
-                          () {
-                            setState(() {
-                              _submission = submit();
-                            });
-                          },
-                          child: Text(
-                            isNew ?
-                            loc.create :
-                            loc.save)),
+                      ValueListenableBuilder(
+                        valueListenable: payload,
+                        builder: (context, snapshot, _) => FilledButton(
+                            onPressed: !snapshot.hasData
+                                ? null
+                                : () {
+                                    if (!mounted) {
+                                      return;
+                                    }
+                                    setState(() {
+                                      _submission = submit();
+                                    });
+                                  },
+                            child: Text(isNew ? loc.create : loc.save)),
                       ),
                       const SizedBox(height: 32),
                       ValueListenableBuilder(
                         valueListenable: payload,
                         builder: (context, snapshot, _) {
                           if (snapshot.hasError) {
-                            return Text(snapshot.error.toString().replaceFirst("Exception: ", "Error: "));
+                            return Text(snapshot.error
+                                .toString()
+                                .replaceFirst("Exception: ", "Error: "));
                           }
 
                           if (snapshot.connectionState ==
