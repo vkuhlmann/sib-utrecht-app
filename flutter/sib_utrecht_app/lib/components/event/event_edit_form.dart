@@ -54,7 +54,13 @@ class _EventEditFormState extends State<EventEditForm>
   bool wordpressControlled = true;
   bool enableSignup = true;
   int spaces = 1;
-  bool get isNew => widget.originalEvent == null;
+  bool get isNew {
+    if (!mounted) {
+      return true;
+    }
+    return widget.originalEvent == null;
+  }
+
   String? descriptionHtml;
   int descriptionTab = 1;
   String? imageUrl;
@@ -65,6 +71,10 @@ class _EventEditFormState extends State<EventEditForm>
   Future<Map> descriptionFields = Future.value({});
 
   Map<String, dynamic> getUpdates() {
+    if (!mounted) {
+      return {};
+    }
+
     var origEvent = widget.originalEvent;
 
     // final eventId = origEvent?.id;
@@ -383,6 +393,10 @@ class _EventEditFormState extends State<EventEditForm>
     final conn = await APIAccess.of(context).connector;
     final httpConn = conn.base as HTTPApiConnector;
 
+    if (!mounted) {
+      return;
+    }
+
     final res1 = await conn.post(
         "/events/${widget.originalEvent?.id ?? 'wp-0'}/image_upload",
         version: ApiVersion.v2);
@@ -392,6 +406,10 @@ class _EventEditFormState extends State<EventEditForm>
     final String asciiFilename =
         "promo_image_${file.name.replaceAll(RegExp(r'[^a-zA-Z0-9._~-]'), '')}";
     // ascii.decode(utf8.encode(file.name));
+
+    if (!mounted) {
+      return;
+    }
 
     final res2Raw = await httpConn.client.post(
       // Uri.parse("$wordpressUrl/wp-json/wp/v2/media"),
@@ -408,12 +426,20 @@ class _EventEditFormState extends State<EventEditForm>
 
     final res2 = httpConn.handleResponse(res2Raw);
 
+    if (!mounted) {
+      return;
+    }
+
     final res3 = await conn.post(
         "/events/${widget.originalEvent?.id ?? 'wp-0'}/image",
         version: ApiVersion.v2,
         body: {
           "response": res2,
         });
+
+    if (!mounted) {
+      return;
+    }
 
 
     // String url = res2["source_url"] ??
