@@ -81,14 +81,20 @@ class _EventTile3State extends State<EventTile3> {
     return Card(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
-            side: isActive
-                ? BorderSide(
-                    color: isActive
-                        ? Theme.of(context).colorScheme.primary
-                        :
-                        // null
-                        Theme.of(context).colorScheme.secondary)
-                : BorderSide.none),
+            side:
+                // isActive
+                //     ? BorderSide(
+                //       width: 3,
+                //         color: isActive
+                //             ?
+                //             Theme.of(context).colorScheme.onSecondary
+                //             // Theme.of(context).colorScheme.primaryContainer
+                //             // Theme.of(context).colorScheme.onPrimary
+                //             :
+                //             // null
+                //             Theme.of(context).colorScheme.secondary)
+                //     :
+                BorderSide.none),
         color: Theme.of(context).colorScheme.primaryContainer,
         clipBehavior: Clip.antiAlias,
         child: Row(
@@ -98,7 +104,45 @@ class _EventTile3State extends State<EventTile3> {
               // Column(children: [
               //   Expanded(child:
               Container(
-                  color: Theme.of(context).colorScheme.onPrimary,
+                  decoration: BoxDecoration(
+                      color: 
+                      isActive ? 
+                      Theme.of(context).colorScheme.onPrimary
+                      :
+                      Theme.of(context).colorScheme.onPrimary,
+                      borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          bottomLeft: Radius.circular(8)),
+                      border: isActive && false
+                          ? 
+                          // Border.all(
+                          //     width: 3,
+                          //     color: 
+                          //     Colors.purpleAccent.withAlpha(100)
+                          //     // Theme.of(context).colorScheme.primary.withAlpha(100)
+                          //     )
+                          Border(
+                            left: BorderSide(
+                              width: 3,
+                              color: 
+                              Colors.purpleAccent.withAlpha(100)
+                              // Theme.of(context).colorScheme.primary.withAlpha(100)
+                              ),
+                              top: BorderSide(
+                              width: 3,
+                              color: 
+                              Colors.purpleAccent.withAlpha(100)
+                              // Theme.of(context).colorScheme.primary.withAlpha(100)
+                              ),
+                              bottom: BorderSide(
+                              width: 3,
+                              color: 
+                              Colors.purpleAccent.withAlpha(100)
+                              // Theme.of(context).colorScheme.primary.withAlpha(100)
+                              )
+                          )
+                          : null),
+                  // color: Theme.of(context).colorScheme.onPrimary,
                   // width: 40,
                   // constraints:
                   //     const BoxConstraints(maxWidth: 40, maxHeight: 100),

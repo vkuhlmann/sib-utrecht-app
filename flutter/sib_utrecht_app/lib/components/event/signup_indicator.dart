@@ -7,9 +7,12 @@ class SignupIndicator extends StatefulWidget {
   final AnnotatedEvent event;
   final bool isFixedWidth;
 
-  const SignupIndicator({Key? key, required this.event, required this.isFixedWidth}) : super(key: key);
+  const SignupIndicator(
+      {Key? key, required this.event, required this.isFixedWidth})
+      : super(key: key);
 
-  static SignupIndicator? Maybe(AnnotatedEvent event, {bool isFixedWidth = false}) {
+  static SignupIndicator? Maybe(AnnotatedEvent event,
+      {bool isFixedWidth = false}) {
     if ((event.participate.signup.method ?? "none") == "none") {
       return null;
     }
@@ -39,6 +42,8 @@ class _SignupIndicatorState extends State<SignupIndicator> {
 
   static Widget? buildInner(AnnotatedEvent event) {
     var signupType = event.participate.signup.method ?? "none";
+    final active = event.participate.signup.available ??
+        ((event.date.end ?? event.date.start).isAfter(DateTime.now()));
 
     if (signupType == "none") {
       return null;
@@ -57,7 +62,7 @@ class _SignupIndicatorState extends State<SignupIndicator> {
 
       return Checkbox(
         value: participation.isParticipating,
-        onChanged: setParticipating == null
+        onChanged: (setParticipating == null || !active)
             ? null
             : (value) {
                 setParticipating(value ?? false);
@@ -76,18 +81,19 @@ class _SignupIndicatorState extends State<SignupIndicator> {
       //   return const SizedBox();
       // }
 
-      return
-        Builder(
-          builder: (context) =>
-       IconButton(
-          onPressed: () {
-            launchUrl(Uri.parse(url)).catchError((e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Failed to open signup link: $url")));
-              return false;
-            });
-          },
-          icon: const Icon(Icons.open_in_browser)));
+      return Builder(
+          builder: (context) => IconButton(
+              color: active ? null : Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
+              onPressed:
+              // !active ? null : 
+              () {
+                launchUrl(Uri.parse(url)).catchError((e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text("Failed to open signup link: $url")));
+                  return false;
+                });
+              },
+              icon: const Icon(Icons.open_in_browser)));
     }
 
     return const Icon(Icons.error);
