@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
@@ -86,7 +87,9 @@ class _EventTile3State extends State<EventTile3> {
         color: Theme.of(context).colorScheme.primaryContainer,
         child: ListTile(
             onTap: () {
-              GoRouter.of(context).push("/event/${widget.event.id}");
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                GoRouter.of(context).push("/event/${widget.event.id}");
+              });
             },
             leading: (placement?.isContinuation != true)
                 ? SignupIndicator.Maybe(widget.event)

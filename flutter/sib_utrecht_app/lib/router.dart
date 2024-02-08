@@ -213,10 +213,15 @@ GoRouter createRouter() {
                         log.info("Shell route child is $child");
 
                         return TwoPane(
-                          startPane:
-                              const EventsPage(key: ValueKey("eventsPage")),
+                          startPane: Builder(builder: (context) {
+                            log.fine("Doing builder for startPane");
+
+                              return const EventsPage(key: ValueKey("eventsPage"));
+                          }
+                          ),
                           endPane: Builder(builder: (context) {
                             bool suppress = true;
+                            log.fine("Doing builder for endPane");
 
                             // suppress = MediaQuery.of(context).size
 
@@ -257,6 +262,8 @@ GoRouter createRouter() {
                               // }
                               String? eventId =
                                   state.pathParameters['event_id'];
+
+                              log.fine("Doing event route builder for eventId $eventId");
 
                               if (eventId == null) {
                                 router.go("/");

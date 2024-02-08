@@ -1,5 +1,5 @@
 {
-description = "Flutter 3.13.0";
+description = "Flutter 3.16.7";
 
 inputs = {
   nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -26,7 +26,7 @@ outputs = { self, nixpkgs, flake-utils }:
       androidComposition = pkgs.androidenv.composeAndroidPackages {
         buildToolsVersions = [ buildToolsVersion "30.0.3" ];
         #buildToolsVersions = [ buildToolsVersion "28.0.3" ];
-        platformVersions = [ "33" ];
+        platformVersions = [ "31" "33" ];
         abiVersions = [ "armeabi-v7a" "arm64-v8a" ];
         #systemImageTypes = [ "google_apis" ];
         
@@ -49,13 +49,13 @@ outputs = { self, nixpkgs, flake-utils }:
           ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
           CHROME_EXECUTABLE = "/run/current-system/sw/bin/chromium";
           buildInputs = [
-            pkgs.flutter
+            #pkgs.flutter
             #./flutter_nix_3_13_0/default.nix
             #flutter_custom.stable
             androidSdk
             #jdk
             jdk17
-            android-tools
+            #android-tools
             #android-studio
           ];
         };

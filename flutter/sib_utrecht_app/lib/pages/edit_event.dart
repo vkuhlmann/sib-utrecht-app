@@ -1,16 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:js_interop';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/event_edit_form.dart';
-import 'package:sib_utrecht_app/components/resource_pool_access.dart';
 import 'package:sib_utrecht_app/model/api/events.dart';
 import 'package:sib_utrecht_app/model/fragments_bundle.dart';
-import 'package:sib_utrecht_app/model/unpacker/direct_unpacker.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
 import '../utils.dart';
@@ -399,6 +394,24 @@ class _EventEditPageState extends State<EventEditPage> {
               },
             ))
           ]))),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child:
+          ValueListenableBuilder(
+            valueListenable: payload,
+            builder: (context, snapshot, _) => FilledButton(
+                onPressed: !snapshot.hasData
+                    ? null
+                    : () {
+                        if (!mounted) {
+                          return;
+                        }
+                        setState(() {
+                          _submission = submit();
+                        });
+                      },
+                child: Text(isNew ? loc.create : loc.save)),
+          )),
           AlertsPanel(controller: _alertsPanelController, loadingFutures: [
             if (subm != null)
               AlertsFutureStatus(component: "submission", future: subm, data: {

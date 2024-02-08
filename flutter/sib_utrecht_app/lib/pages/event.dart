@@ -33,7 +33,7 @@ import '../components/actions/alerts_panel.dart';
 import '../components/api_access.dart';
 
 class EventPage extends StatefulWidget {
-  const EventPage({Key? key, required this.eventId}) : super(key: key);
+  const EventPage({super.key, required this.eventId});
   final String eventId;
 
   @override
@@ -43,12 +43,19 @@ class EventPage extends StatefulWidget {
 class EventHeader extends StatelessWidget {
   final AnnotatedEvent event;
 
-  const EventHeader(this.event, {Key? key}) : super(key: key);
+  const EventHeader(this.event, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    log.fine("Building EventHeader for event id ${event.id}");
+
     var eventEnd = event.date.end;
     final wpPermalink = event.wpPermalink;
+
+    final loc = AppLocalizations.of(context);
+    if (loc == null) {
+      throw StateError("AppLocalizations is null");
+    }
 
     return Column(children: [
       Row(children: [
@@ -74,7 +81,7 @@ class EventHeader extends StatelessWidget {
         Card(
             child: ListTile(
                 title: Text(
-                    "${AppLocalizations.of(context)!.eventLocation}: ${event.location.toString()}"))),
+                    "${loc.eventLocation}: ${event.location.toString()}"))),
 
       Card(
           child: ListTile(
@@ -89,7 +96,7 @@ class EventHeader extends StatelessWidget {
               SizedBox(
                   width: 80,
                   child:
-                      Text("${AppLocalizations.of(context)!.eventStarts}: ")),
+                      Text("${loc.eventStarts}: ")),
               Wrap(children: [
                 SizedBox(
                     width: 260,
@@ -223,20 +230,26 @@ class EventHeader extends StatelessWidget {
 class EventDescription extends StatelessWidget {
   final Event event;
 
-  const EventDescription(this.event, {Key? key}) : super(key: key);
+  const EventDescription(this.event, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    log.fine("Building EventDescription for event id ${event.id}");
+
     final eventBody = event.body;
     if (eventBody == null) {
       throw StateError("Event body is null");
     }
 
     final (description, _, _) = eventBody.extractDescriptionAndThumbnail();
+    final loc = AppLocalizations.of(context);
+    if (loc == null) {
+      throw StateError("AppLocalizations is null");
+    }
 
     return Card(
         child: ListTile(
-            title: Text(AppLocalizations.of(context)!.eventDescription),
+            title: Text(loc.eventDescription),
             subtitle: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
                 child: HtmlWidget(
@@ -252,11 +265,12 @@ class EventPageContents extends StatelessWidget {
   final AnnotatedEvent event;
 
   const EventPageContents(
-      {Key? key, required this.eventParticipation, required this.event})
-      : super(key: key);
+      {super.key, required this.eventParticipation, required this.event});
 
   @override
   Widget build(BuildContext context) {
+    log.fine("Building EventPageContents for event id ${event.id}");
+
     return SelectionArea(
         child: CustomScrollView(slivers: [
       SliverPadding(
@@ -331,6 +345,8 @@ class _EventPageState extends State<EventPage> {
   void initState() {
     super.initState();
 
+    log.fine("Doing initState on EventPage");
+
     _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
         component: "details", status: "loading", data: {}));
     _alertsPanelController.dismissedMessages.add(const AlertsPanelStatusMessage(
@@ -346,7 +362,7 @@ class _EventPageState extends State<EventPage> {
 
   @override
   void didChangeDependencies() {
-    final apiConnector = APIAccess.of(context).connector;
+    // final apiConnector = APIAccess.of(context).connector;
 
     // if (apiConnector != _eventProvider.apiConnector) {
     //   log.info(
@@ -370,6 +386,8 @@ class _EventPageState extends State<EventPage> {
 
   @override
   Widget build(BuildContext context) {
+    log.info("Building EventPage for event id ${widget.eventId}");
+
     // var provEvents = ResourcePoolAccess.of(context).pool.eventsProvider;
     return WithSIBAppBar(
         actions: const [],
@@ -384,8 +402,8 @@ class _EventPageState extends State<EventPage> {
                           // ListenableBuilder(
                           //     listenable: Listenable.merge([_eventProvider, provEvents]),
                           //     builder: (context, _) {
-                          log.fine(
-                              "Building event page for event id ${widget.eventId}");
+                          // log.fine(
+                          //     "Building event page for event id ${widget.eventId}");
 
                           return
                               // WithSIBAppBar(

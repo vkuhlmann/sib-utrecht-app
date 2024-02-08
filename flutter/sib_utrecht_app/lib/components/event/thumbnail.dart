@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sib_utrecht_app/log.dart';
 import 'package:sib_utrecht_app/model/event.dart';
 
 import 'package:sib_utrecht_app/router.dart';
@@ -7,10 +8,12 @@ import 'package:sib_utrecht_app/router.dart';
 class EventThumbnail extends StatelessWidget {
   final Event event;
 
-  const EventThumbnail(this.event, {Key? key}) : super(key: key);
+  const EventThumbnail(this.event, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    log.fine("Building EventThumbnail");
+
     final eventBody = event.body;
     if (eventBody == null) {
       throw Exception("Event body is null, in EventThumbnail");
@@ -25,10 +28,12 @@ class EventThumbnail extends StatelessWidget {
 class ThumbnailImageView extends StatelessWidget {
   final String? imageUrl;
 
-  const ThumbnailImageView(this.imageUrl, {Key? key}) : super(key: key);
+  const ThumbnailImageView(this.imageUrl, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    log.fine("Building ThumbnailImageView");
+
     final imageUrl = this.imageUrl;
     final loc = AppLocalizations.of(context);
     if (loc == null) {
