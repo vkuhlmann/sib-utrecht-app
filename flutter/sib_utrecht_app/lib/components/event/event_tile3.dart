@@ -39,10 +39,15 @@ class _EventTile3State extends State<EventTile3> {
     final meetup = ev.participate.meetup;
     final meetupTime = meetup.time;
 
-    bool showTime = meetup.time?.toIso8601String().substring(0, 10)
-      == placement?.date.toIso8601String().substring(0, 10)
-      && meetup.time?.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0)
-      != meetup.time;
+    bool showTime = meetup.time?.toIso8601String().substring(0, 10) ==
+            placement?.date.toIso8601String().substring(0, 10) &&
+        meetup.time?.copyWith(
+                hour: 0,
+                minute: 0,
+                second: 0,
+                millisecond: 0,
+                microsecond: 0) !=
+            meetup.time;
 
     bool showLocation = meetup.location != null;
     // && (widget.event.placement?.isContinuation != true)
@@ -85,57 +90,99 @@ class _EventTile3State extends State<EventTile3> {
                         Theme.of(context).colorScheme.secondary)
                 : BorderSide.none),
         color: Theme.of(context).colorScheme.primaryContainer,
-        child: ListTile(
-            onTap: () {
-              SchedulerBinding.instance.addPostFrameCallback((_) {
-                GoRouter.of(context).push("/event/${widget.event.id}");
-              });
-            },
-            leading: (placement?.isContinuation != true)
-                ? SignupIndicator.Maybe(widget.event)
-                : null,
-            title: Row(
-              children: [
-                Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                      Text(
-                          widget.event.name.getLocalLong(
-                              Localizations.localeOf(context)),
-                          textAlign: TextAlign.left,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: Theme.of(context).textTheme.titleMedium),
-                      if (primaryInfoLine.isNotEmpty)
-                        Text(primaryInfoLine,
-                            // textAlign: TextAlign.right,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Theme.of(context).brightness ==
-                                        Brightness.light
-                                    ? Colors.grey[600]
-                                    : Colors.grey[400],
-                                fontSize: 12))
-                    ])),
-                const SizedBox(width: 16),
-                // SizedBox(
-                //     width: 140,
-                //     child:
-                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  if (secondaryInfoLine.isNotEmpty)
-                    Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(secondaryInfoLine,
-                            style: TextStyle(
-                                color: Theme.of(context).brightness ==
-                                        Brightness.light
-                                    ? Colors.grey[600]
-                                    : Colors.grey[400],
-                                fontSize: 12))),
-                ]),
-              ],
-            )));
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+            // crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // if (placement?.isContinuation != true)
+              // Column(children: [
+              //   Expanded(child:
+              Container(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  // width: 40,
+                  // constraints:
+                  //     const BoxConstraints(maxWidth: 40, maxHeight: 100),
+                  width: 55,
+                  height: 60,
+                  // height: 80,
+                  child: Center(
+                      child: placement?.isContinuation != true
+                          ? SignupIndicator.Maybe(widget.event)
+                          : const SizedBox())),
+              // ]),
+              Expanded(
+                  child:
+                      // Column(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   mainAxisSize: MainAxisSize.min,
+                      //   crossAxisAlignment: CrossAxisAlignment.center,
+                      //   children: [
+                      // Container()
+                      ListTile(
+                          onTap: () {
+                            SchedulerBinding.instance.addPostFrameCallback((_) {
+                              GoRouter.of(context)
+                                  .push("/event/${widget.event.id}");
+                            });
+                          },
+                          // leading:
+                          // (placement?.isContinuation != true)
+                          //     ? Container(
+                          //         color: Colors.purple,
+                          //         width: 40,
+                          //         child: SignupIndicator.Maybe(widget.event))
+                          //     : null,
+                          title: Row(
+                            children: [
+                              Expanded(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                    // const SizedBox(height: 60),
+                                    Text(
+                                        widget.event.name.getLocalLong(
+                                            Localizations.localeOf(context)),
+                                        textAlign: TextAlign.left,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium),
+                                    if (primaryInfoLine.isNotEmpty)
+                                      Text(primaryInfoLine,
+                                          // textAlign: TextAlign.right,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                          .brightness ==
+                                                      Brightness.light
+                                                  ? Colors.grey[600]
+                                                  : Colors.grey[400],
+                                              fontSize: 12))
+                                  ])),
+                              const SizedBox(width: 16),
+                              // SizedBox(
+                              //     width: 140,
+                              //     child:
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    if (secondaryInfoLine.isNotEmpty)
+                                      Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Text(secondaryInfoLine,
+                                              style: TextStyle(
+                                                  color: Theme.of(context)
+                                                              .brightness ==
+                                                          Brightness.light
+                                                      ? Colors.grey[600]
+                                                      : Colors.grey[400],
+                                                  fontSize: 12))),
+                                  ]),
+                            ],
+                          )))
+            ]));
   }
 }
