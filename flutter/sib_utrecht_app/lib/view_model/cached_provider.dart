@@ -1,9 +1,6 @@
-import 'dart:async';
 
 import 'package:sib_utrecht_app/model/api/utils.dart';
 import 'package:sib_utrecht_app/model/api_connector.dart';
-import 'package:sib_utrecht_app/model/api_connector_cache.dart';
-import 'package:sib_utrecht_app/model/api_connector_cache_monitor.dart';
 import 'package:sib_utrecht_app/model/api_connector_cacher.dart';
 import 'package:sib_utrecht_app/model/resource_pool.dart';
 import 'package:sib_utrecht_app/utils.dart';
@@ -17,10 +14,9 @@ class CachedProvider<T> extends CachedProviderT<T, T, CacherApiConnector> {
       {required this.obtain,
       FetchResult<T>? cache,
       required ResourcePool? pool,
-      required bool allowAutoRefresh,
-      required FutureOr<CacherApiConnector> connector})
+      required super.allowAutoRefresh,
+      required super.connector})
       : super(
-            allowAutoRefresh: allowAutoRefresh,
             getFresh: (c) {
               // var monitor = CacheApiConnectorMonitor(c);
 
@@ -90,6 +86,5 @@ class CachedProvider<T> extends CachedProviderT<T, T, CacherApiConnector> {
             //           return null;
             //         }
             //       },
-            postProcess: (v) => v,
-            connector: connector);
+            postProcess: (v) => v);
 }

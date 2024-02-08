@@ -292,6 +292,8 @@ class _EventEditFormState extends State<EventEditForm>
     if (signupEnd != null) {
       _registerDeadlineController.text = _dateFormat.format(signupEnd);
     }
+
+    onFieldsUpdated();
   }
 
   void doExtractFromDescription(String desc) {
@@ -454,6 +456,8 @@ class _EventEditFormState extends State<EventEditForm>
 
     onFieldsUpdated();
     // log.info(url);
+
+    // submit();
   }
 
   @override
@@ -586,13 +590,14 @@ class _EventEditFormState extends State<EventEditForm>
                             }
 
                             _descriptionHtmlController.text = descriptionHtml;
-
-                            onFieldChanged(val);
                             setState(() {
                               this.descriptionHtml = descriptionHtml;
                             });
 
+                            // onFieldChanged(val);
                             doExtractFromDescription(val);
+
+                            onFieldsUpdated();
                           },
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
@@ -603,12 +608,14 @@ class _EventEditFormState extends State<EventEditForm>
                       subtitle: TextField(
                           controller: _descriptionHtmlController,
                           onChanged: (val) {
-                            onFieldChanged(val);
+                            // onFieldChanged(val);
                             setState(() {
                               descriptionHtml = val;
                             });
 
                             doExtractFromDescription(val);
+
+                            onFieldsUpdated();
                           },
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
@@ -618,32 +625,32 @@ class _EventEditFormState extends State<EventEditForm>
                 // ])
                 SliverToBoxAdapter(
                     child: Column(children: [
-                  const SizedBox(height: 48),
-                  Card(
-                      child: FutureBuilderPatched(
-                          future: descriptionFields,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasError) {
-                              return Text('Error: ${snapshot.error}');
-                            }
+                  // const SizedBox(height: 48),
+                  // Card(
+                  //     child: FutureBuilderPatched(
+                  //         future: descriptionFields,
+                  //         builder: (context, snapshot) {
+                  //           if (snapshot.hasError) {
+                  //             return Text('Error: ${snapshot.error}');
+                  //           }
 
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const CircularProgressIndicator();
-                            }
+                  //           if (snapshot.connectionState ==
+                  //               ConnectionState.waiting) {
+                  //             return const CircularProgressIndicator();
+                  //           }
 
-                            final data = snapshot.data;
-                            if (data == null) {
-                              return const SizedBox();
-                            }
+                  //           final data = snapshot.data;
+                  //           if (data == null) {
+                  //             return const SizedBox();
+                  //           }
 
-                            return Text(JsonEncoder.withIndent("  ", (e) {
-                              if (e is DateTime) {
-                                return e.toIso8601String();
-                              }
-                              return e.toJson();
-                            }).convert(data));
-                          })),
+                  //           return Text(JsonEncoder.withIndent("  ", (e) {
+                  //             if (e is DateTime) {
+                  //               return e.toIso8601String();
+                  //             }
+                  //             return e.toJson();
+                  //           }).convert(data));
+                  //         })),
                   const SizedBox(height: 48),
                   ThumbnailImageView(imageUrl),
                   const SizedBox(height: 48),
@@ -700,6 +707,7 @@ class _EventEditFormState extends State<EventEditForm>
                         (p0) {
                       setState(() {
                         wordpressControlled = p0.contains("wordpress");
+                        onFieldsUpdated();
                       });
                     },
                   ),
@@ -715,6 +723,7 @@ class _EventEditFormState extends State<EventEditForm>
                               : (val) {
                                   setState(() {
                                     wordpressControlled = val;
+                                    onFieldsUpdated();
                                   });
                                 }),
                     ),

@@ -115,16 +115,17 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
     }
     activeListener = null;
 
-    for (var element in data) {
+    for (var element in [...data]) {
       element.dispose();
-      data.remove(element);
+      // data.remove(element);
       loadingData?.remove(element);
     }
+    data.clear();
 
-    for (CachedProvider<U> element in loadingData ?? []) {
+    for (CachedProvider<U> element in [...(loadingData ?? [])]) {
       element.dispose();
-      loadingData?.remove(element);
     }
+    loadingData?.clear();
 
     loadingData = null;
 
@@ -221,6 +222,11 @@ class _MultiplexedProviderState<T, U> extends State<MultiplexedProvider<T, U>> {
 
   void updateData() {
     log.info("[Provider] updateData for $widget with query ${widget.query}");
+
+    if (!mounted) {
+      log.fine("[Provider] updateData: not mounted");
+      return;
+    }
 
     var loadingData = this.loadingData;
     for (CachedProvider<U> element in loadingData ?? []) {

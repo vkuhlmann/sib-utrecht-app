@@ -44,8 +44,8 @@ class AlertsPanel extends StatefulWidget {
   final List<AlertsFutureStatus> loadingFutures;
   final AlertsPanelController controller;
 
-  const AlertsPanel({Key? key, required this.loadingFutures,
-  required this.controller}) : super(key: key);
+  const AlertsPanel({super.key, required this.loadingFutures,
+  required this.controller});
 
   @override
   State<AlertsPanel> createState() => _AlertsPanelState();
@@ -79,6 +79,10 @@ class _AlertsPanelState extends State<AlertsPanel> {
       var a = fut.future.then((_) {
         return Future.delayed(const Duration(seconds: 2)).then((_) {
           if (!allowedCallbackIdentities.contains(callbackIdentity)) {
+            return;
+          }
+
+          if (!mounted) {
             return;
           }
 
