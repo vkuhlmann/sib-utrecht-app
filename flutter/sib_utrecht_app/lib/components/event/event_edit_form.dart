@@ -225,9 +225,7 @@ class _EventEditFormState extends State<EventEditForm>
   }
 
   void onFieldChanged(_) {
-    // setState(() {
     onFieldsUpdated();
-    // });
   }
 
   void onFieldsUpdated() {
@@ -252,7 +250,7 @@ class _EventEditFormState extends State<EventEditForm>
     if (event == null) {
       if (wordpressControlled) {
         enableSignup = true;
-        _spacesController.text = "40";
+        _spacesController.text = "";
       }
 
       return;
