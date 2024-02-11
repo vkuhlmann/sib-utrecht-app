@@ -4,6 +4,7 @@ import 'package:sib_utrecht_app/components/actions/appbar_suppression.dart';
 import 'package:sib_utrecht_app/components/actions/sib_appbar.dart';
 import 'package:sib_utrecht_app/components/event/thumbnail.dart';
 import 'package:sib_utrecht_app/components/dual_screen-1.0.4/lib/dual_screen.dart';
+import 'package:sib_utrecht_app/pages/activate_page.dart';
 import 'package:sib_utrecht_app/pages/confidants.dart';
 import 'package:sib_utrecht_app/pages/group_members.dart';
 import 'package:sib_utrecht_app/pages/group_members_add.dart';
@@ -167,6 +168,7 @@ GoRouter createRouter() {
       //     // navigatorKey: _authScreensNav,
       //     initialLocation: "/login",
       //     routes: <RouteBase>[
+
       GoRoute(
         // parentNavigatorKey: _authScreensNav,
         path: '/login',
@@ -179,194 +181,188 @@ GoRouter createRouter() {
         builder: (context, state) =>
             NewLoginPage(params: state.uri.queryParameters),
       ),
-      // ]),
-      // StatefulShellBranch(
-      //     // navigatorKey: _mainScreensNav,
-      //     routes: [
       StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) {
             log.info("Building indexed stack @@@@@@@@@@");
             return ScaffoldWithNavbar(
-              loginController: loginManager,
-              navigationShell,
-              currentPage: state.matchedLocation,
-              // title: "SIB-Utrecht (Bèta)"
-            );
+                loginController: loginManager,
+                navigationShell,
+                currentPage: state.matchedLocation);
           },
           branches: [
-            StatefulShellBranch(
-                // navigatorKey: _sectionNavigatorKey,
-                initialLocation: '/',
-                routes: <RouteBase>[
-                  Route(
-                      path: '/',
-                      builder: (context, state) => const HomePage(),
-                      routes: [
-                        Route(
-                          path: 'events',
-                          builder: (context, state) => const EventsPage(),
-                        ),
-                      ]),
-                  ShellRoute(
-                      builder: (context, state, child) {
-                        bool isDetailsPriority = true;
-                        log.info("Shell route child is $child");
+            StatefulShellBranch(initialLocation: '/', routes: <RouteBase>[
+              Route(
+                  path: '/',
+                  builder: (context, state) => const HomePage(),
+                  routes: [
+                    Route(
+                      path: 'events',
+                      builder: (context, state) => const EventsPage(),
+                    ),
+                  ]),
+              GoRoute(
+                path: '/activate/:activation_code',
+                builder: (context, state) =>
+                    ActivatePage(
+                      activationCode: state.pathParameters["activation_code"] ?? "missing",
+                      params: state.uri.queryParameters),
+              ),
+              ShellRoute(
+                  builder: (context, state, child) {
+                    bool isDetailsPriority = true;
+                    log.info("Shell route child is $child");
 
-                        return TwoPane(
-                          startPane: Builder(builder: (context) {
-                            log.fine("Doing builder for startPane");
+                    return TwoPane(
+                      startPane: Builder(builder: (context) {
+                        log.fine("Doing builder for startPane");
 
-                              return const EventsPage(key: ValueKey("eventsPage"));
+                        return const EventsPage(key: ValueKey("eventsPage"));
+                      }),
+                      endPane: Builder(builder: (context) {
+                        bool suppress = true;
+                        log.fine("Doing builder for endPane");
+
+                        // suppress = MediaQuery.of(context).size
+
+                        suppress = TwoPaneResolution.maybeOf(context)
+                                ?.resolvedPanePriority ==
+                            TwoPanePriority.both;
+
+                        return AppbarSuppression(
+                            suppressTitle: suppress,
+                            suppressMenu: suppress,
+                            suppressBackbutton: suppress,
+                            child: child);
+                      }),
+                      paneProportion: 0.5,
+                      panePriority: MediaQuery.sizeOf(context).width > 1000
+                          ? TwoPanePriority.both
+                          : (isDetailsPriority
+                              ? TwoPanePriority.end
+                              : TwoPanePriority.start),
+                    );
+                  },
+                  routes: [
+                    Route(
+                        path: '/event/new',
+                        builder: (context, state) => const EventEditPage(
+                            key: ValueKey("event/new"), eventId: null)),
+                    Route(
+                        path: '/event/:event_id',
+                        name: "event",
+                        builder: (context, state) {
+                          // String? eventId;
+                          // if (state.pathParameters
+                          //     .containsKey('event_id')) {
+                          //   eventId = int.tryParse(
+                          //       state.pathParameters['event_id']!);
+                          // }
+                          String? eventId = state.pathParameters['event_id'];
+
+                          log.fine(
+                              "Doing event route builder for eventId $eventId");
+
+                          if (eventId == null) {
+                            router.go("/");
+                            return const Center(
+                              child: Text("Invalid event id"),
+                            );
                           }
-                          ),
-                          endPane: Builder(builder: (context) {
-                            bool suppress = true;
-                            log.fine("Doing builder for endPane");
 
-                            // suppress = MediaQuery.of(context).size
+                          // return EventsDoublePage(
+                          //     eventId: eventId,
+                          //     isDetailsPriority: true,
+                          //     key: ValueKey("event_double/$eventId"));
 
-                            suppress = TwoPaneResolution.maybeOf(context)
-                                    ?.resolvedPanePriority ==
-                                TwoPanePriority.both;
+                          return EventPage(
+                              eventId: eventId,
+                              key: ValueKey("event/$eventId"));
+                        },
+                        routes: [
+                          Route(
+                              path: 'edit',
+                              name: "event_edit",
+                              builder: (context, state) {
+                                // int? eventId;
+                                // // if (state.pathParameters
+                                // //     .containsKey('event_id')) {
+                                // //   eventId = int.tryParse(
+                                // //       state.pathParameters['event_id']!);
+                                // // }
+                                // String? eventIdStr =
+                                //     ;
 
-                            return AppbarSuppression(
-                                suppressTitle: suppress,
-                                suppressMenu: suppress,
-                                suppressBackbutton: suppress,
-                                child: child);
-                          }),
-                          paneProportion: 0.5,
-                          panePriority: MediaQuery.sizeOf(context).width > 1000
-                              ? TwoPanePriority.both
-                              : (isDetailsPriority
-                                  ? TwoPanePriority.end
-                                  : TwoPanePriority.start),
-                        );
-                      },
-                      routes: [
-                        Route(
-                            path: '/event/new',
-                            builder: (context, state) =>
-                                const EventEditPage(
-                                  key: ValueKey("event/new"),
-                                  eventId: null)),
-                        Route(
-                            path: '/event/:event_id',
-                            name: "event",
-                            builder: (context, state) {
-                              // String? eventId;
-                              // if (state.pathParameters
-                              //     .containsKey('event_id')) {
-                              //   eventId = int.tryParse(
-                              //       state.pathParameters['event_id']!);
-                              // }
-                              String? eventId =
-                                  state.pathParameters['event_id'];
+                                // if (eventIdStr != "new" &&
+                                //     eventIdStr != null) {
+                                //   eventId = int.tryParse(eventIdStr);
+                                // }
 
-                              log.fine("Doing event route builder for eventId $eventId");
+                                String? eventIdParam =
+                                    state.pathParameters['event_id'];
 
-                              if (eventId == null) {
-                                router.go("/");
-                                return const Center(
-                                  child: Text("Invalid event id"),
-                                );
-                              }
+                                String? eventId = eventIdParam;
+                                if (eventId == "new") {
+                                  eventId = null;
+                                }
 
-                              // return EventsDoublePage(
-                              //     eventId: eventId,
-                              //     isDetailsPriority: true,
-                              //     key: ValueKey("event_double/$eventId"));
-
-                              return EventPage(
-                                  eventId: eventId,
-                                  key: ValueKey("event/$eventId"));
-                            },
-                            routes: [
-                              Route(
-                                  path: 'edit',
-                                  name: "event_edit",
-                                  builder: (context, state) {
-                                    // int? eventId;
-                                    // // if (state.pathParameters
-                                    // //     .containsKey('event_id')) {
-                                    // //   eventId = int.tryParse(
-                                    // //       state.pathParameters['event_id']!);
-                                    // // }
-                                    // String? eventIdStr =
-                                    //     ;
-
-                                    // if (eventIdStr != "new" &&
-                                    //     eventIdStr != null) {
-                                    //   eventId = int.tryParse(eventIdStr);
-                                    // }
-
-                                    String? eventIdParam =
-                                        state.pathParameters['event_id'];
-
-                                    String? eventId = eventIdParam;
-                                    if (eventId == "new") {
-                                      eventId = null;
-                                    }
-
-                                    return EventEditPage(
-                                        eventId: eventId,
-                                        key: ValueKey("event/$eventIdParam/edit"));
+                                return EventEditPage(
+                                    eventId: eventId,
+                                    key: ValueKey("event/$eventIdParam/edit"));
+                              },
+                              routes: [
+                                GoRoute(
+                                  path: 'delete',
+                                  name: "event_delete_confirm",
+                                  pageBuilder: (BuildContext context,
+                                      GoRouterState state) {
+                                    return DialogPage(
+                                        // builder: (_) => AboutDialog()
+                                        builder: (_) => AlertDialog(
+                                              title:
+                                                  const Text('Event deletion'),
+                                              content: const Text(
+                                                  'Are you sure you want to delete the event?'),
+                                              actions: [
+                                                TextButton(
+                                                    onPressed: () {
+                                                      // Navigator.pop(
+                                                      //         context);
+                                                      router.pop(
+                                                          "delete_confirmed");
+                                                    },
+                                                    child:
+                                                        const Text('Delete')),
+                                                TextButton(
+                                                    onPressed: () {
+                                                      // Navigator.pop(
+                                                      //         context);
+                                                      router.pop();
+                                                    },
+                                                    child: const Text('Cancel'))
+                                              ],
+                                            ));
+                                    // builder: (_) => ThumbnailImageDialog(
+                                    //     url: state.uri
+                                    //             .queryParameters["url"]
+                                    //         as String));
                                   },
-                                  routes: [
-                                    GoRoute(
-                                      path: 'delete',
-                                      name: "event_delete_confirm",
-                                      pageBuilder: (BuildContext context,
-                                          GoRouterState state) {
-                                        return DialogPage(
-                                            // builder: (_) => AboutDialog()
-                                            builder: (_) => AlertDialog(
-                                                  title: const Text(
-                                                      'Event deletion'),
-                                                  content: const Text(
-                                                      'Are you sure you want to delete the event?'),
-                                                  actions: [
-                                                    TextButton(
-                                                        onPressed: () {
-                                                          // Navigator.pop(
-                                                          //         context);
-                                                          router.pop(
-                                                              "delete_confirmed");
-                                                        },
-                                                        child: const Text(
-                                                            'Delete')),
-                                                    TextButton(
-                                                        onPressed: () {
-                                                          // Navigator.pop(
-                                                          //         context);
-                                                          router.pop();
-                                                        },
-                                                        child: const Text(
-                                                            'Cancel'))
-                                                  ],
-                                                ));
-                                        // builder: (_) => ThumbnailImageDialog(
-                                        //     url: state.uri
-                                        //             .queryParameters["url"]
-                                        //         as String));
-                                      },
-                                    )
-                                  ]),
-                              GoRoute(
-                                path: 'image',
-                                name: "event_image_dialog",
-                                pageBuilder: (BuildContext context,
-                                    GoRouterState state) {
-                                  return DialogPage(
-                                      // builder: (_) => AboutDialog()
-                                      builder: (_) => ThumbnailImageDialog(
-                                          url: state.uri.queryParameters["url"]
-                                              as String));
-                                },
-                              )
-                            ])
-                      ])
-                ]),
+                                )
+                              ]),
+                          GoRoute(
+                            path: 'image',
+                            name: "event_image_dialog",
+                            pageBuilder:
+                                (BuildContext context, GoRouterState state) {
+                              return DialogPage(
+                                  // builder: (_) => AboutDialog()
+                                  builder: (_) => ThumbnailImageDialog(
+                                      url: state.uri.queryParameters["url"]
+                                          as String));
+                            },
+                          )
+                        ])
+                  ])
+            ]),
             StatefulShellBranch(routes: <RouteBase>[
               GoRoute(
                   path: '/feed',
